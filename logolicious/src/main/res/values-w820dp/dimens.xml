@@ -1,0 +1,18 @@
+<resources>
+
+    <dimen name="activity_horizontal_margin">64dp</dimen>
+    <dimen name="OrderScreenFontSize">30dp</dimen>
+    <dimen name="OrderScreenUncheckFontSize">23dp</dimen>
+
+    <item name="match_parent" format="integer" type="dimen">-1</item>
+    <item name="wrap_content" format="integer" type="dimen">-2</item>
+
+    <dimen name="SaveButtonWidth">@dimen/match_parent</dimen>
+    <dimen name="ItemResizeText">31dp</dimen>
+    <dimen name="LongPressOptionHeight">30dp</dimen>
+    <dimen name="TextSizeOnCanvas">130sp</dimen>
+
+    <dimen name="NormalText">28sp</dimen>
+    <dimen name="WwwText">35sp</dimen>
+
+</resources>

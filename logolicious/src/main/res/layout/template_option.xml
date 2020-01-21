@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/DodgerBlue"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/wrap_content"
+        android:background="@color/Black">
+
+        <TextView
+            android:id="@+id/title_template"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:gravity="left|center_vertical"
+            android:text="ADD TEXT"
+            android:textColor="@color/AntiqueWhite" />
+
+        <ImageView
+            android:id="@+id/cancelSaving"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:src="@drawable/close_circled" />
+
+    </LinearLayout>
+    
+    <Button
+        android:id="@+id/useAsTemplate"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_margin="10dp"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="USE AS TEMPLATE" />
+
+    <!--<Button
+        android:id="@+id/renameTemplate"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_margin="10dp"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="RENAME" />-->
+
+    <Button
+        android:id="@+id/deleteTemplate"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_margin="10dp"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="DELETE" />
+    
+    <!--<Button
+        android:id="@+id/closeTemplateOption"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_margin="10dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="CLOSE" />-->
+
+</LinearLayout>

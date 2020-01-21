@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/DodgerBlue"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/wrap_content"
+        android:background="@color/Black">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:gravity="left|center_vertical"
+            android:text="RENAME TEMPLATE"
+            android:textColor="@color/AntiqueWhite" />
+
+        <ImageView
+            android:id="@+id/close"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:src="@drawable/close_circled" />
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/textTemaplateName"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:ems="10"
+        android:singleLine="true" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <Button
+            android:id="@+id/btnRenameTemplate"
+            android:layout_width="0dp"
+            android:layout_height="40dip"
+            android:layout_marginLeft="20dp"
+            android:layout_weight=".5"
+            android:background="@drawable/button_white_edge"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="SAVE" />
+    </LinearLayout>
+
+</LinearLayout>

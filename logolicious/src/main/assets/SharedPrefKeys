@@ -1,0 +1,7 @@
+boolean     TextShadow
+int         TextAlign
+int         TextAlignment
+//saving options
+String      SavingType e.g JPG_HQ
+boolean     dontAskMeAgain - either to show saving pref every time you save the photo
+String      ImageFilename - the filename to create

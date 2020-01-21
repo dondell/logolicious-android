@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/DodgerBlue"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+        android:layout_margin="3dp">
+
+        <Button
+            android:id="@+id/buttonCreateFolder"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="40dip"
+            android:layout_weight="1"
+            android:background="@drawable/button_white_edge"
+            android:text="New Folder"
+            android:textColor="@color/Black" />
+
+        <Button
+            android:id="@+id/buttonChckAll"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="40dip"
+            android:layout_weight="1"
+            android:background="@drawable/button_white_edge"
+            android:text="Check All"
+            android:textColor="@color/Black" />
+
+        <Button
+            android:id="@+id/buttonUnChckAll"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="40dip"
+            android:layout_weight="1"
+            android:background="@drawable/button_white_edge"
+            android:text="Un-Check All"
+            android:textColor="@color/Black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/textViewCurrentPath"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="/sdcard/"
+            android:textColor="@color/Black"
+            android:textSize="15sp" 
+            android:ems="15"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"/>
+    </LinearLayout>
+
+    <!--
+    <ListView
+        android:id="@+id/external_files"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@android:color/white"
+        android:paddingTop="22dp"
+        android:stackFromBottom="true" >
+    </ListView>  -->
+
+    <GridView
+        android:id="@+id/external_files"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@android:color/white"
+        android:numColumns="2"
+        android:paddingTop="22dp"
+        android:stackFromBottom="true" >
+    </GridView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/DodgerBlue"
+        android:gravity="center" >
+
+        <Button
+            android:id="@+id/buttonDone"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="40dip"
+            android:background="@drawable/button_white_edge"
+            android:minWidth="200px"
+            android:text="Ok"
+            android:textColor="@color/Black" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,51 @@
+<resources>
+
+    <style name="Theme.Transparent" parent="android:Theme">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
+    <style name="GrayTheme" parent="Theme.AppCompat">
+        <item name="android:windowBackground">@color/style_greybackground</item>
+        <item name="colorAccent">@color/white</item>
+        <item name="colorControlActivated">@color/style_greybackground</item>
+        <item name="colorControlNormal">@color/black</item>
+        <item name="windowNoTitle">false</item>
+        <item name="windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="colorPrimary">@color/style_greybackground</item>
+        <item name="colorPrimaryDark">@color/style_greybackground</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textColorPrimary">@color/white</item>
+    </style>
+
+    <style name="colorPickerStyle" parent="android:Theme">
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:cacheColorHint">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="AppThemeDark" parent="android:Theme" />
+
+    <style name="AppThemeDark.FullScreen" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
+
+    <style name="PhotoGridLayout">
+        <item name="android:drawSelectorOnTop">true</item>
+        <item name="android:listSelector">@drawable/photogrid_list_selector</item>
+    </style>
+
+    <style name="DialogStyle" parent="android:Theme.Dialog">
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowMinWidthMajor">80%</item>
+        <item name="android:windowMinWidthMinor">80%</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+</resources>

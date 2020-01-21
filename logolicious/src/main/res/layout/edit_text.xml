@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/Semi_Trans80"
+    android:orientation="vertical"
+    android:padding="7dp">
+
+    <EditText
+        android:id="@+id/newText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter text"
+        android:singleLine="true"
+        android:padding="5dp" />
+
+    <Button
+        android:id="@+id/updateButton"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/LongPressOptionHeight"
+        android:background="@drawable/button_white_edge"
+        android:padding="3dp"
+        android:text="Update" />
+
+</LinearLayout>

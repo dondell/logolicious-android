@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="aspectRatio_TextSize">10sp</dimen>
+    <dimen name="OrderScreenFontSize">12dp</dimen>
+    <dimen name="OrderScreenUncheckFontSize">8dp</dimen>
+
+    <item name="match_parent" format="integer" type="dimen">-1</item>
+    <item name="wrap_content" format="integer" type="dimen">-2</item>
+
+    <dimen name="SaveButtonWidth">@dimen/match_parent</dimen>
+    <dimen name="ItemResizeText">15dp</dimen>
+    <dimen name="LongPressOptionHeight">30dp</dimen>
+    <dimen name="TextSizeOnCanvas">80sp</dimen>
+
+    <dimen name="GPlayLogoHeight">40dp</dimen>
+
+    <dimen name="NormalText">20sp</dimen>
+    <dimen name="WwwText">27sp</dimen>
+
+</resources>

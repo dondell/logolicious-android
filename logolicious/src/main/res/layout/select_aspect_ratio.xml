@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/DodgerBlue"
+    android:gravity="top"
+    android:orientation="vertical" >
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TableRow
+            android:id="@+id/tableRow1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/aspectRatio169"
+                android:layout_width="0dp"
+                android:layout_height="60dip"
+                android:layout_margin="10dp"
+                android:layout_marginBottom="50dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_white_edge"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:text="16:9"
+                android:textSize="@dimen/aspectRatio_TextSize" />
+
+            <Button
+                android:id="@+id/aspectRatio43"
+                android:layout_width="0dp"
+                android:layout_height="60dip"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_white_edge"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:text="4:3"
+                android:textSize="@dimen/aspectRatio_TextSize" />
+
+            <Button
+                android:id="@+id/aspectRatio11"
+                android:layout_width="0dp"
+                android:layout_height="60dip"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_white_edge"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:text="1:1"
+                android:textSize="@dimen/aspectRatio_TextSize" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+        </TableRow>
+    </TableLayout>
+
+</LinearLayout>

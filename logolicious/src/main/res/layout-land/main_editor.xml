@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    tools:context=".screens.activities.ActivityMainEditor">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.65"
+            android:orientation="vertical"
+            android:weightSum="2">
+
+            <RelativeLayout
+                android:id="@+id/photo"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1.64"
+                android:background="@drawable/backrepeat">
+
+                <include
+                    android:id="@+id/live_include"
+                    layout="@layout/live_surface"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <com.olav.logolicious.customize.widgets.DynamicImageView
+                    android:id="@+id/backgroundImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter"
+                    android:visibility="visible" />
+
+                <com.olav.logolicious.customize.widgets.LayersContainerView
+                    android:id="@+id/layeredLogos"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:contentDescription="@string/app_name"
+                    android:scaleType="matrix" />
+
+                <Button
+                    android:id="@+id/buttonDoneLive"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/button_white_edge"
+                    android:padding="10dp"
+                    android:text="DONE"
+                    android:textColor="@color/Black"
+                    android:visibility="visible" />
+
+                <Button
+                    android:id="@+id/flipCamera"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/buttonDoneLive"
+                    android:layout_alignBottom="@+id/buttonDoneLive"
+                    android:layout_alignParentLeft="true"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/button_white_edge"
+                    android:padding="10dp"
+                    android:text="FLIP"
+                    android:textColor="@color/Black"
+                    android:visibility="visible" />
+
+                <ProgressBar
+                    android:id="@+id/templateProgress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:indeterminateDrawable="@drawable/progress"
+                    android:indeterminateOnly="true"
+                    android:maxHeight="30dip"
+                    android:minHeight="30dip"
+                    android:progress="50"
+                    android:visibility="invisible" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/menuBottom"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight=".38"
+                android:orientation="vertical"
+                android:weightSum="2">
+
+                <LinearLayout
+                    android:id="@+id/menuBottomUpper"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1.4"
+                    android:background="@color/Black"
+                    android:gravity="center"
+                    android:weightSum="2">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight=".08" />
+
+                    <ImageButton
+                        android:id="@+id/loadLogo"
+                        android:layout_width="0dp"
+                        android:layout_height="fill_parent"
+                        android:layout_weight=".43"
+                        android:background="@color/Black"
+                        android:contentDescription="@string/contentdesc_icon_eraser"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/load_logo" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="fill_parent"
+                        android:layout_weight="1.19"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingBottom="20dp"
+                        android:paddingTop="20dp"
+                        android:weightSum="3">
+
+                        <ImageView
+                            android:id="@+id/buttonAddText"
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:layout_weight="1"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/addtext" />
+
+                        <ImageView
+                            android:id="@+id/buttonTextColor"
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:layout_weight="1"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/color_palette" />
+
+                        <ImageButton
+                            android:id="@+id/buttonTrashcan"
+                            android:layout_width="0dp"
+                            android:layout_height="fill_parent"
+                            android:layout_weight="1"
+                            android:background="@color/Transparent"
+                            android:contentDescription="@string/contentdesc_bin"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/doubletap_trash" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight=".30"
+                        android:orientation="vertical">
+
+                        <ImageButton
+                            android:id="@+id/buttonRotZero"
+                            android:layout_width="fill_parent"
+                            android:layout_height="0dp"
+                            android:layout_marginRight="15dp"
+                            android:layout_weight="1"
+                            android:background="@color/Transparent"
+                            android:contentDescription="@string/label_button_undo"
+                            android:onClick="rotateLogo0"
+                            android:scaleType="fitStart"
+                            android:src="@drawable/zero_degrees" />
+
+                        <ImageView
+                            android:layout_width="fill_parent"
+                            android:layout_height="0dp"
+                            android:layout_marginRight="15dp"
+                            android:layout_weight="1"
+                            android:contentDescription="@string/label_button_share"
+                            android:onClick="rotateLogo90"
+                            android:scaleType="fitStart"
+                            android:src="@drawable/ninety_degrees" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/LinearAdjustment"
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight=".6"
+                    android:background="@color/Black"
+                    android:weightSum="2">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight=".08" />
+
+                    <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight=".2"
+                        android:background="@color/Black"
+                        android:contentDescription="@string/contentdesc_icon_saturation"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/trans" />
+
+                    <LinearLayout
+                        android:id="@+id/bottomSlidersContainer"
+                        android:layout_width="0dp"
+                        android:layout_height="fill_parent"
+                        android:layout_marginBottom="0dp"
+                        android:layout_weight="1.72"
+                        android:background="@color/Black"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <RelativeLayout
+                            android:layout_width="fill_parent"
+                            android:layout_height="10dp">
+
+                            <com.olav.logolicious.customize.widgets.RulerView
+                                android:layout_width="fill_parent"
+                                android:layout_height="fill_parent"
+                                android:layout_marginBottom="1dp"
+                                android:layout_marginLeft="13dp"
+                                android:layout_marginRight="43dp"
+                                android:rotation="180" />
+
+                            <TextView
+                                android:id="@+id/textViewFontPreview"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentLeft="true"
+                                android:layout_alignParentTop="true"
+                                android:layout_marginLeft="3dp"
+                                android:text="0%"
+                                android:textAppearance="?android:attr/textAppearanceSmall"
+                                android:textSize="4pt" />
+
+                            <TextView
+                                android:id="@+id/TextView01"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentRight="true"
+                                android:layout_alignParentTop="true"
+                                android:layout_marginRight="20dp"
+                                android:text="100%"
+                                android:textAppearance="?android:attr/textAppearanceSmall"
+                                android:textSize="4pt" />
+                        </RelativeLayout>
+
+                        <SeekBar
+                            android:id="@+id/seekBarTrans"
+                            android:layout_width="fill_parent"
+                            android:layout_height="fill_parent"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginBottom="9.5dp"
+                            android:layout_marginLeft="3dp"
+                            android:layout_marginRight="25dp"
+                            android:indeterminate="false"
+                            android:max="255"
+                            android:paddingBottom="3dp"
+                            android:progress="155"
+                            android:progressDrawable="@drawable/styled_progress2"
+                            android:thumb="@drawable/slider_indicator_01" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight=".35"
+            android:orientation="vertical"
+            android:weightSum="2">
+
+            <RelativeLayout
+                android:id="@+id/menuRight"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1.64"
+                android:background="@color/DodgerBlue"
+                android:orientation="vertical">
+
+                <com.olav.logolicious.customize.widgets.DynamicImageView
+                    android:id="@+id/imageViewLogo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginTop="5dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@string/app_name"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/logolicious_white_txt" />
+
+                <LinearLayout
+                    android:id="@+id/LinearOtherBtns"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/buttonLive"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@color/Transparent"
+                        android:contentDescription="Live"
+                        android:onClick="selectLiveOption"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/live"
+                        android:visibility="gone" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@color/White"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/buttonGallery"
+                        android:layout_width="@dimen/SaveButtonWidth"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="@string/contentdesc_icon_eraser"
+                        android:onClick="selectImageOption"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/select_image" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="7dp"
+                        android:layout_marginRight="7dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@color/White"
+                        android:visibility="visible" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/linearLayout1"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@+id/imageViewLogo"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/buttonShowMyLogos"
+                        android:layout_width="@dimen/SaveButtonWidth"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:gravity="center"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/mylogos"
+                        android:textColor="@color/White" />
+
+                    <ImageView
+                        android:id="@+id/buttonPrefab"
+                        android:layout_width="@dimen/SaveButtonWidth"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:gravity="center"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/prefablogo_category"
+                        android:textColor="@color/White" />
+
+                    <ImageView
+                        android:id="@+id/buttonSnapOnGrid"
+                        android:layout_width="@dimen/SaveButtonWidth"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:gravity="center"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/snap_on_grid"
+                        android:textColor="@color/White" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@color/White" />
+
+                    <ImageView
+                        android:id="@+id/savedTemplates"
+                        android:layout_width="@dimen/SaveButtonWidth"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:gravity="center"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/saved_templated"
+                        android:textColor="@color/White" />
+
+                    <ImageView
+                        android:layout_width="@dimen/SaveButtonWidth"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:gravity="center"
+                        android:onClick="saveTemplate"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/save_as_template"
+                        android:textColor="@color/White" />
+
+                    <View
+                        android:id="@+id/spacerNoLogo"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@color/White"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/noLogo"
+                        android:layout_width="@dimen/SaveButtonWidth"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:src="@drawable/no_logo_button"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/cppText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginLeft="13dp"
+                        android:layout_marginStart="13dp"
+                        android:text="Mem"
+                        android:textColor="@color/Black"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight=".36"
+                android:background="@color/DodgerBlue"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/save"
+                    android:layout_width="@dimen/SaveButtonWidth"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:adjustViewBounds="true"
+                    android:background="@color/DodgerBlue"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/save" />
+
+                <ImageView
+                    android:id="@+id/sharePic"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginTop="5dp"
+                    android:adjustViewBounds="true"
+                    android:background="@color/DodgerBlue"
+                    android:contentDescription="@string/contentdesc_icon_saturation"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/share_icon" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!--
+    <com.olav.logolicious.supertooltips.ToolTipRelativeLayout
+        android:id="@+id/activity_main_tooltipframelayout"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="end" >
+    </com.olav.logolicious.supertooltips.ToolTipRelativeLayout>
+    -->
+
+    <com.olav.logolicious.supertooltips.ToolTipRelativeLayout
+        android:id="@+id/activity_main_tooltipframelayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </com.olav.logolicious.supertooltips.ToolTipRelativeLayout>
+
+    <include
+        android:id="@+id/tiptip"
+        layout="@layout/tips"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:visibility="gone" />
+
+</RelativeLayout>

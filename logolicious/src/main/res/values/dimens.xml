@@ -1,0 +1,31 @@
+<resources>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="padding">16dp</dimen>
+    <dimen name="listview_item_padding">16dp</dimen>
+    <dimen name="OrderScreenFontSize">30dp</dimen>
+    <dimen name="OrderScreenUncheckFontSize">23dp</dimen>
+
+    <item name="match_parent" format="integer" type="dimen">-1</item>
+    <item name="wrap_content" format="integer" type="dimen">-2</item>
+
+    <dimen name="SaveButtonWidth">@dimen/match_parent</dimen>
+    <dimen name="image_thumbnail_size">100dp</dimen>
+    <dimen name="image_thumbnail_spacing">1dp</dimen>
+    <dimen name="ambilwarna_hsvHeight">240dp</dimen>
+    <dimen name="ambilwarna_hsvWidth">240dp</dimen>
+    <dimen name="ambilwarna_hueWidth">30dp</dimen>
+    <dimen name="ambilwarna_spacer">8dp</dimen>
+
+    <dimen name="ItemResizeText">25sp</dimen>
+
+    <dimen name="LongPressOptionHeight">30dp</dimen>
+    <dimen name="TextSizeOnCanvas">120sp</dimen>
+
+    <dimen name="GPlayLogoHeight">40dp</dimen>
+    <dimen name="NormalText">28sp</dimen>
+    <dimen name="WwwText">35sp</dimen>
+
+</resources>

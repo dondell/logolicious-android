@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/DodgerBlue"
+    android:gravity="top|left"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:gravity="left"
+        android:orientation="vertical" >
+
+        <CheckBox
+            android:id="@+id/type1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="true"
+            android:text="@string/PNG_HQ" />
+
+        <CheckBox
+            android:id="@+id/type2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:enabled="true"
+            android:text="@string/JPG_HQ" />
+
+        <CheckBox
+            android:id="@+id/type3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="true"
+            android:text="@string/JPG" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_marginLeft="9dp"
+            android:layout_marginRight="9dp"
+            android:background="@drawable/dotted"
+            android:layerType="software" />
+
+        <CheckBox
+            android:id="@+id/promptalways"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Don\&apos;t ask me again" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="2dp"
+            android:layout_marginLeft="9dp"
+            android:layout_marginRight="9dp"
+            android:background="@color/White" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="12dp"
+        android:layout_marginTop="3dp"
+        android:text="Rename your images?"
+        android:textColor="@color/White" >
+
+        <requestFocus android:layout_width="wrap_content" />
+    </TextView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true"
+        android:gravity="center" >
+
+        <EditText
+            android:id="@+id/fileName"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="9dp"
+            android:layout_weight="1"
+            android:hint="Set your file name here."
+            android:imeOptions="flagNoExtractUi"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/save"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="35dip"
+        android:layout_gravity="center"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="Save" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="11dp"
+        android:text="Note: Leave empty for automatic file name (we never overwrite originals!)"
+        android:textColor="@color/Black" />
+
+    <TextView
+        android:id="@+id/TextView01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:layout_marginLeft="11dp"
+        android:layout_marginTop="5dp"
+        android:text="@string/SavingPrefNotes"
+        android:textColor="@color/Black" />
+
+</LinearLayout>

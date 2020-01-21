@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">LogoLicious</string>
+    <string name="package_name">com.olav.logolicious</string>
+    <string name="crash_report">Crash Report</string>
+    <string name="app_about_info">For more information visit:</string>
+    <string name="website"><u>www.AddYourLogoApp.com</u></string>
+    <string name="email">helpdesk@thelaughingdutchmen.com</string>
+    <string name="app_about_info_broughttoyou">Brought to you by</string>
+    <string name="app_about_info_followusonsocialmedia">Follow us on social media</string>
+    <string name="app_about_info_website">/LogoLicious.me</string>
+    <string name="app_about_info_hashtag">#LogoLicious \n#thelaughingdutchmen \n#laughingdutchmen \n@thelaughingdutchmen</string>
+    <string name="settings">SETTINGS</string>
+    <string name="label_button_share">SHARE</string>
+    <string name="label_rotate">Rotate</string>
+    <string name="label_button_undo">Undo</string>
+    <string name="label_button_ok">Ok</string>
+    <string name="label_button_close">Close</string>
+    <string name="label_button_change_contact_image">Change Image</string>
+    <string name="label_rate_title">Rate LogoLicious</string>
+    <string name="label_rate_message">If you enjoy using LogoLicious, would you mind taking a moment to rate it? It won\'t take more than a minute. Thanks for your support!</string>
+    <string name="label_button_ratenow">Rate LogoLicious</string>
+    <string name="label_button_ratelater">Remind me later</string>
+    <string name="label_enable">ENABLE</string>
+    <string name="label_includedinpackage">Included in package</string>
+    <string name="label_unlock">Unlock</string>
+    <string name="label_sharetext">This logo was added with #LogoLicious</string>
+    <string name="label_show_introscreen_nextime">Show introduction screens at next startup.</string>
+    <string name="message_tip1">TIP: You can drag the item with your finger and use two fingers to scale and/rotate the item.\n</string>
+    <string name="message_tip2">TIP: Click here for more information about LogoLicious and/or to unlock more features..\n</string>
+    <string name="message_tip3">TIP: Use the color palette to match your skin complexion or just to add some funky colors. \n </string>
+    <string name="message_tip4">TIP: Use the sliders to adjust and blend the new feature(s) to your image.\n</string>
+    <string name="message_tip5">TIP: Use the eraser to erase features or parts of the features and make them fit perfectly. Do not forget to turn the eraser off when you are done.\n</string>
+    <string name="message_tip6">TIP: Did you know you could remove the logo and hashtags on saved images? Click on logo on top right corner and go to settings.\n</string>
+    <string name="messave_tip_menu">Don\'t show this message again</string>
+    <string name="activity_contacts_list">Contacts List</string>
+    <string name="imageview_description">Contact Thumbnail</string>
+    <string name="address_button_description">View Address</string>
+    <string name="no_contacts">No Contacts Found</string>
+    <string name="no_contact_selected">No Contact Selected</string>
+    <string name="search_hint">Find contacts</string>
+    <string name="contentdesc_bin">Recycle Your Items here.</string>
+    <string name="contentdesc_icon_brightness">Brightness</string>
+    <string name="contentdesc_icon_saturation">Saturation</string>
+    <string name="contentdesc_icon_eraser">Eraser</string>
+    <string name="contentdesc_icon_flip">Flipper</string>
+    <string name="buy_access_to_level2">Buy Access to Level 2</string>
+    <string name="level2_disabled">Level 2 Disabled</string>
+    <string name="level2_enabled">Level 2 Enabled</string>
+    <string name="search_match_other">Matches Other Field</string>
+    <string name="no_address">No addresses found</string>
+    <string name="no_intent_found">No application found to handle this action</string>
+    <string name="sdcard_root">/storage/</string>
+    <string name="label_no_ppt_found">No PPT files found</string>
+    <string name="NoLogoSelected">No logo\'s selected</string>
+    <string name="InternalStorage">Internal Storage</string>
+    <string name="ExternalStorage">External Storage</string>
+    <string name="LogoUploadErrorMessage">The Logo has an invalid dimension. Try choosing different one.</string>
+    <string name="ErrorAfterCameraCapture">Image taken is not received. If the error continues, please inform us. Thanks</string>
+    <string name="ErrorGettingImageFromGallery">Image is somewhat corrupted. If the error continues, please inform us. Thanks</string>
+    <string name="SharingWaitMessage">"Sharing your file. Give us a moment while we prepare this in high resolution."</string>
+    <string name="SavingImageMessage">"Put some Text or Logo on the Editor."</string>
+    <string name="SavingImageWhileonLiveMessage">"You cannot save while you are in live mode."</string>
+    <string name="SharingImageWhileonLiveMessage">"You cannot share while you are in live mode."</string>
+    <string name="SavingTemplateMessage">"Be sure you are not in live mode."</string>
+    <string name="SharingImageMessage">"Nothing to Share! Add logo or text."</string>
+    <string name="PictureViaCamFName">"picture_taken.jpg"</string>
+    <string name="ErrorMultipleBaseImgSelect">Our app can only cater 1 image at a time.</string>
+    <string name="AddTextAlertMessage">Please enter text first.</string>
+    <string name="crash_toast_text">Ooooops ! I crashed, but a report has been sent to my developer to help fix the issue !</string>
+    <string name="crash_dialog_title">CrashTest has crashed</string>
+    <string name="crash_dialog_text">An unexpected error occurred forcing the application to stop. Please help us fix this by sending us error data, all you have to do is click OK.</string>
+    <string name="crash_dialog_comment_prompt">You might add your comments about the problem below:</string>
+    <string name="crash_dialog_ok_toast">Thank you !</string>
+    <string name="apply_template_message">"A logo within this template has been deleted."</string>
+    <string name="logoSizeExceedsPreferred">"Please note, the selected logo file is larger than 2.5mb.
+       We recommend a logo size less than 2.5mb. You can proceed, but the app may crash as a result of an
+       out of memory issue."</string>
+    <!-- Note that the choice you make now becomes the default for all further images. -->
+    <string name="SavingPrefNotes">         *If you choose to uncheck \'Don\'t ask me again\' 
+         you can change the saving preferences in the Logolicious settings: 
+        \n>> Click the Logolicious button in the right top.
+        \n \u0020\u0020\u0020>> Settings tab</string>
+    <string name="AfterSavingMessage">You can find the saved items in your
+         \nGallery/Logolicious or
+         \nGallery/Others/Logolicious</string>
+    <string name="OrderEmail">"order@logolicious.com"</string>
+    <string name="ClickHereToOrder">
+<![CDATA[<!DOCTYPE html><html><body>
+            Click here to order: <u>order@logolicious.com</p></u>
+            </body></html>]]>
+    </string>
+    <string name="label_oderbodymsg">
+<![CDATA[
+       <html>
+       <head>
+		</head>
+       <body>
+        <h1><p style="font-size:36px;">Hey Logolicious,</p></h1>
+		<br>I would love a new logo! And the total price of $199 sounds great. Below is a list of information and answers that will help you create my new logo:
+        <br>
+        <br>
+        <h3><b>YOUR BACKGROUND INFORMATION:</b></h3>
+        <br>
+        <b>1.</b> <b><font color="red">&#8227;[My Name/Business name].................................................................</font></b>
+        <br>
+        <br>
+        <b>2.</b> I’m envisioning the logo also contains the following text: <b><font color="red">&#8227;[Insert tagline] ...................................................</font></b> Please use this text <b><font color="red">&#8227;[exactly as it is/creatively]?</font></b>.
+        <br>
+        <br>
+        <b>3.</b> Go visit my page <b><font color="red">&#8227;[Insert: http://www.???????.com]</font></b> to get an idea of my current style.
+        <br>
+        <br>
+        <b>4.</b> <b><font color="red">&#8227;[Please enter]</font></b> business description, (+ activities, the mission, and vision): 
+        <br>
+        <font color="red">......................................................................................................................</font>
+        <br>
+        <br>
+        <h3><b>LOGO STYLE: </b></h3>
+        <b>5.</b> I’m imagining the style my the logo to have a 
+        <br>
+        <b><font color="red">&#8227;[A] modern and corporate vibe</font></b>
+        <br>
+        <b><font color="red">&#8227;[B] playful retro design</font></b>
+        <br>
+        <b><font color="red">&#8227;[C] Handwritten / Calligraphy style</font></b>
+        <br>
+        <br>
+        <b>6.</b> Please use there <b><font color="red">&#8227;[color(s)] </font></b>
+        <br>and avoid <b><font color="red">&#8227;[color(s)] </font></b>
+        <br>
+        <br>
+        <b>7.</b> Attached I include <b><font color="red">&#8227;[a sketch/an image/my prior logo that needs updating/anything that is useful].</font></b>
+        <br>
+        <br>
+        <h3><b>TO RECEIVE INVOICE:</b></h3>
+        <b>8.</b> My PayPal email account is: <b><font color="red">&#8227;[insert email address].</font></b>
+        <br>
+        <br>
+        Thank you
+        <br>
+        <br>
+        ______________________________________________________________________
+        <br><br>Terms and Conditions:<br>
+        <br>Step 1: You receive a personal (non-automated) email with an acceptance of your order and potentially clarification of your request.
+        <br>Step 2: You will receive a payment request from <font color="blue"><u>oder@logolicious.com</u></font>
+        <br>Step 3: You will deposit $100 via Paypal as a confirmation of the order.
+        <br>Step 4: Within 24 hours you will receive three (3) logo proposals by email.
+        <br>Step 5: You choose the one you like best, and (if necessary) provide suggestions/modifications
+        <br>Step 6: Within 24 hours you receive the logo of choice, adjusted to your feedback.
+        <br>Step 7: (If needed) provide feedback once more.
+        <br>Step 8: Within 24 hours receive the final logo draft.
+        <br>Step 9: You will receive a payment request for the remaining $99.
+        <br>Step 10: After full payment, you will receive the logo in high-resolution format: png, jpg, pdf (vector).
+        <br>
+        <br><h3><b>PLEASE PROVIDE ANSWERS TO ALL QUESTIONS IN THIS EMAIL BEFORE SENDING!</b></h3>
+		</body></html>
+        ]]>
+
+    </string>
+    <string name="PNG_HQ">PNG (= no pixel loss, but large file).</string>
+    <string name="JPG_HQ">JPG 100% high quality (= no noticeable quality loss, smaller size). EXIF data embedded</string>
+    <string name="JPG">JPG 40% small file (= reduced output, small quality loss). EXIF data embedded.</string>
+    <string name="clear_cache_menu">Clear Caches</string>
+    <string name="clear_cache_complete_toast">Caches have been cleared</string>
+    <string name="no_network_connection_toast">No network connection found</string>
+
+    <string name="TemplateApplyErrorMessage">Things may not be in place or even going outside the image since this template is a different Aspect Ratio. Are you sure to continue?
+        \n\nNote: You can create a template for this Aspect ratio using the save template after you have added items on the photo.</string>
+    <string name="promo_code">Promo Code</string>
+    <string name="done">DONE</string>
+    <string name="_0">0%</string>
+    <string name="resize">RESIZE</string>
+    <string name="todo">TODO</string>
+    <string name="_100">100%</string>
+    <string name="live">Live</string>
+    <string name="MemoryLowAlertMessage">"Caution, your device is running low on memory (RAM). Please close other applications to avoid program failure"</string>
+    <string name="MemoryLowAlertMessageV2">Hi, your phone is running low on memory. Logolicious cannot proceed without the risk of crashing. Please exit the app and close other applications or restart your phone. Another thing to try is using a small image. Logolicious does not alter image quality and therefore is a bit memory intensive.</string>
+    <string name="MemoryLowAlertMessageForLogo">Some logo are being downscaled because the allocated memory android provide for each app is not much.</string>
+    <string name="MessageErrorOnLogoUpload">"There\'s a problem uploading the logo. Try another logo.</string>
+    <string name="BaseImageGreaterThan15MBWarningMessage">Due to the size of your image, there might not be enough free memory to process this photo. If issues occur, please downscale your image or quit one or more programs, and then try again.</string>
+    <string name="Continue">CONTINUE</string>
+    <string name="Cancel">CANCEL</string>
+    <string name="Warning">Warning</string>
+    <string name="SuccessFontSync">Successfully sync fonts</string>
+    <string name="SCREEN_LAYOUT_SIZE">normal</string>
+    <string name="font_feature_tip" formatted="true"><![CDATA[
+    New feature: Add your own font to Logolicious
+        <br><br>
+    <b>Step 1</b>: Save a font (.ttf file) to your phones\' standard \'downloads\' folder.
+    <br><br>
+    <b>Step 2</b>: Simply click the \'SCAN FOR FONTS\' button right here and the font(s) in your download folder will become available automatically.
+    ]]> </string>
+    <string-array name="showGuidelinesArray">
+        <item>Off</item>
+        <item>On Touch</item>
+        <item>On</item>
+    </string-array>
+
+</resources>

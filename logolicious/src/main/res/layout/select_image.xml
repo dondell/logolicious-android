@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/DodgerBlue"
+    android:gravity="center"
+    android:orientation="vertical">
+
+
+    <Button
+        android:id="@+id/buttonLiveTakePhoto"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_margin="10dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="TAKE PHOTO" />
+
+    <Button
+        android:id="@+id/buttonSelectPhoto"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_margin="10dp"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="SELECT IMAGE" />
+
+
+    <Button
+        android:id="@+id/buttonSelectBatchPhoto"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_margin="10dp"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="BATCH"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/buttonSelectVideo"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_margin="10dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="SELECT VIDEO"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/buttonQuit"
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:layout_margin="10dp"
+        android:background="@drawable/button_white_edge"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="CLOSE"
+        android:visibility="gone" />
+
+</LinearLayout>

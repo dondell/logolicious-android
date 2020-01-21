@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top|left"
+        android:orientation="vertical"
+        android:src="@color/transparent_100" >
+
+        <ImageView
+            android:id="@+id/transparentPixel"
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+            android:src="@color/transparent_100"
+            android:visibility="visible" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:background="#909193"
+            android:gravity="top"
+            android:orientation="vertical" >
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:adjustViewBounds="true"
+                android:scaleType="fitXY"
+                android:src="@drawable/ll_logodeal_a" />
+
+            <TextView
+                android:id="@+id/email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="6dp"
+                android:layout_marginTop="3dp"
+                android:gravity="top|center_horizontal"
+                android:singleLine="false"
+                android:text="Click here to order: order@logolicious.com"
+                android:textColor="@color/Black"
+                android:textSize="@dimen/OrderScreenFontSize" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:adjustViewBounds="true"
+                android:scaleType="fitXY"
+                android:src="@drawable/ll_logodeal_b" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#909193"
+            android:orientation="vertical"
+            android:visibility="gone" >
+
+            <CheckBox
+                android:id="@+id/checkBoxNoLogoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:text="No thanks, I am happy with my current logo. Please remove the &apos;No Logo&apos; button."
+                android:textSize="@dimen/OrderScreenUncheckFontSize" />
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>
