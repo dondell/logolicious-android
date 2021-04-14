@@ -27,5 +27,6 @@
     <dimen name="GPlayLogoHeight">40dp</dimen>
     <dimen name="NormalText">28sp</dimen>
     <dimen name="WwwText">35sp</dimen>
+    <dimen name="item_margin">1dp</dimen>
 
 </resources>

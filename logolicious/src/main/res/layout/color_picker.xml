@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:background="@color/White"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/wrap_content"
+        android:background="@color/Black">
+
+        <TextView
+            android:id="@+id/AddTextTitle"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:gravity="left|center_vertical"
+            android:text="PICK YOUR COLOR"
+            android:textColor="@color/AntiqueWhite" />
+
+        <ImageView
+            android:id="@+id/close"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:src="@drawable/close_circled" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <com.olav.logolicious.customize.widgets.AutofitRecyclerView
+            android:id="@+id/gridViewColors"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".55"
+            android:clipToPadding="false"
+            android:columnWidth="30dp"
+            android:orientation="vertical"
+            android:padding="1dp"
+            tools:itemCount="20"
+            tools:listitem="@layout/grid_color_item" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".45"
+            android:orientation="vertical"
+            android:layout_margin="2dp">
+
+            <Button
+                android:id="@+id/newColor"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:background="@drawable/button_black_edge"
+                android:text="Custom Color"
+                android:textSize="10sp"
+                android:textColor="@color/white"
+                android:layout_marginBottom="2dp"/>
+
+            <com.olav.logolicious.customize.widgets.AutofitRecyclerView
+                android:id="@+id/gridViewCustomColors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:columnWidth="30dp"
+                android:orientation="vertical"
+                android:padding="1dp"
+                tools:itemCount="10"
+                android:scrollbars="vertical"
+                tools:listitem="@layout/custom_color_item" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

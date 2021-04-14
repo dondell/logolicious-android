@@ -81,7 +81,6 @@ public class ExternalFilesAdapter extends ArrayAdapter<ExternalFilesModel> {
 			titleView.setText(modelsArrayList.get(position).getTitle());
 		}
 
-
 		// 5. return rowView
 		return rowView;
 	}

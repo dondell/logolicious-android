@@ -20,17 +20,21 @@ import java.util.ArrayList;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
 
+    private static final String TAG = "SQLiteHelper";
     public static final String DATABASE_NAME = "logolicious.db";
-    private static final int DATABASE_VERSION = 27;
+    private static final int DATABASE_VERSION = 28;
     public static final String APP_TABLE = "logolicious";
     public static final String TEMPLATE_TABLE_NAME1 = "template";
     public static final String TEMPLATE_TABLE_NAME2 = "template_preview";
     public static final String HINT_TABLE = "hint";
     public static final String FONT_TABLE = "user_fonts";
+    public static final String CUSTOM_COLORS_TABLE = "custom_colors";
 
     public static final String FONT_COLUMN_ID = "_id";
     public static final String FONT_PATH = "path";
 
+    public static final String COLOR_ID = "_id";
+    public static final String COLOR_CODE = "color_code";
     public static final String APP_TABLE_COLUMN_LOGOLICIOUS_USAGE = "app_use";
     public static final String APP_TABLE_COLUMN_LOGOLICIOUS_SAVECOUNT = "save_count";
     public static final String APP_TABLE_COLUMN_ISRATED = "israted";
@@ -62,6 +66,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        Log.i(TAG, "onCreate");
         db.execSQL("CREATE TABLE IF NOT EXISTS " + APP_TABLE + "(" +
                 TEMPLATE_COLUMN_ID + " INTEGER PRIMARY KEY, " +
                 APP_TABLE_COLUMN_LOGOLICIOUS_USAGE + " TEXT, " +
@@ -105,6 +110,11 @@ public class SQLiteHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS " + FONT_TABLE + " (" +
                 FONT_COLUMN_ID + " INTEGER PRIMARY KEY, " +
                 FONT_PATH + " TEXT)"
+        );
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + CUSTOM_COLORS_TABLE + " (" +
+                COLOR_ID + " INTEGER PRIMARY KEY, " +
+                COLOR_CODE + " TEXT)"
         );
     }
 
@@ -173,6 +183,39 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public Cursor getFonts() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM " + FONT_TABLE, null);
+    }
+
+    public long addCustomColor(String value) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COLOR_CODE, value);
+        return db.insert(CUSTOM_COLORS_TABLE, null, contentValues);
+    }
+
+    public Cursor getCustomColors() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM " + CUSTOM_COLORS_TABLE, null);
+    }
+
+    public void deleteAllCustomColors() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("delete from "+ CUSTOM_COLORS_TABLE);
+    }
+
+    public Integer deleteColor(String colorCode) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(CUSTOM_COLORS_TABLE, COLOR_CODE + " = ? ", new String[]{colorCode});
+    }
+
+    public boolean checkIfAddColorItemExist() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("SELECT * FROM " + CUSTOM_COLORS_TABLE +
+                        " WHERE " + COLOR_CODE + " = ''",
+                null);
+        if (res.getCount() != 0)
+            return true;
+        res.close();
+        return false;
     }
 
     public int isShowHint() {

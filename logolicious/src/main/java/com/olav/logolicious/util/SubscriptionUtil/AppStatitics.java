@@ -52,20 +52,24 @@ public class AppStatitics {
         }
     }
 
-    public static void showSubscription(ActivityMainEditor context, int count){
+    public static void showSubscription(Activity context, int count){
         //Aside from 30 times usage(every other image), after more than 30 times usage,
         //show the subscription every other 3. e.g show subscription on 33, 36, 39.
-        //if(count >= 30) {
-            Log.i("xxx","xxx Subscription save/share=" + count);
-            dsd
-            int nSkipper = ((count - 30) % 3);
-            Log.i("xxx","xxx Subscription SUBSCRIPTION_DONE_SHOWING=" + LogoliciousApp.sharedPreferenceGet(GlobalClass.getAppContext(), "SUBSCRIPTION_DONE_SHOWING", -1));
-            Log.i("xxx","xxx Subscription nSkipper=" + nSkipper);
-            if(0 == nSkipper && 0 == LogoliciousApp.sharedPreferenceGet(GlobalClass.getAppContext(), "SUBSCRIPTION_DONE_SHOWING", -1)) {
+        int nSkipper = ((count - 5) % 3);
+        Log.i("xxx","xxx Subscription save/share=" + count);
+        Log.i("xxx","xxx Subscription SUBSCRIPTION_DONE_SHOWING=" + LogoliciousApp.sharedPreferenceGet(GlobalClass.getAppContext(), "SUBSCRIPTION_DONE_SHOWING", -1));
+        Log.i("xxx","xxx Subscription nSkipper=" + nSkipper);
+
+        if(count == 5) { //first popup
+            if(0 == LogoliciousApp.sharedPreferenceGet(GlobalClass.getAppContext(), "SUBSCRIPTION_DONE_SHOWING", -1)) {
                 LogoliciousApp.sharedPreferenceSet(GlobalClass.getAppContext(), "SUBSCRIPTION_DONE_SHOWING", 1);
                 LogoliciousApp.showSubscription(context, count);
             }
-        //}
+        } else {
+            if(count > 6 && 0 == nSkipper) {
+                LogoliciousApp.showSubscription(context, count);
+            }
+        }
     }
 
     public  static  void addSaveShareCount(Activity context){
@@ -76,6 +80,10 @@ public class AppStatitics {
             LogoliciousApp.sharedPreferenceSet(GlobalClass.getAppContext(), "SUBSCRIPTION_DONE_SHOWING", 0);
             Log.i("xxx", "xxx addSaveShareCount= " + AppStatitics.sharedPreferenceGet(context, "STAT_SAVE_SHARE_COUNT", -1));
 //        }
+
+        if (GlobalClass.subscriptionOkToShow && !LogoliciousApp.isLive || !LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
+            ActivityMainEditor.isShowSubscription(context);
+        }
     }
 
     public static int getSaveShareCount(Activity context){

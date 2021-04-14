@@ -10,7 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.support.v4.view.GestureDetectorCompat;
+import androidx.core.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -34,7 +34,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 public class LayersContainerView extends ImageView implements OnTouchListener {
     Context ctx;
@@ -95,7 +94,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         mCanvas = new Canvas();
         this.setDrawingCacheEnabled(true);
 
-        longPressGestureListener= new LongPressGestureListener();
+        longPressGestureListener = new LongPressGestureListener();
         mGestureDetector = new GestureDetectorCompat(ctx, longPressGestureListener);
     }
 
@@ -108,7 +107,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    public void setMeasured(int width, int height){
+    public void setMeasured(int width, int height) {
         setMeasuredDimension(width, height);
     }
 
@@ -120,9 +119,9 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         //Snap on Grid
-        if(null != sharedPreferences) {
-            if(sharedPreferences.getBoolean("SnapOnGrid", false)) {
-                int gridThichness = (int)(canvas.getWidth() * 0.005);
+        if (null != sharedPreferences) {
+            if (sharedPreferences.getBoolean("SnapOnGrid", false)) {
+                int gridThichness = (int) (canvas.getWidth() * 0.005);
                 canvas.drawLine(0, 0, canvas.getWidth(), canvas.getHeight(), PaintUtil.newSnapOnGridPaint(gridThichness));
                 canvas.drawLine(canvas.getWidth(), 0, 0, canvas.getHeight(), PaintUtil.newSnapOnGridPaint(gridThichness));
             }
@@ -188,7 +187,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
                     ITEM_INITIAL_DATA.color = targetSelected.color;
 
                     invalidate();
-                    Log.i("xxx","xxx ACTION_DOWN");
+                    Log.i("xxx", "xxx ACTION_DOWN");
                     break;
                 }
             }
@@ -196,7 +195,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         } else if (event.getAction() == MotionEvent.ACTION_POINTER_DOWN) {
         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
             if (targetSelected != null) {
-                if(!targetSelected.isLock) {
+                if (!targetSelected.isLock) {
                     targetSelected.firstTouchX = event.getX();
                     targetSelected.firstTouchY = event.getY();
                     targetSelected.touch = true;
@@ -229,14 +228,14 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
                     invalidate();
 
 //                    Log.i("xxx","xxx hasMatrixChanges " + hasMatrixChanges);
-                    if(hasMatrixChanges) {
+                    if (hasMatrixChanges) {
                         /*
                         Check first if the user move item and redo is not empty, then delete all redo array. The last move will
                         automatically the last history for redo array
                          */
                         deleteRedos();
 
-                        Log.i("xxx","xxx ACTION_UP undo.size()-> " + undos.size() + " redos.size()->" + redos.size());
+                        Log.i("xxx", "xxx ACTION_UP undo.size()-> " + undos.size() + " redos.size()->" + redos.size());
                         putToHistory();
                         hasMatrixChanges = false;
                     }
@@ -257,31 +256,31 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         return targetSelected.onTouchEvent(event);
     }
 
-    private boolean isLayerInHistory(Layer l){
+    private boolean isLayerInHistory(Layer l) {
         boolean bRet = false;
-        if(null != undos) {
-            if(undos.size() > 0) {
+        if (null != undos) {
+            if (undos.size() > 0) {
                 //we should delete from the end to fully delete items
                 //note: size will change when one item is deleted
-                for(int i = undos.size() - 1; i>=0; i--) {
-                    if(undos.get(i).layerHis.uniqueID == l.uniqueID) {
+                for (int i = undos.size() - 1; i >= 0; i--) {
+                    if (undos.get(i).layerHis.uniqueID == l.uniqueID) {
                         bRet = true;
                     }
                 }
             }
         }
 
-        if(null != redos) {
-            if(redos.size() > 0){
-                for(int i = redos.size() - 1; i>=0; i--) {
-                    if(redos.get(i).layerHis.uniqueID == l.uniqueID) {
+        if (null != redos) {
+            if (redos.size() > 0) {
+                for (int i = redos.size() - 1; i >= 0; i--) {
+                    if (redos.get(i).layerHis.uniqueID == l.uniqueID) {
                         bRet = true;
                     }
                 }
             }
         }
 
-        Log.i("xxx","xxx isLayerInHistory " + bRet);
+        Log.i("xxx", "xxx isLayerInHistory " + bRet);
         return bRet;
     }
 
@@ -334,8 +333,8 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
     /**
      * Delete last item of undo when new item is created
      */
-    private void skipLastUndos(){
-        if(undos.size() > 1) {
+    private void skipLastUndos() {
+        if (undos.size() > 1) {
             undos.get(undos.size() - 1).skipMe = true;
         }
     }
@@ -343,25 +342,25 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
     /***
      *  This will delete redo records if the current created item is created when redo size is not zero
      */
-    private void deleteRedos(){
-        if(redos.size() > 0) {
-            if(undos.size() == 0) {
+    private void deleteRedos() {
+        if (redos.size() > 0) {
+            if (undos.size() == 0) {
                 undos.add(redos.get(redos.size() - 1));
             }
             redos.clear();
-            Log.i("xxx","xxx redos.clear() == undo.size()-> " + undos.size() + " redos.size()->" + redos.size());
+            Log.i("xxx", "xxx redos.clear() == undo.size()-> " + undos.size() + " redos.size()->" + redos.size());
         }
 
         // Delete history when reaches more than the limit
-        if(null != undos) {
-            if(undos.size() > HISTORY_LIMIT) {
+        if (null != undos) {
+            if (undos.size() > HISTORY_LIMIT) {
                 undos.remove(0);
             }
         }
     }
 
-    private void putFirstItemHistory(Layer l){
-        History newHisRecord  = new History();
+    private void putFirstItemHistory(Layer l) {
+        History newHisRecord = new History();
         newHisRecord.itemPath = l.bitmapPath;
         newHisRecord.matrixHis.reset();
         newHisRecord.matrixHis.set(l.matrix);
@@ -369,28 +368,28 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         newHisRecord.identifier = l.uniqueID;
         newHisRecord.rotation = l.rotation;
         newHisRecord.skipMe = true;
-        if(undos.size() == 0) {
+        if (undos.size() == 0) {
             newHisRecord.firstIndex = true;
             newHisRecord.lastIndex = false;
         }
         undos.add(newHisRecord);
-        Log.i("xxx","xxx putHistory undo.size()-> " + undos.size() + " redos.size()->" + redos.size());
+        Log.i("xxx", "xxx putHistory undo.size()-> " + undos.size() + " redos.size()->" + redos.size());
     }
 
-    public void putToHistory(){
-        if(!isLayerInHistory(targetSelected)) {
+    public void putToHistory() {
+        if (!isLayerInHistory(targetSelected)) {
             putInitialItemPositionHistory(ITEM_INITIAL_DATA);
         }
 
         putHistory(targetSelected);
     }
 
-    private void putInitialItemPositionHistory(History h){
+    private void putInitialItemPositionHistory(History h) {
         undos.add(h);
     }
 
-    private void putHistory(Layer l){
-        History newHisRecord  = new History();
+    private void putHistory(Layer l) {
+        History newHisRecord = new History();
         newHisRecord.itemPath = l.bitmapPath;
         newHisRecord.matrixHis.reset();
         newHisRecord.matrixHis.set(l.matrix);
@@ -398,18 +397,18 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         newHisRecord.identifier = l.uniqueID;
         newHisRecord.rotation = l.rotation;
         newHisRecord.color = l.color;
-        if(undos.size() == 0) {
+        if (undos.size() == 0) {
             newHisRecord.firstIndex = true;
             newHisRecord.lastIndex = false;
         } else {
             //un-skip previous
-            if(null != undos) {
-                Log.i("xxx","xxx dmdm " + undos.size());
+            if (null != undos) {
+                Log.i("xxx", "xxx dmdm " + undos.size());
                 undos.get(undos.size() - 1).skipMe = false;
                 undos.add(newHisRecord);
                 //Skip last record for Undo array
                 undos.get(undos.size() - 1).skipMe = true;
-                Log.i("xxx","xxx putHistory id="+undos.get(undos.size() - 1).identifier+" undo.size()-> " + undos.size() + " redos.size()->" + redos.size() + " skip " + undos.get(undos.size() - 1).skipMe);
+                Log.i("xxx", "xxx putHistory id=" + undos.get(undos.size() - 1).identifier + " undo.size()-> " + undos.size() + " redos.size()->" + redos.size() + " skip " + undos.get(undos.size() - 1).skipMe);
             }
         }
     }
@@ -419,7 +418,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         Log.i("LogoOptimizeDimension", "orig w " + b.getWidth() + " h " + b.getHeight());
         Bitmap optimizeBitmap = null;
 
-        if(null == b)
+        if (null == b)
             return null;
 
         double ratioX = (double) b.getWidth() / screenW;
@@ -452,7 +451,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         }
         if (targetSelected != null) {
             layers.remove(targetSelected);
-            Log.i("xxx","xxx Path to delete " + targetSelected.bitmapPath);
+            Log.i("xxx", "xxx Path to delete " + targetSelected.bitmapPath);
             deleteHistoryOnDoubleTapDelete(undos, redos, targetSelected.uniqueID);
         }
         updateHistoryButtons(ActivityMainEditor.act);
@@ -477,9 +476,9 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         }
 
         //Snap on Grid
-        if(null != sharedPreferences) {
-            if(sharedPreferences.getBoolean("SnapOnGrid", false)) {
-                int gridThichness = (int)(mCanvas.getWidth() * 0.005);
+        if (null != sharedPreferences) {
+            if (sharedPreferences.getBoolean("SnapOnGrid", false)) {
+                int gridThichness = (int) (mCanvas.getWidth() * 0.005);
                 mCanvas.drawLine(0, 0, mCanvas.getWidth(), mCanvas.getHeight(), PaintUtil.newSnapOnGridPaint(gridThichness));
                 mCanvas.drawLine(mCanvas.getWidth(), 0, 0, mCanvas.getHeight(), PaintUtil.newSnapOnGridPaint(gridThichness));
             }
@@ -503,7 +502,8 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         // create template background
         Bitmap template = null;
         template = Bitmap.createBitmap(smallWidth, smallHeight, Bitmap.Config.ARGB_8888);
-        GlobalClass.diskCache.put("TemplateBaseImage", template);
+        if (GlobalClass.diskCache != null)
+            GlobalClass.diskCache.put("TemplateBaseImage", template);
 
         mCanvas = new Canvas(template);
         if (asPicture) {
@@ -522,10 +522,10 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         for (Layer l : layers) {
             float[] values = new float[9];
             l.matrix.getValues(values);
-            if(l.isLock) {
+            if (l.isLock) {
                 Log.i("xxx", "xxx saving template l.isLock = " + l.isLock);
                 l.text = l.text + "41411"; // index 4 = isLock
-            } else if(l.shadow) {
+            } else if (l.shadow) {
                 l.text = l.text + "51511"; //index 8 = shadow
             }
 
@@ -602,7 +602,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
                             ActivityMainEditor.DEVICE_HEIGHT
                     );
 
-                    if(null == b)
+                    if (null == b)
                         continue;
 
                     GlobalClass.LOGO_APPLY_TEMPLATE_COUNT = GlobalClass.LOGO_APPLY_TEMPLATE_COUNT + 1;
@@ -620,8 +620,8 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
                 // apply to text layer
                 if (!fontIsExemption(c.getString(17))) {
                     boolean hasShadow = false;
-                    if(!LogoliciousApp.strIsNullOrEmpty(c.getString(4))) {
-                        if(c.getString(4).contains("51511")) {
+                    if (!LogoliciousApp.strIsNullOrEmpty(c.getString(4))) {
+                        if (c.getString(4).contains("51511")) {
                             hasShadow = true;
                         }
                     }
@@ -635,7 +635,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
                 }
             }
 
-            if(null == newLayer)
+            if (null == newLayer)
                 continue;
 
             //add a uniqueID identifier
@@ -670,14 +670,14 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
             //check locking flag
             layers.get(layers.size() - 1).text = c.getString(4);
             String strLock = layers.get(layers.size() - 1).text;
-            if(null != strLock) {
+            if (null != strLock) {
                 int indexOfLock = strLock.lastIndexOf("4141");
-                Log.i("xxx","xxx indexOfLock " + indexOfLock);
-                if(indexOfLock > -1) {
-                    String xx = strLock.substring(indexOfLock, indexOfLock+5);
+                Log.i("xxx", "xxx indexOfLock " + indexOfLock);
+                if (indexOfLock > -1) {
+                    String xx = strLock.substring(indexOfLock, indexOfLock + 5);
                     String strLockText = xx.substring(4, 5);
                     layers.get(layers.size() - 1).isLock = Integer.valueOf(strLockText) == 1 ? true : false;
-                    layers.get(layers.size() - 1).text = layers.get(layers.size() - 1).text.replace("41411","");
+                    layers.get(layers.size() - 1).text = layers.get(layers.size() - 1).text.replace("41411", "");
                     invalidate();
                 }
             }
@@ -685,15 +685,15 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
             //check shadow flag
             layers.get(layers.size() - 1).text = c.getString(4);
             String strShadow = layers.get(layers.size() - 1).text;
-            if(null != strShadow) {
+            if (null != strShadow) {
                 int indexOfShadow = strShadow.lastIndexOf("5151");
-                Log.i("xxx","xxx indexOfShadow " + indexOfShadow);
-                if(indexOfShadow > -1) {
-                    String xx = strShadow.substring(indexOfShadow, indexOfShadow+5);
+                Log.i("xxx", "xxx indexOfShadow " + indexOfShadow);
+                if (indexOfShadow > -1) {
+                    String xx = strShadow.substring(indexOfShadow, indexOfShadow + 5);
                     String strShadowText = xx.substring(4, 5);
                     layers.get(layers.size() - 1).shadow = Integer.valueOf(strShadowText) == 1 ? true : false;
-                    layers.get(layers.size() - 1).text = layers.get(layers.size() - 1).text.replace("51511","");
-                    Log.i("xxx","xxx abc " + layers.get(layers.size() - 1).text);
+                    layers.get(layers.size() - 1).text = layers.get(layers.size() - 1).text.replace("51511", "");
+                    Log.i("xxx", "xxx abc " + layers.get(layers.size() - 1).text);
                     invalidate();
                 }
             }
@@ -750,7 +750,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
     public static ArrayList<History> undos = new ArrayList<>();
     public static ArrayList<History> redos = new ArrayList<>();
     private static boolean hasMatrixChanges = false;
-    private static int currentIdentifier = - 1;
+    private static int currentIdentifier = -1;
 
     public static class History {
         public Matrix matrixHis = new Matrix();
@@ -763,7 +763,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         public float rotation = 0;
         public int color;
 
-        public History(){
+        public History() {
             this.itemPath = "";
             this.matrixHis = new Matrix();
         }
@@ -777,39 +777,38 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         }
     }
 
-    private boolean isLastHistoryIndexOfAnItem(History currentData, ArrayList<History> histData){
-        if(null == currentData)
+    private boolean isLastHistoryIndexOfAnItem(History currentData, ArrayList<History> histData) {
+        if (null == currentData)
             return false;
 
         boolean bRet = false;
         int count = 0;
-        for(int i = 0; i < histData.size(); i++){
+        for (int i = 0; i < histData.size(); i++) {
             if (currentData.identifier == histData.get(i).identifier) {
                 count = count + 1;
             }
         }
 
-        if(count == 1)
+        if (count == 1)
             bRet = true;
 
         return bRet;
     }
 
     /**
-     *
      * @param hData
      * @param curData
      * @return Get the next history for the current item(layer).
      */
-    private History getNextHistoryForThisItem(ArrayList<History> hData, History curData){
+    private History getNextHistoryForThisItem(ArrayList<History> hData, History curData) {
         History dataReturn = null;
-       // for (int i = hData.size() - 1; i >= 0 ; i--) {
-        Log.i("xxx","xxx g getNextHistoryForThisItem index " + curData.identifier + " hData.size() - 1 = " + (hData.size()));
-        for (int i = 0; i < hData.size() ; i++) {
-            Log.i("","xxx hData size = " + hData.size() + " hData.get(i).identifier = " + hData.get(i).identifier + " curData.identifier = " + curData.identifier);
-            if(hData.get(i).identifier == curData.identifier) {
+        // for (int i = hData.size() - 1; i >= 0 ; i--) {
+        Log.i("xxx", "xxx g getNextHistoryForThisItem index " + curData.identifier + " hData.size() - 1 = " + (hData.size()));
+        for (int i = 0; i < hData.size(); i++) {
+            Log.i("", "xxx hData size = " + hData.size() + " hData.get(i).identifier = " + hData.get(i).identifier + " curData.identifier = " + curData.identifier);
+            if (hData.get(i).identifier == curData.identifier) {
                 dataReturn = hData.get(i);
-                Log.i("xxx","xxx getNextHistoryForThisItem index " + dataReturn.identifier);
+                Log.i("xxx", "xxx getNextHistoryForThisItem index " + dataReturn.identifier);
             }
         }
         return dataReturn;
@@ -826,27 +825,27 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
                 undoData = undos.get(undos.size() - 1);
                 origData = undoData;
 
-                    //check skipper
-                    if(true == undoData.skipMe) {
-                        Log.i("xxx","xxx c undo.size()-> " + undos.size() + "\n redos.size()->" + redos.size() + " \nPath:" + undoData.itemPath + "\n Skip:" + undoData.skipMe + "\n # " + undoData.identifier);
-                        undos.get(undos.size() - 1).skipMe = false;
-                        redos.add(undos.get(undos.size() - 1));
-                        undos.remove(undos.get(undos.size() - 1));
-                        //since this is a skip, we need to use the next history to be use for transformation
-                        if (undos.size() > 0)
-                            undoData = getNextHistoryForThisItem(undos, origData);
-                    } else {
-                        Log.i("xxx","xxx d undo.size()-> " + undos.size() + "\n redos.size()->" + redos.size() + " \n Path:" + undoData.itemPath + "\n Skip:" + undoData.skipMe + "\n # " + undoData.identifier);
-                        undos.get(undos.size() - 1).skipMe = false;
-                        redos.add(undos.get(undos.size() - 1));
-                        undos.remove(undos.get(undos.size() - 1));
-                        if (undos.size() > 0)
-                            undoData = getNextHistoryForThisItem(undos, origData);
-                    }
+                //check skipper
+                if (true == undoData.skipMe) {
+                    Log.i("xxx", "xxx c undo.size()-> " + undos.size() + "\n redos.size()->" + redos.size() + " \nPath:" + undoData.itemPath + "\n Skip:" + undoData.skipMe + "\n # " + undoData.identifier);
+                    undos.get(undos.size() - 1).skipMe = false;
+                    redos.add(undos.get(undos.size() - 1));
+                    undos.remove(undos.get(undos.size() - 1));
+                    //since this is a skip, we need to use the next history to be use for transformation
+                    if (undos.size() > 0)
+                        undoData = getNextHistoryForThisItem(undos, origData);
+                } else {
+                    Log.i("xxx", "xxx d undo.size()-> " + undos.size() + "\n redos.size()->" + redos.size() + " \n Path:" + undoData.itemPath + "\n Skip:" + undoData.skipMe + "\n # " + undoData.identifier);
+                    undos.get(undos.size() - 1).skipMe = false;
+                    redos.add(undos.get(undos.size() - 1));
+                    undos.remove(undos.get(undos.size() - 1));
+                    if (undos.size() > 0)
+                        undoData = getNextHistoryForThisItem(undos, origData);
+                }
 
-                if(isLastHistoryIndexOfAnItem(undoData, undos)){
-                    Log.i("xxx","xxx isLastHistoryIndexOfAnItem " );
-                    if(undos.size() > 0) {
+                if (isLastHistoryIndexOfAnItem(undoData, undos)) {
+                    Log.i("xxx", "xxx isLastHistoryIndexOfAnItem ");
+                    if (undos.size() > 0) {
                         redos.add(undoData);
                         undos.remove(undoData);
                     }
@@ -857,7 +856,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
             }
         }
 
-        if(null == undoData)
+        if (null == undoData)
             return;
 
         //search current layer and apply the previous matrix
@@ -875,11 +874,11 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
             }
         }
 
-        Log.i("xxx","xxx z undo.size()-> " + undos.size() + " redos.size()->" + redos.size());
+        Log.i("xxx", "xxx z undo.size()-> " + undos.size() + " redos.size()->" + redos.size());
         updateHistoryButtons(context);
     }
 
-    public void redo(View v, ActivityMainEditor context){
+    public void redo(View v, ActivityMainEditor context) {
         //apply the old transformation of the layer in the layer
         boolean isdoubleClick = false;
         History redoData = null;
@@ -890,7 +889,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
                 origData = redoData;
 
                 //check skipper
-                if(true == redoData.skipMe) {
+                if (true == redoData.skipMe) {
 //                    Log.i("xxx","xxx c undo.size()-> " + undos.size() + "\n redos.size()->" + redos.size() + " \nPath:" + redoData.itemPath + "\n Skip:" + redoData.skipMe + "\n # " + redoData.identifier);
                     redos.get(redos.size() - 1).skipMe = false;
                     undos.add(redos.get(redos.size() - 1));
@@ -898,8 +897,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
 //                    //since this is a skip, we need to use the next history to be use for transformation
                     if (redos.size() > 0)
                         redoData = getNextHistoryForThisItem(redos, origData);
-                }
-                else {
+                } else {
 //                    Log.i("xxx","xxx d undo.size()-> " + undos.size() + "\n redos.size()->" + redos.size() + " \n Path:" + redoData.itemPath + "\n Skip:" + redoData.skipMe + "\n # " + redoData.identifier);
                     undos.add(redos.get(redos.size() - 1));
                     redos.remove(redos.get(redos.size() - 1));
@@ -907,9 +905,9 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
                         redoData = getNextHistoryForThisItem(redos, origData);
                 }
 
-                if(isLastHistoryIndexOfAnItem(redoData, redos)){
-                    Log.i("xxx","xxx isLastHistoryIndexOfAnItem " );
-                    if(redos.size() > 0) {
+                if (isLastHistoryIndexOfAnItem(redoData, redos)) {
+                    Log.i("xxx", "xxx isLastHistoryIndexOfAnItem ");
+                    if (redos.size() > 0) {
                         undos.add(redoData);
                         redos.remove(redoData);
                     }
@@ -919,7 +917,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
             }
         }
 
-        if(null == redoData)
+        if (null == redoData)
             return;
 
         //search current layer and apply the previous matrix
@@ -942,24 +940,24 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
     }
 
 
-    private void deleteHistoryOnDoubleTapDelete(ArrayList<History> undo, ArrayList<History> redo, int uniqueIDforEachLayer){
+    private void deleteHistoryOnDoubleTapDelete(ArrayList<History> undo, ArrayList<History> redo, int uniqueIDforEachLayer) {
         //delete the history if match
-        if(null != undo) {
-            if(undo.size() > 0) {
+        if (null != undo) {
+            if (undo.size() > 0) {
                 //we should delete from the end to fully delete items
                 //note: size will change when one item is deleted
-                for(int i = undo.size() - 1; i>=0; i--) {
-                    if(undo.get(i).layerHis.uniqueID == uniqueIDforEachLayer) {
+                for (int i = undo.size() - 1; i >= 0; i--) {
+                    if (undo.get(i).layerHis.uniqueID == uniqueIDforEachLayer) {
                         undo.remove(i);
                     }
                 }
             }
         }
 
-        if(null != redo) {
-            if(redo.size() > 0){
-                for(int i = redo.size() - 1; i>=0; i--) {
-                    if(redo.get(i).layerHis.uniqueID == uniqueIDforEachLayer) {
+        if (null != redo) {
+            if (redo.size() > 0) {
+                for (int i = redo.size() - 1; i >= 0; i--) {
+                    if (redo.get(i).layerHis.uniqueID == uniqueIDforEachLayer) {
                         redo.remove(i);
                     }
                 }
@@ -968,17 +966,17 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
 
     }
 
-    public void updateHistoryButtons(Activity context){
+    public void updateHistoryButtons(Activity context) {
 
         ImageView undo = (ImageView) (context).findViewById(R.id.undo);
         ImageView redo = (ImageView) (context).findViewById(R.id.redo);
 
-        if(undos.size() >= 1)
+        if (undos.size() >= 1)
             LogoliciousApp.setImageViewTint(context, R.id.undo, context.getResources().getColor(R.color.transparent_100));
         else
             LogoliciousApp.setImageViewTint(context, R.id.undo, context.getResources().getColor(R.color.DimGray));
 
-        if(redos.size() >= 1)
+        if (redos.size() >= 1)
             LogoliciousApp.setImageViewTint(context, R.id.redo, context.getResources().getColor(R.color.transparent_100));
         else
             LogoliciousApp.setImageViewTint(context, R.id.redo, context.getResources().getColor(R.color.DimGray));
@@ -997,9 +995,9 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         public void onLongPress(MotionEvent e) {
             super.onLongPress(e);
 
-            if(null != targetSelected) {
+            if (null != targetSelected) {
                 //enable option only on textmode
-                if(targetSelected.isTextMode) {
+                if (targetSelected.isTextMode) {
                     longPressOptions(e);
                 }
             }
@@ -1011,7 +1009,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         }
     }
 
-    private void longPressOptions(final MotionEvent e){
+    private void longPressOptions(final MotionEvent e) {
         LogoliciousApp.updateText(ActivityMainEditor.act, ActivityMainEditor.backgroundImage, ActivityMainEditor.layeredLogos, false);
     }
 
@@ -1021,14 +1019,13 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
             Layer l = layers.get(i);
             lyrCurrentIdx = i;
             if (l.contains(e)) {
-                if(targetSelected.isLock) {
+                if (targetSelected.isLock) {
                     targetSelected.isLock = false;
                     targetSelected.touch = false;
                     deleteHistoryOnDoubleTapDelete(undos, redos, targetSelected.uniqueID);
                     updateHistoryButtons(ActivityMainEditor.act);
                     invalidate();
-                }
-                else {
+                } else {
                     targetSelected.isLock = true;
                     targetSelected.touch = true;
                     deleteHistoryOnDoubleTapDelete(undos, redos, targetSelected.uniqueID);

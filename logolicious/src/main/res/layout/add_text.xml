@@ -35,10 +35,12 @@
     <EditText
         android:id="@+id/textToAdd"
         android:layout_width="240dp"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:layout_margin="10dp"
+        android:background="@color/white"
         android:ems="10"
         android:hint="Enter Text Here"
+        android:paddingLeft="2dp"
         android:singleLine="true" />
 
     <TextView
@@ -53,17 +55,19 @@
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <CheckBox
-        android:layout_width="wrap_content"
         android:id="@+id/checkboxShadow"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="left"
-        android:text="Shadow"/>
+        android:text="Shadow" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
         android:gravity="center"
         android:orientation="horizontal"
         android:weightSum="2">
@@ -74,10 +78,11 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="@drawable/button_white_edge"
+            android:lines="2"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
-            android:lines="2"
-            android:text="CHANGE \nFONT" />
+            android:text="CHANGE \nFONT"
+            android:textSize="10sp" />
 
         <Button
             android:id="@+id/buttonAddFont"
@@ -86,10 +91,12 @@
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
             android:background="@drawable/button_black_edge2"
+            android:lines="2"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:textSize="5pt"
-            android:text="Scan For Fonts" />
+            android:singleLine="false"
+            android:text="Scan&#10;for Fonts"
+            android:textSize="10sp" />
 
         <ImageButton
             android:id="@+id/fontTip"
@@ -107,7 +114,8 @@
             android:background="@drawable/button_black_edge"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
-            android:text="OK!" />
+            android:text="OK!"
+            android:textSize="10sp" />
 
     </LinearLayout>
 

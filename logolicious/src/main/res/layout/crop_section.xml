@@ -7,7 +7,7 @@
     android:focusableInTouchMode="true"
     android:orientation="vertical"
     android:weightSum="2"
-    tools:context=".screens.activities.ActivityImageCropNew" >
+    tools:context=".screens.activities.ActivityImageCropNew">
 
     <RelativeLayout
         android:id="@+id/RelativeLayout1"
@@ -15,14 +15,13 @@
         android:layout_height="0dp"
         android:layout_weight="1.50"
         android:gravity="center"
-        android:weightSum="2" >
+        android:weightSum="2">
 
         <com.olav.logolicious.cropper.CropImageView
             android:id="@+id/CropImageView"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
-            android:layout_alignParentTop="true">
-        </com.olav.logolicious.cropper.CropImageView>
+            android:layout_alignParentTop="true"></com.olav.logolicious.cropper.CropImageView>
 
         <Button
             android:id="@+id/aspectRatio"
@@ -48,18 +47,31 @@
         android:layout_weight=".25"
         android:gravity="center"
         android:orientation="horizontal"
-        android:weightSum="4" >
+        android:weightSum="5">
+
+        <ImageView
+            android:id="@+id/freeTransform"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:background="@color/Transparent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/free_crop_ratio"
+            android:textSize="@dimen/aspectRatio_TextSize" />
 
         <ImageView
             android:id="@+id/aspectRatio11"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_margin="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
             android:layout_weight="1"
             android:adjustViewBounds="true"
             android:background="@color/Transparent"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ratio1_1"
             android:textSize="@dimen/aspectRatio_TextSize" />
@@ -69,12 +81,11 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:layout_margin="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
             android:layout_weight="1"
             android:adjustViewBounds="true"
             android:background="@color/Transparent"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
             android:scaleType="fitCenter"
             android:src="@drawable/rotate_ratio3_2"
             android:textSize="@dimen/aspectRatio_TextSize" />
@@ -84,12 +95,11 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:layout_margin="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
             android:layout_weight="1"
             android:adjustViewBounds="true"
             android:background="@color/Transparent"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
             android:scaleType="fitCenter"
             android:src="@drawable/rotate_ratio4_3"
             android:textSize="@dimen/aspectRatio_TextSize" />
@@ -98,12 +108,12 @@
             android:id="@+id/aspectRatio169"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_margin="6dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginRight="6dp"
+            android:layout_marginBottom="6dp"
             android:layout_weight="1"
             android:adjustViewBounds="true"
             android:background="@color/Transparent"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
             android:scaleType="fitCenter"
             android:src="@drawable/rotate_ratio16_9"
             android:textSize="@dimen/aspectRatio_TextSize" />
@@ -117,7 +127,7 @@
         android:layout_weight=".25"
         android:gravity="center"
         android:orientation="horizontal"
-        android:weightSum="3" >
+        android:weightSum="4">
 
         <ImageButton
             android:id="@+id/Button_rotate"
@@ -132,16 +142,18 @@
             android:textSize="12sp" />
 
         <ImageButton
-            android:id="@+id/Button_crop"
+            android:id="@+id/btnFlip"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_gravity="center"
-            android:layout_margin="4dp"
+            android:layout_margin="6dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
+            android:padding="12dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ok_button"
-            android:textSize="12sp" />
+            android:src="@drawable/flip_mirror"
+            android:textSize="12sp"
+            android:visibility="visible" />
 
         <ImageButton
             android:id="@+id/Button_nocrop"
@@ -154,8 +166,20 @@
             android:padding="5dp"
             android:scaleType="fitCenter"
             android:src="@drawable/no_crop"
-            android:textSize="12sp"
-            android:visibility="visible" />
+            android:textSize="12sp" />
+
+        <ImageButton
+            android:id="@+id/Button_crop"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:layout_margin="4dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ok_button"
+            android:textSize="12sp" />
+
     </LinearLayout>
 
 </LinearLayout>

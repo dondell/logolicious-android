@@ -98,16 +98,39 @@
             android:weightSum="2"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/button_maybe_later"
+            <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/GPlayLogoHeight"
-                android:layout_gravity="center"
-                android:layout_margin="5dp"
                 android:layout_weight="1"
-                android:adjustViewBounds="true"
+                android:layout_margin="5dp"
                 android:paddingLeft="5dp"
-                android:src="@drawable/maybe_later_button" />
+                android:gravity="center"
+                android:layout_gravity="center">
+
+                <ImageView
+                    android:id="@+id/button_maybe_later"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:adjustViewBounds="true"
+                    android:layout_centerInParent="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/maybe_later_button" />
+
+                <TextView
+                    android:id="@+id/tvTimer"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="center"
+                    android:textAlignment="center"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/red" />
+            </RelativeLayout>
 
             <ImageView
                 android:id="@+id/buttonSubscribe"

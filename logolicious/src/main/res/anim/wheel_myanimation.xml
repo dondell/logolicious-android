@@ -7,5 +7,5 @@
         android:pivotX="50%"
         android:pivotY="90%"
         android:startOffset="0"
-        android:toDegrees="360"></rotate>
+        android:toDegrees="360" />
 </set>

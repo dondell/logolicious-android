@@ -5,94 +5,86 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.olav.logolicious.R;
+import com.olav.logolicious.util.ClickColorListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ColorPickerAdapter extends BaseAdapter {
+public class ColorPickerAdapter extends RecyclerView.Adapter<ColorPickerAdapter.ViewHolder> {
 
-	private Context context;
-	// list which holds the colors to be displayed
-	public static List<String> colorList = new ArrayList<String>();
-	// width of grid column
-	int colorGridColumnWidth;
+    private static List<String> colorList = new ArrayList<>();
+    private ClickColorListener clickColorListener;
 
-	public ColorPickerAdapter(Context context) {
-		this.context = context;
+    public ColorPickerAdapter(Context context, ClickColorListener clickColorListener) {
+        this.clickColorListener = clickColorListener;
 
-		// defines the width of each color square
-		colorGridColumnWidth = context.getResources().getInteger(R.integer.colorGridColumnWidth);
+        // for convenience and better reading, we place the colors in a two dimension array
+        String[][] colors = {
+                {"9f1f66", "1baae4", "3ab24b", "feaf45", "be1e2e"},
+                {"ed297d", "1474c1", "08663b", "f9eb30", "f23b37"},
+                {"ffffff", "28398f", "2bb770", "cee31c", "f0592a"},
+                {"000000", "642c8f", "05aa9d", "8cc644", "f69220"}
+        };
 
-		// for convenience and better reading, we place the colors in a two dimension array
-		String colors[][] = {
-				{ "9f1f66","1baae4","3ab24b","feaf45","be1e2e" }, 
-				{ "ed297d","1474c1","08663b","f9eb30","f23b37" },
-				{ "ffffff","28398f","2bb770","cee31c","f0592a" }, 
-				{ "000000","642c8f","05aa9d","8cc644","f69220" }
-				};
+        colorList = new ArrayList<>();
 
-		colorList = new ArrayList<String>();
+        // add the color array to the list
+        for (String[] color : colors) {
+            for (String s : color) {
+                colorList.add("#" + s);
+            }
+        }
+    }
 
-		// add the color array to the list
-		for (int i = 0; i < colors.length; i++) {
-			for (int j = 0; j < colors[i].length; j++) {
-				colorList.add("#" + colors[i][j]);
-			}
-		}
-	}
 
-	public View getView(int position, View convertView, ViewGroup parent) {
-		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		
-//		ImageView imageView;
-		View gridView;
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.grid_color_item, parent, false);
+        return new ViewHolder(view);
+    }
 
-		// can we reuse a view?
-		if (convertView == null) {
-			
-			gridView = new View(context);
-			// get layout from mobile.xml
-			gridView = inflater.inflate(R.layout.grid_color_item, (ViewGroup)null);
-			// set image based on selected text
-			ImageView imageView = (ImageView) gridView.findViewById(R.id.grid_item_color);
-//			imageView = new ImageView(context);
-			// set the width of each color square
-			imageView.setLayoutParams(new LinearLayout.LayoutParams(colorGridColumnWidth, colorGridColumnWidth));
-			// check if last color item is reach
-			// if true then replace it with no color icon
-			if(Color.parseColor(colorList.get(position)) == Color.parseColor("#ffffff")){
-				imageView.setBackgroundResource(R.drawable.no_color);
-			} else {
-				imageView.setBackgroundColor(Color.parseColor(colorList.get(position)));	
-			}
-			imageView.setId(position);
-			
-			// set value into textview
-			TextView textView = (TextView) gridView.findViewById(R.id.grid_item_color_label);
-			textView.setText(colorList.get(position));
-		} else {
-//			imageView = (ImageView) convertView;
-			gridView = (View) convertView;
-		}
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+        // check if last color item is reach, if true then replace it with no color icon
+        if (Color.parseColor(colorList.get(position)) == Color.parseColor("#ffffff")) {
+            holder.preColors.setBackgroundResource(R.drawable.no_color);
+        } else {
+            holder.preColors.setBackgroundColor(Color.parseColor(colorList.get(position)));
+        }
 
-		return gridView;
-	}
+        holder.preColors.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                clickColorListener.onColorSelect(colorList.get(position));
+            }
+        });
+    }
 
-	public int getCount() {
-		return colorList.size();
-	}
+    public long getItemId(int position) {
+        return 0;
+    }
 
-	public Object getItem(int position) {
-		return null;
-	}
+    @Override
+    public int getItemCount() {
+        return colorList.size();
+    }
 
-	public long getItemId(int position) {
-		return 0;
-	}
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        LinearLayout preColors;
+        ImageView grid_item_color;
+
+        ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            preColors = itemView.findViewById(R.id.preColors);
+            grid_item_color = itemView.findViewById(R.id.grid_item_color);
+        }
+    }
 }

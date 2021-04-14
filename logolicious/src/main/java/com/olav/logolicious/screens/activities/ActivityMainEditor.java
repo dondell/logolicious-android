@@ -2,6 +2,7 @@ package com.olav.logolicious.screens.activities;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -15,7 +16,9 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -34,9 +37,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.StrictMode;
 import android.provider.MediaStore;
-import android.support.annotation.RequiresApi;
+import android.text.Editable;
 import android.text.InputFilter;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -47,6 +53,8 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -64,29 +72,47 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.anjlab.android.iab.v3.BillingProcessor;
-import com.anjlab.android.iab.v3.PurchaseInfo;
-import com.anjlab.android.iab.v3.TransactionDetails;
+import androidx.annotation.RequiresApi;
+import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.olav.logolicious.BuildConfig;
 import com.olav.logolicious.R;
 import com.olav.logolicious.customize.adapters.AdapterGridLogos;
 import com.olav.logolicious.customize.adapters.ArrayHolderLogos;
+import com.olav.logolicious.customize.adapters.ColorPickerAdapter;
+import com.olav.logolicious.customize.adapters.CustomColorAdapter;
 import com.olav.logolicious.customize.adapters.TemplateListAdapter;
 import com.olav.logolicious.customize.datamodel.ImageExif;
 import com.olav.logolicious.customize.widgets.DynamicImageView;
 import com.olav.logolicious.customize.widgets.LayersContainerView;
+import com.olav.logolicious.customize.widgets.MarginDecoration;
 import com.olav.logolicious.supertooltips.ToolTip;
 import com.olav.logolicious.supertooltips.ToolTipRelativeLayout;
 import com.olav.logolicious.supertooltips.ToolTipView;
 import com.olav.logolicious.util.BillingService;
+import com.olav.logolicious.util.ClickColorListener;
 import com.olav.logolicious.util.FileUtil;
 import com.olav.logolicious.util.GlobalClass;
+import com.olav.logolicious.util.HexColorValidator;
 import com.olav.logolicious.util.LogoliciousApp;
+import com.olav.logolicious.util.SQLiteHelper;
 import com.olav.logolicious.util.SubscriptionUtil.AppStatitics;
 import com.olav.logolicious.util.SubscriptionUtil.SubscriptionUtil;
 import com.olav.logolicious.util.camera.CameraUtils;
 import com.olav.logolicious.util.camera.ScreenDimensions;
 import com.olav.logolicious.util.image.BitmapSaver;
 import com.olav.logolicious.util.image.ImageHelper;
+import com.skydoves.colorpickerview.ActionMode;
+import com.skydoves.colorpickerview.ColorEnvelope;
+import com.skydoves.colorpickerview.ColorPickerView;
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
+import com.skydoves.colorpickerview.sliders.AlphaSlideBar;
+import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
 
 import org.acra.ACRA;
 import org.json.JSONException;
@@ -103,6 +129,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import top.defaults.colorpicker.ColorObserver;
 
 import static com.olav.logolicious.util.GlobalClass.PICK_FONT_RESULT_CODE;
 import static com.olav.logolicious.util.GlobalClass.sqLiteHelper;
@@ -144,7 +174,6 @@ public class ActivityMainEditor extends Activity implements
     private static final int REQUEST_CODE_UPLOAD_LOGOS = 3;
     private static final int REQUEST_SHARE_ACTION = 4;
     private static final int REQUEST_CODE_CHOOSE_LOGO_FROM_GAL = 5;
-    private static final int REQUEST_CODE_BROWSE_FILES = 6;
 
     /**
      * Draggable ImageView for funny images
@@ -168,10 +197,10 @@ public class ActivityMainEditor extends Activity implements
     // these matrices will be used to move and zoom image
     public static Matrix mMatrix = new Matrix();
 
-    public static LinearLayout bottomSlidersContainer;
-    public static RelativeLayout resultingScreen, listRight;
+    public LinearLayout bottomSlidersContainer;
+    public RelativeLayout resultingScreen, listRight;
     public static ImageView backgroundImage;
-    private static ImageView ivSOG;
+    private ImageView ivSOG;
 
     private DynamicImageView imageViewLogo;
     private static ArrayList<ArrayHolderLogos> mylogoItems = new ArrayList<ArrayHolderLogos>();
@@ -186,7 +215,6 @@ public class ActivityMainEditor extends Activity implements
     public static final int MESSAGE_APPLY_TEMPLATE = 7;
     private static File fileToSave = null;
     private GridView gridview;
-    private ListView templateLV;
     private AdapterGridLogos adapterFunnyGridItems;
     // Hint
     private View hintLayout;
@@ -200,11 +228,6 @@ public class ActivityMainEditor extends Activity implements
     SharedPreferences.Editor editor;
     //available keys : SavingType, dontAskMeAgain
 
-    //rating
-    private int isRated = 0;
-    private int saveCount = 0;
-    private int id = 0; // rating id in logolicious table
-
     // Live Button Feature
     Camera mCamera;
     SurfaceView mPreview;
@@ -217,15 +240,25 @@ public class ActivityMainEditor extends Activity implements
     private Button start, stop, capture;
 
     private View live_panel;
+    private ArrayList<String> customColorsArray = new ArrayList<>();
+    private CustomColorAdapter customColorAdapter;
+    public static String colorSelected;
+    private boolean initColor = true;
+    private Handler handlerColorPickerDetector = new Handler();
 
-    // IBillingHandler implementation
+    //Billing implementation
+    private PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
+        @Override
+        public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
+            // To be implemented in a later section.
+        }
+    };
 
-    @Override
-    public void onBillingInitialized() {
-        /*
-         * Called when BillingProcessor was initialized and it's ready to purchase
-         */
-    }
+    private BillingClient billingClient = BillingClient.newBuilder(getApplicationContext())
+            .setListener(purchasesUpdatedListener)
+            .enablePendingPurchases()
+            .build();
+
 
     @Override
     public void onProductPurchased(String productId, TransactionDetails details) {
@@ -309,6 +342,7 @@ public class ActivityMainEditor extends Activity implements
     public static String picturePath = "";
 
     protected GlobalClass gc;
+    private HexColorValidator colorValidator = new HexColorValidator();
 
     /**
      * Callback called by the camera Utils when image file has been created
@@ -375,26 +409,26 @@ public class ActivityMainEditor extends Activity implements
         act = ActivityMainEditor.this;
         preferences = ActivityMainEditor.act.getPreferences(Context.MODE_PRIVATE);
         editor = preferences.edit();
-        backgroundImage = (ImageView) findViewById(R.id.backgroundImage);
-        ivSOG = (ImageView) findViewById(R.id.buttonSnapOnGrid);
-        layeredLogos = (LayersContainerView) findViewById(R.id.layeredLogos);
-        imageViewLogo = (DynamicImageView) findViewById(R.id.imageViewLogo);
-        bottomSlidersContainer = (LinearLayout) findViewById(R.id.bottomSlidersContainer);
-        listRight = (RelativeLayout) findViewById(R.id.menuRight);
-        resultingScreen = (RelativeLayout) findViewById(R.id.photo);
-        seekbarTrans = (SeekBar) findViewById(R.id.seekBarTrans);
-        buttonTrashcan = (ImageButton) findViewById(R.id.buttonTrashcan);
+        backgroundImage = findViewById(R.id.backgroundImage);
+        ivSOG = findViewById(R.id.buttonSnapOnGrid);
+        layeredLogos = findViewById(R.id.layeredLogos);
+        imageViewLogo = findViewById(R.id.imageViewLogo);
+        bottomSlidersContainer = findViewById(R.id.bottomSlidersContainer);
+        listRight = findViewById(R.id.menuRight);
+        resultingScreen = findViewById(R.id.photo);
+        seekbarTrans = findViewById(R.id.seekBarTrans);
+        buttonTrashcan = findViewById(R.id.buttonTrashcan);
 
         // Live Feature UI
-        live_panel = (View) findViewById(R.id.live_include);
-        parentView = (LinearLayout) findViewById(R.id.picture_content_parent_view_host);
-        cameraLayout = (RelativeLayout) findViewById(R.id.full_camera_content);
+        live_panel = findViewById(R.id.live_include);
+        parentView = findViewById(R.id.picture_content_parent_view_host);
+        cameraLayout = findViewById(R.id.full_camera_content);
 
         //set initial data
         if (null != preferences) {
             if (preferences.getBoolean("dontAskMeAgain", false)) {
                 editor.putBoolean("dontAskMeAgain", true);
-                editor.commit();
+                editor.apply();
             } else {
                 editor.putBoolean("dontAskMeAgain", false);
                 editor.commit();
@@ -429,7 +463,7 @@ public class ActivityMainEditor extends Activity implements
 
             @Override
             public void run() {
-                Drawable thumbTransparent = ImageHelper.resizeDrawable(getResources(), getResources().getDrawable(R.drawable.slider_indicator_01), seekbarTrans.getHeight() + 5, (seekbarTrans.getHeight() + 5) > 45 ? 45: (seekbarTrans.getHeight() + 5));
+                Drawable thumbTransparent = ImageHelper.resizeDrawable(getResources(), getResources().getDrawable(R.drawable.slider_indicator_01), seekbarTrans.getHeight() + 5, (seekbarTrans.getHeight() + 5) > 45 ? 45 : (seekbarTrans.getHeight() + 5));
                 thumbTransparent.setBounds(0, 2, thumbTransparent.getIntrinsicWidth(), thumbTransparent.getIntrinsicHeight());
                 seekbarTrans.setThumb(thumbTransparent);
                 seekbarTrans.setThumbOffset(5);
@@ -442,8 +476,7 @@ public class ActivityMainEditor extends Activity implements
         layeredLogos.setMyMatrix(mMatrix);
 
         resultingScreen.setDrawingCacheEnabled(true);
-        final int deviceWidth = getWindowManager().getDefaultDisplay().getWidth();
-        DEVICE_WIDTH = deviceWidth;
+        DEVICE_WIDTH = getWindowManager().getDefaultDisplay().getWidth();
         int deviceHeight = getWindowManager().getDefaultDisplay().getHeight();
         DEVICE_HEIGHT = deviceHeight;
 
@@ -461,9 +494,9 @@ public class ActivityMainEditor extends Activity implements
                         backgroundImage.setImageDrawable(d1);
                         // ensure the base image will show up after putting drawable
                         FileUtil.fileWrite(GlobalClass.log_path, "MainEditor: showing the base image", true);
-                        if (GlobalClass.subscriptionOkToShow && (backgroundImage.getDrawable() != null && !LogoliciousApp.isLive) || !LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
-                            isShowSubscription();
-                        }
+                        /*if (GlobalClass.subscriptionOkToShow && (backgroundImage.getDrawable() != null && !LogoliciousApp.isLive) || !LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
+                            isShowSubscription(this);
+                        }*/
                     } else {
                         FileUtil.fileWrite(GlobalClass.log_path, "MainEditor: error showing the base image", true);
                     }
@@ -587,7 +620,8 @@ public class ActivityMainEditor extends Activity implements
         }
         super.onDestroy();
         Log.i(TAG, "xxx onDestroy");
-        GlobalClass.diskCache.clearCache();
+        if (null != GlobalClass.diskCache)
+            GlobalClass.diskCache.clearCache();
         System.gc();
         GlobalClass.freeMem();
         AppStatitics.sharedPreferenceSet(act, "subscription_countdown", 0);
@@ -613,20 +647,22 @@ public class ActivityMainEditor extends Activity implements
         GlobalClass.pendingShowMemAlert = false;
     }
 
-    private void checkSubscription() {
+    private static void checkSubscription(Activity act) {
         //Statistics
-        AppStatitics.initializeSaveCount(ActivityMainEditor.this);
+        AppStatitics.initializeSaveCount(act);
         //Check Subscription
         bp.loadOwnedPurchasesFromGoogle();
         td = bp.getSubscriptionTransactionDetails(SubscriptionUtil.SUBSCRIPTION_SKU);
         if (null != td) {
+            Log.i(TAG, "xxx transaction " + td.toString());
             //get purchased info
             pInfo = td.purchaseInfo;
             if (null != pInfo) {
                 if (!pInfo.purchaseData.autoRenewing) {
-                    Log.i("", "You have cancelled your Subscription.");
+                    Log.i("xxx", "xxx You have cancelled your Subscription.");
                     AppStatitics.sharedPreferenceSet(act, "isSubscribed", 0);
-                } else {
+                } else if (pInfo.purchaseData.purchaseState.name().equals(PurchaseState.PurchasedSuccessfully.name())) {
+                    Log.i("xxx", "xxx You have your Subscription.");
                     AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
                 }
             }
@@ -639,7 +675,7 @@ public class ActivityMainEditor extends Activity implements
         super.onStart();
         Log.i(TAG, "xxx onStart");
         GlobalClass.freeMem();
-        checkSubscription();
+        checkSubscription(this);
 
         /*
         https://stackoverflow.com/questions/38200282/android-os-fileuriexposedexception-file-storage-emulated-0-test-txt-exposed
@@ -662,7 +698,7 @@ public class ActivityMainEditor extends Activity implements
         super.onResume();
         Log.i(TAG, "xxx onResume");
         bp = new BillingProcessor(this, SubscriptionUtil.base64EncodedPublicKey, this);
-        checkSubscription();
+        checkSubscription(this);
         isSomeActivityIsRunning = false;
         mOrientation = this.getResources().getConfiguration().orientation;
         isMinimized = false;
@@ -739,8 +775,6 @@ public class ActivityMainEditor extends Activity implements
                     // ensure items parent directory
                     initPaths();
                     FileUtil.createDirs(new String[]{GlobalClass.log_path, logoDir, tempDir, tempShareDir, tempSavedPics, liveDir});
-                } else {
-
                 }
                 break;
             case LogoliciousApp.REQUEST_ID_MULTIPLE_PERMISSIONS:
@@ -872,27 +906,11 @@ public class ActivityMainEditor extends Activity implements
 
                 Uri content_describer = data.getData();
                 String filePath = data.getData().getPath();
-                Log.d("xxx", "xxx filePath " + filePath);
-                Log.d("xxx", "xxx name " + content_describer.getLastPathSegment());
-                //get the path
-                Log.d("Path???", content_describer.getPath());
-                Log.d("Path???", FileUtil.getPath(this, content_describer));
                 try {
                     FileUtil.copyFile(new FileInputStream(content_describer.getPath()), new FileOutputStream(fontsDir + content_describer.getLastPathSegment()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-//                if (!TextUtils.isEmpty(filePath)) {
-//                    String[] pathSplits = filePath.split("/");
-//                    if (pathSplits.length > 0 && pathSplits[pathSplits.length - 1].contains(".ttf")) {
-//                        Log.i("xxx", "xxx This is font file");
-//                        GlobalClass.sqLiteHelper.insertFont(filePath);
-//                        LogoliciousApp.showMessageOK(this, pathSplits[pathSplits.length - 1] + " successfully added.", null);
-//                    } else {
-//                        Log.i("xxx", "xxx This is not font file");
-//                        LogoliciousApp.showMessageOK(this, "Sorry, the file is not supported.", null);
-//                    }
-//                }
             }
         }
     }
@@ -904,7 +922,6 @@ public class ActivityMainEditor extends Activity implements
         if (v.getId() == R.id.layeredLogos) {
             if (null != layeredLogos && null != layeredLogos.targetSelected)
                 layeredLogos.onTouch(v, event);
-            //Log.i("xxx","xxx view id: " + getResources().getResourceEntryName(v.getId()));
         }
         return false;
     }
@@ -1433,13 +1450,11 @@ public class ActivityMainEditor extends Activity implements
         }
     }
 
-    private void isShowSubscription() {
-        boolean bRet = false;
+    public static void isShowSubscription(Activity act) {
         //check user already subscribed
-        checkSubscription();
+        checkSubscription(act);
         if (0 == AppStatitics.sharedPreferenceGet(act, "isSubscribed", 0)) {
-            bRet = true;
-            AppStatitics.showSubscription(ActivityMainEditor.this, AppStatitics.sharedPreferenceGet(ActivityMainEditor.this, "STAT_SAVE_SHARE_COUNT", 0));
+            AppStatitics.showSubscription(act, AppStatitics.sharedPreferenceGet(act, "STAT_SAVE_SHARE_COUNT", 0));
             Log.i("xxx", "xxx b isShowSubscription ");
         }
 
@@ -1449,9 +1464,11 @@ public class ActivityMainEditor extends Activity implements
         Cursor cur = GlobalClass.sqLiteHelper.getSaveCount();
         try {
             while (cur.moveToNext()) {
-                saveCount = cur.getInt(0);
-                id = cur.getInt(1);
-                isRated = cur.getInt(2);
+                int saveCount = cur.getInt(0);
+                // rating id in logolicious table
+                int id = cur.getInt(1);
+                //rating
+                int isRated = cur.getInt(2);
                 if (AppStatitics.sharedPreferenceGet(this, "STAT_SAVE_SHARE_COUNT", 0) >= 5 && 0 == AppStatitics.sharedPreferenceGet(this, "RATED", 0)) {
                     LogoliciousApp.showRateDialog(act, id, saveCount);
                     Toast.makeText(getApplicationContext(), "Your Photo has been succesfully saved.", Toast.LENGTH_LONG).show();
@@ -1525,11 +1542,18 @@ public class ActivityMainEditor extends Activity implements
 
                 //Show share list.
                 Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
-                shareIntent.setType("image/" + FileUtil.getImageType(preferences)); // text/plain
+                //shareIntent.setType("image/" + FileUtil.getImageType(preferences)); // text/plain
+                shareIntent.setType("message/rfc822");
                 String shareText = getResources().getString(R.string.label_sharetext);
                 shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "LogoLicious");
                 shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareText);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, photoUri);
+                Uri uri = FileProvider.getUriForFile(ActivityMainEditor.this, BuildConfig.APPLICATION_ID, new File(photoUri.getPath()));
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.setDataAndType(uri, getContentResolver().getType(uri));
+                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                //shareIntent.putExtra(Intent.EXTRA_STREAM, photoUri);
                 startActivityForResult(Intent.createChooser(shareIntent, "Share Your LogoLicious"), REQUEST_SHARE_ACTION);
 
                 editor.putBoolean("ProceedEvenNoMemAvailable", false);
@@ -1691,7 +1715,7 @@ public class ActivityMainEditor extends Activity implements
                 LogoliciousApp.addText(act, backgroundImage, layeredLogos, false, false);
                 break;
             case R.id.buttonTextColor:
-                LogoliciousApp.showColorPicker(act, layeredLogos, listRight);
+                showColor();
                 break;
             case R.id.save: {
                 System.gc();
@@ -1748,9 +1772,7 @@ public class ActivityMainEditor extends Activity implements
             case R.id.buttonDoneLive:
                 if (LIVE_SELECTED == LIVE_CAMERA) {
                     mCamUtils.clickPicture();
-                } else {
                 }
-
                 // off the blink the live button
                 ImageView img = (ImageView) findViewById(R.id.buttonLive);
                 img.setImageResource(R.drawable.live);
@@ -1780,6 +1802,7 @@ public class ActivityMainEditor extends Activity implements
             default:
                 break;
         }
+
     }
 
     public final Handler mHandler = new Handler() {
@@ -2059,7 +2082,7 @@ public class ActivityMainEditor extends Activity implements
         isShowItems = true;
         LayoutInflater inflater = (LayoutInflater) getApplication().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View viewG = inflater.inflate(R.layout.template_list, null);
-        templateLV = (ListView) viewG.findViewById(R.id.templateLV);
+        ListView templateLV = (ListView) viewG.findViewById(R.id.templateLV);
 
         BaseAdapter adapter = new TemplateListAdapter(
                 ActivityMainEditor.this,
@@ -2409,16 +2432,6 @@ public class ActivityMainEditor extends Activity implements
 
         GlobalClass.baseBitmap = BitmapFactory.decodeFile(GlobalClass.picturePath); //ImageHelper.decodeBitmapPath(GlobalClass.picturePath); //ImageHelper.correctBitmapRotation(GlobalClass.picturePath, ImageHelper.decodeBitmapPath(GlobalClass.picturePath));
 
-        // watch onWindowFocusChanged below
-        // get the width and height of the resulting screen
-//        backgroundImage.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-//            @Override
-//            public boolean onPreDraw() {
-//                backgroundImage.getViewTreeObserver().removeOnPreDrawListener(this);
-//
-//                bH = backgroundImage.getHeight();
-//                bW = backgroundImage.getWidth();
-
         if (LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
             LogoliciousApp.toast(ActivityMainEditor.this, res.getString(R.string.ErrorAfterCameraCapture), Toast.LENGTH_LONG);
             return;
@@ -2426,9 +2439,6 @@ public class ActivityMainEditor extends Activity implements
 
         Log.d(TAG, "Picture retrieve path = " + GlobalClass.picturePath);
         LogoliciousApp.callCropper(act, listRight, backgroundImage, DEVICE_WIDTH);
-//                return false;
-//            }
-//        });
     }
 
     private void onResultFromGallery(Intent data) {
@@ -2521,12 +2531,15 @@ public class ActivityMainEditor extends Activity implements
         d.setTitle("Memory Details");
         d.setCancelable(true);
 
-        TextView totalMem = (TextView) d.findViewById(R.id.totalMemory);
-        TextView availableMem = (TextView) d.findViewById(R.id.availableMemory);
+        TextView totalMem = d.findViewById(R.id.totalMemory);
+        TextView availableMem = d.findViewById(R.id.availableMemory);
 
-        double dTotalMem = (int) (LogoliciousApp.getAvailableMemory(ActivityMainEditor.this).totalMem / 0x100000L);
-        totalMem.setText(String.format("%d%s", (int) dTotalMem, "mb"));
-        availableMem.setText(String.format("%d%s", LogoliciousApp.getAvailableMemMB(ActivityMainEditor.this), "mb"));
+        double dTotalMem = 0;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            dTotalMem = (int) (LogoliciousApp.getAvailableMemory(ActivityMainEditor.this).totalMem / 0x100000L);
+        }
+        totalMem.setText(String.format(Locale.US, "%d%s", (int) dTotalMem, "mb"));
+        availableMem.setText(String.format(Locale.US, "%d%s", LogoliciousApp.getAvailableMemMB(ActivityMainEditor.this), "mb"));
         d.show();
     }
 
@@ -2586,5 +2599,197 @@ public class ActivityMainEditor extends Activity implements
             editor.commit();
         }
         layeredLogos.invalidate();
+    }
+
+    private void showColor() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View pickerContainer = inflater.inflate(R.layout.color_picker, null);
+
+        builder.setView(pickerContainer);
+        final AlertDialog d = builder.create();
+
+        RecyclerView gridview = pickerContainer.findViewById(R.id.gridViewColors);
+        RecyclerView gridviewCustomColors = pickerContainer.findViewById(R.id.gridViewCustomColors);
+        Button newColor = pickerContainer.findViewById(R.id.newColor);
+        ImageView close = pickerContainer.findViewById(R.id.close);
+        gridview.addItemDecoration(new MarginDecoration(this));
+        gridview.setHasFixedSize(true);
+        gridview.setAdapter(new ColorPickerAdapter(getApplicationContext(), new ClickColorListener() {
+            @Override
+            public void onColorSelect(String colorCode) {
+                if (layeredLogos.targetSelected != null && layeredLogos.targetSelected.isTextMode) {
+                    layeredLogos.targetSelected.changeTextColor(Color.parseColor(colorCode));
+                    layeredLogos.invalidate();
+                }
+                d.dismiss();
+            }
+        }));
+
+        customColorsArray.clear();
+        Cursor colorCursor = GlobalClass.sqLiteHelper.getCustomColors();
+        while (colorCursor.moveToNext()) {
+            customColorsArray.add(colorCursor.getString(colorCursor.getColumnIndex(SQLiteHelper.COLOR_CODE)));
+        }
+        customColorAdapter = new CustomColorAdapter(this, customColorsArray, new ClickColorListener() {
+            @Override
+            public void onColorSelect(String colorCode) {
+                if (!TextUtils.isEmpty(colorCode) && layeredLogos.targetSelected != null && layeredLogos.targetSelected.isTextMode) {
+                    layeredLogos.targetSelected.changeTextColor(Color.parseColor(colorCode));
+                    layeredLogos.invalidate();
+                    d.dismiss();
+                } else {
+                    d.dismiss();
+                    addColor();
+                }
+            }
+        });
+        gridviewCustomColors.addItemDecoration(new MarginDecoration(this));
+        gridviewCustomColors.setHasFixedSize(true);
+        gridviewCustomColors.setAdapter(customColorAdapter);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        d.show();
+        newColor.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                d.dismiss();
+                addColor();
+            }
+        });
+        close.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                d.dismiss();
+            }
+        });
+        ((AlertDialog) d).getButton(AlertDialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
+        ((AlertDialog) d).getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.INVISIBLE);
+        d.getWindow().setLayout((int) LogoliciousApp.convertDpToPixel(30 * 9, this), ViewGroup.LayoutParams.WRAP_CONTENT);
+    }
+
+    boolean changesFromKeyListener = false;
+    boolean enableColorInput = false;
+
+    private void addColor() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View pickerContainer = inflater.inflate(R.layout.add_custom_color, null);
+        final EditText etColorCode = pickerContainer.findViewById(R.id.etColorCode);
+        LogoliciousApp.setEditTextMaxLength(etColorCode, 7);
+        final ColorPickerView colorPickerView = pickerContainer.findViewById(R.id.colorPickerView);
+        AlphaSlideBar alphaSlideBar = pickerContainer.findViewById(R.id.alphaSlideBar);
+        Button apply = pickerContainer.findViewById(R.id.apply);
+        BrightnessSlideBar brightnessSlide = pickerContainer.findViewById(R.id.brightnessSlide);
+        colorPickerView.setColorListener(new ColorEnvelopeListener() {
+            @Override
+            public void onColorSelected(ColorEnvelope envelope, boolean fromUser) {
+                String strColor = envelope.getHexCode();
+                Log.i(TAG, "xxx onColorSelected " + strColor);
+                if (changesFromKeyListener) {
+                    etColorCode.setBackgroundColor(envelope.getColor());
+                    ActivityMainEditor.colorSelected = String.format("#%s", strColor);
+                } else {
+                    etColorCode.setText(String.format("#%s", strColor.substring(2)));
+                }
+                changesFromKeyListener = false;
+            }
+        });
+        colorPickerView.attachAlphaSlider(alphaSlideBar);
+        colorPickerView.attachBrightnessSlider(brightnessSlide);
+        colorPickerView.setPreferenceName("MyColorPicker");
+        colorPickerView.setActionMode(ActionMode.ALWAYS);
+        colorPickerView.getViewTreeObserver()
+                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            colorPickerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        } else {
+                            colorPickerView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        }
+                    }
+                });
+
+        initColor = true;
+        builder.setView(pickerContainer);
+        final AlertDialog d = builder.create();
+
+        apply.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean isInvalidColorVal = false;
+                try {
+                    Color.parseColor(etColorCode.getText().toString());
+                    colorPickerView.selectByHsv(Color.parseColor(etColorCode.getText().toString()));
+
+                    if (!TextUtils.isEmpty(ActivityMainEditor.colorSelected) && !ActivityMainEditor.colorSelected.equals("#FFFFFFFF")) {
+                        Cursor colorCursor = GlobalClass.sqLiteHelper.getCustomColors();
+                        if (colorCursor.getCount() >= 11) {
+                            LogoliciousApp.showMessageOK(ActivityMainEditor.this, "You can only add up to 11 custom colors.", null);
+                        } else {
+                            sqLiteHelper.addCustomColor(ActivityMainEditor.colorSelected);
+                            showColor();
+                        }
+                    }
+                    isInvalidColorVal = false;
+                } catch (IllegalArgumentException iae) {
+                    isInvalidColorVal = true;
+                    LogoliciousApp.toast(ActivityMainEditor.this, "Invalid Color", Toast.LENGTH_SHORT);
+                }
+
+                if (!isInvalidColorVal) {
+                    d.dismiss();
+                }
+            }
+        });
+
+        handlerColorPickerDetector.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "xxx color detector");
+                if (etColorCode.getText().length() == 7) {
+                    boolean isInvalidColorVal = false;
+                    try {
+                        Color.parseColor(etColorCode.getText().toString());
+                        colorPickerView.selectByHsv(Color.parseColor(etColorCode.getText().toString()));
+                        isInvalidColorVal = false;
+                        changesFromKeyListener = true;
+                    } catch (IllegalArgumentException iae) {
+                        isInvalidColorVal = true;
+                        LogoliciousApp.toast(ActivityMainEditor.this, "Invalid Color", Toast.LENGTH_SHORT);
+                    }
+                }
+
+                if (!d.isShowing()) {
+                    handlerColorPickerDetector.removeCallbacks(null);
+                } else {
+                    handlerColorPickerDetector.postDelayed(this, 1000);
+                }
+            }
+        }, 1000);
+
+        d.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                handlerColorPickerDetector.removeCallbacks(null);
+            }
+        });
+        d.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
+                handlerColorPickerDetector.removeCallbacks(null);
+            }
+        });
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        d.show();
+        d.getWindow().setLayout((int) LogoliciousApp.convertDpToPixel(30 * 9, this), ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 }

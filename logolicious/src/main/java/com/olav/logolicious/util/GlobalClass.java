@@ -8,7 +8,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Environment;
-import android.support.v4.util.LruCache;
+import androidx.collection.LruCache;
 import android.util.Log;
 
 import com.nostra13.universalimageloader.core.ImageLoader;

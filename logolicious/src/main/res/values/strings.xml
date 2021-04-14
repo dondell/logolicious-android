@@ -25,7 +25,7 @@
     <string name="label_enable">ENABLE</string>
     <string name="label_includedinpackage">Included in package</string>
     <string name="label_unlock">Unlock</string>
-    <string name="label_sharetext">This logo was added with #LogoLicious</string>
+    <string name="label_sharetext">Created with #LogoLicious #addyourlogoapp</string>
     <string name="label_show_introscreen_nextime">Show introduction screens at next startup.</string>
     <string name="message_tip1">TIP: You can drag the item with your finger and use two fingers to scale and/rotate the item.\n</string>
     <string name="message_tip2">TIP: Click here for more information about LogoLicious and/or to unlock more features..\n</string>

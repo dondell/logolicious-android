@@ -1,1 +1,1 @@
-include ':logolicious'
+include ':logolicious', ':colorpickerview'

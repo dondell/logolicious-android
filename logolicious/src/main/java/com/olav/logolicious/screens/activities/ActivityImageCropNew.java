@@ -5,9 +5,6 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Rect;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -17,14 +14,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
-import android.widget.TextView;
 
 import com.olav.logolicious.R;
 import com.olav.logolicious.cropper.CropImageView;
@@ -39,26 +32,16 @@ import java.util.ArrayList;
 import static com.olav.logolicious.screens.activities.ActivityMainEditor.DEVICE_HEIGHT;
 import static com.olav.logolicious.screens.activities.ActivityMainEditor.DEVICE_WIDTH;
 
-public class ActivityImageCropNew extends Activity implements OnClickListener, OnTouchListener{
+public class ActivityImageCropNew extends Activity implements OnClickListener, OnTouchListener {
 
     // Static final constants
-    private static final int DEFAULT_ASPECT_RATIO_VALUES = 20;
     private static final int ROTATE_NINETY_DEGREES = 90;
-    private static final String ASPECT_RATIO_X = "ASPECT_RATIO_X";
-    private static final String ASPECT_RATIO_Y = "ASPECT_RATIO_Y";
-    private static final int ON_TOUCH = 1;
-
-    // Instance variables
-    private int mAspectRatioX = DEFAULT_ASPECT_RATIO_VALUES;
-    private int mAspectRatioY = DEFAULT_ASPECT_RATIO_VALUES;
-    public static String CAMERA_CAPTURE_IN_LANDSCAPE = "landscape";
 
     Bitmap croppedImage;
-    Bitmap nonCropped;
-    static CropImageView cropImageView;
+    CropImageView cropImageView;
     GestureDetector gestureDetector;
     public static int doubleTapView;
-    public static ArrayList<AspectRatioPair> arrAspects = new ArrayList<ActivityImageCropNew.AspectRatioPair>();
+    public static ArrayList<AspectRatioPair> arrAspects = new ArrayList<>();
     protected GlobalClass gc;
 
     // Saves the state upon rotating the screen/restarting the activity
@@ -78,10 +61,6 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         super.onConfigurationChanged(newConfig);
     }
 
-    public static Rect getActualRect(){
-        return cropImageView.getActualCropRect();
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,11 +68,10 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         setContentView(R.layout.crop_section);
         gc = (GlobalClass) this.getApplicationContext();
         // Initialize components of the app
-        cropImageView = (CropImageView) findViewById(R.id.CropImageView);
+        cropImageView = findViewById(R.id.CropImageView);
         cropImageView.setScaleType(ScaleType.FIT_CENTER);
-        cropImageView.setFixedAspectRatio(true);
 
-        if(GlobalClass.baseBitmap != null){
+        if (GlobalClass.baseBitmap != null) {
             Bitmap bi = ImageHelper.scaleWithRespectToAspectRatio(GlobalClass.baseBitmap, DEVICE_WIDTH, DEVICE_HEIGHT);
             cropImageView.setImageBitmap(bi);
             //cropImageView.rotateImage(LogoliciousApp.sharedPreferenceGet(ActivityImageCropNew.this, "BaseImgOrientation", 0));
@@ -109,37 +87,21 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         gestureDetector = new GestureDetector(ActivityImageCropNew.this, new GestureListener());
 
         // Sets initial aspect ratio
+        cropImageView.setFixedAspectRatio(true);
         cropImageView.post(new Runnable() {
             @Override
             public void run() {
-//		    	 check if landscape or portrait
-
-                // if camera capture and is rotated
-                Bundle extras = getIntent().getExtras();
-                if (extras != null) {
-
-                    if(ImageHelper.isPortrait(GlobalClass.origBitmapwidth, GlobalClass.origBitmapheight)){
-                        // portrait
-                        mAspectRatioX = (int) extras.getInt("D_W");
-                        mAspectRatioY = (int) extras.getInt("D_H");
-                    } else {
-                        // landscape
-                        mAspectRatioX = (int) extras.getInt("D_H");
-                        mAspectRatioY = (int) extras.getInt("D_W");
-                    }
-                }
-
-                if(cropImageView != null){
-                    cropImageView.setFixedAspectRatio(true);
+                cropImageView.setFixedAspectRatio(true);
+                if (cropImageView != null) {
                     cropImageView.setAspectRatio(16, 9);
+                    cropImageView.invalidate();
                 }
 
-                cropImageView.invalidate();
             }
         });
 
         //Sets the rotate button
-        final ImageView rotateButton = (ImageView) findViewById(R.id.Button_rotate);
+        final ImageView rotateButton = findViewById(R.id.Button_rotate);
         rotateButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -153,7 +115,7 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
             }
         });
 
-        final ImageView cropButton = (ImageView) findViewById(R.id.Button_crop);
+        final ImageView cropButton = findViewById(R.id.Button_crop);
         cropButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -183,6 +145,15 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
                 Log.i("Cropper", "xxx Crop button");
 
                 startMainEditor();
+            }
+        });
+
+        final ImageView flip = findViewById(R.id.btnFlip);
+        flip.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                GlobalClass.baseBitmap = LogoliciousApp.flip(cropImageView.getmBitmap(), LogoliciousApp.FLIP_HORIZONTAL);
+                cropImageView.setImageBitmap(GlobalClass.baseBitmap);
             }
         });
 
@@ -257,6 +228,7 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
             }
         });
 
+        LogoliciousApp.setOnClickListener(this, R.id.freeTransform);
         LogoliciousApp.setOnClickListener(this, R.id.aspectRatio11);
         LogoliciousApp.setOnClickListener(this, R.id.aspectRatio23);
         LogoliciousApp.setOnClickListener(this, R.id.aspectRatio43);
@@ -270,15 +242,13 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         //Construct Aspects
         arrAspects.add(new AspectRatioPair(1, 1, 0, 0));
         arrAspects.add(new AspectRatioPair(4, 3, R.drawable.rotate_ratio4_3, R.drawable.rotate_ratio3_4));
-        arrAspects.add(new AspectRatioPair(16, 9, R.drawable.rotate_ratio16_9,  R.drawable.rotate_ratio9_16));
-        arrAspects.add(new AspectRatioPair(3, 2, R.drawable.rotate_ratio3_2,  R.drawable.rotate_ratio2_3));
+        arrAspects.add(new AspectRatioPair(16, 9, R.drawable.rotate_ratio16_9, R.drawable.rotate_ratio9_16));
+        arrAspects.add(new AspectRatioPair(3, 2, R.drawable.rotate_ratio3_2, R.drawable.rotate_ratio2_3));
 
-        //Initially click ratio 16:9
-        AspectRatioPair ar1 = null;
-        clickARatio16_9(ar1);
+        clickFreeTransform();
     }
 
-    private void startMainEditor(){
+    private void startMainEditor() {
         finish();
         Intent intent = new Intent(ActivityImageCropNew.this, ActivityMainEditor.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -295,22 +265,22 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         super.onResume();
         gc.setCurrentActivity(this);
         //Reset 16:9 default settings
-        if(null != arrAspects)
+        if (null != arrAspects)
             arrAspects.get(2).wasFirstClick = false;
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
         // free memory
-        /**
+        /*
          * We commented this in order to prevent error "trying to use a recycled bitmap" in main screen when saving.
          * This bitmap is use when we rotate bitmap in cropper window->hit no crop.
+         *         if (cropImageView.bitmapRotate != null && !cropImageView.bitmapRotate.isRecycled()) {
+                        cropImageView.bitmapRotate.recycle();
+                        cropImageView.bitmapRotate = null;
+                    }
          */
-//        if (cropImageView.bitmapRotate != null && !cropImageView.bitmapRotate.isRecycled()) {
-//            cropImageView.bitmapRotate.recycle();
-//            cropImageView.bitmapRotate = null;
-//        }
 
         System.gc();
         GlobalClass.freeMem();
@@ -325,33 +295,8 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
-        // TODO Auto-generated method stub
-        if ((keyCode == KeyEvent.KEYCODE_BACK))
-        {
-//			finish();
-//			Intent backToMain = new Intent(getApplicationContext(), ActivityMainEditor.class);
-//			startActivity(backToMain);
-        }
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         return super.onKeyDown(keyCode, event);
-    }
-
-    /*
-     * Sets the font on all TextViews in the ViewGroup. Searches recursively for
-     * all inner ViewGroups as well. Just add a check for any other views you
-     * want to set as well (EditText, etc.)
-     */
-    public void setFont(ViewGroup group, Typeface font) {
-        int count = group.getChildCount();
-        View v;
-        for (int i = 0; i < count; i++) {
-            v = group.getChildAt(i);
-            if (v instanceof TextView || v instanceof EditText || v instanceof ImageButton) {
-                ((TextView) v).setTypeface(font);
-            } else if (v instanceof ViewGroup)
-                setFont((ViewGroup) v, font);
-        }
     }
 
     @Override
@@ -368,9 +313,9 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         d.setTitle("ASPECT RATIO");
         d.setCancelable(true);
 
-        Button aspectRatio169 = (Button) d.findViewById(R.id.aspectRatio169);
-        Button aspectRatio43 = (Button) d.findViewById(R.id.aspectRatio43);
-        Button aspectRatio11 = (Button) d.findViewById(R.id.aspectRatio11);
+        Button aspectRatio169 = d.findViewById(R.id.aspectRatio169);
+        Button aspectRatio43 = d.findViewById(R.id.aspectRatio43);
+        Button aspectRatio11 = d.findViewById(R.id.aspectRatio11);
 
         aspectRatio169.setOnClickListener(new OnClickListener() {
 
@@ -387,7 +332,6 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
 
             @Override
             public void onClick(View v) {
-                // TODO Auto-generated method stub
                 d.dismiss();
                 cropImageView.setAspectRatio(4, 3);
                 LogoliciousApp.setButtonText(ActivityImageCropNew.this, R.id.aspectRatio, "4:3", true);
@@ -410,17 +354,23 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
 
     @Override
     public void onClick(View v) {
-        if(v.getId() == R.id.aspectRatio11) {
+        if (v.getId() == R.id.aspectRatio11) {
             cropImageView.setFixedAspectRatio(true);
             cropImageView.setAspectRatio(1, 1);
+            GlobalClass.AR = "";
+            GlobalClass.ARLast = "";
 
             LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio11, getResources().getColor(R.color.Green));
             LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio43, getResources().getColor(R.color.Transparent));
             LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio169, getResources().getColor(R.color.Transparent));
         }
+
+        if(v.getId() == R.id.freeTransform) {
+            clickFreeTransform();
+        }
     }
 
-    private class GestureListener  implements
+    private class GestureListener implements
             GestureDetector.OnGestureListener,
             GestureDetector.OnDoubleTapListener {
 
@@ -450,20 +400,19 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             Log.i("Double Tap", "xxx onSingleTapConfirmed");
-            AspectRatioPair ar1 = null;
 
             switch (doubleTapView) {
                 case R.id.aspectRatio11:
                     clickARatio1_1();
                     break;
                 case R.id.aspectRatio23:
-                    clickARation2_3(ar1);
+                    clickARation2_3();
                     break;
                 case R.id.aspectRatio43:
-                    clickARation4_3(ar1);
+                    clickARation4_3();
                     break;
                 case R.id.aspectRatio169:
-                    clickARatio16_9(ar1);
+                    clickARatio16_9();
                     break;
                 default:
                     break;
@@ -511,8 +460,8 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         public int Y;
         public int drawableMain;
         public int drawableReverse;
-        public boolean wasFirstClick = false;
-        public String ARString = "";
+        boolean wasFirstClick = false;
+        String ARString;
 
         public AspectRatioPair(int x, int y, int d1, int d2) {
             this.X = x;
@@ -523,12 +472,13 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         }
     }
 
-    private void clickARatio1_1(){
+    private void clickARatio1_1() {
         cropImageView.setFixedAspectRatio(true);
         cropImageView.setAspectRatio(1, 1);
         GlobalClass.AR = "1:1";
         GlobalClass.ARLast = "1:1";
-
+        LogoliciousApp.sharedPreferenceSet(this, "isFixAspectRatio", true);
+        LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.freeTransform, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio11, getResources().getColor(R.color.Green));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio23, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio43, getResources().getColor(R.color.Transparent));
@@ -543,15 +493,20 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
         ar1 = arrAspects.get(2);
         ar1.wasFirstClick = false;
         LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio169, ar1.drawableMain);
+
+        cropImageView.setFixedAspectRatio(true);
     }
 
-    private void clickARation2_3(AspectRatioPair ar1){
+    private void clickARation2_3() {
+        cropImageView.setFixedAspectRatio(true);
+        LogoliciousApp.sharedPreferenceSet(this, "isFixAspectRatio", true);
+        LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.freeTransform, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio11, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio23, getResources().getColor(R.color.Green));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio43, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio169, getResources().getColor(R.color.Transparent));
 
-        ar1 = arrAspects.get(1);
+        AspectRatioPair ar1 = arrAspects.get(1);
         ar1.wasFirstClick = false;
         LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio43, ar1.drawableMain);
         ar1 = arrAspects.get(2);
@@ -560,30 +515,32 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
 
         ar1 = arrAspects.get(3);
 
-        cropImageView.setFixedAspectRatio(true);
-        if(ar1.wasFirstClick) {
+        if (ar1.wasFirstClick) {
             ar1.wasFirstClick = false;
             cropImageView.setAspectRatio(2, 3);
             GlobalClass.AR = "2:3";
             GlobalClass.ARLast = "2:3";
             LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio23, ar1.drawableReverse);
-        }
-        else {
+        } else {
             ar1.wasFirstClick = true;
             cropImageView.setAspectRatio(3, 2);
             GlobalClass.AR = "3:2";
             GlobalClass.ARLast = "3:2";
             LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio23, ar1.drawableMain);
         }
+        cropImageView.setFixedAspectRatio(true);
     }
 
-    private void clickARation4_3(AspectRatioPair ar1){
+    private void clickARation4_3() {
+        cropImageView.setFixedAspectRatio(true);
+        LogoliciousApp.sharedPreferenceSet(this, "isFixAspectRatio", true);
+        LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.freeTransform, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio43, getResources().getColor(R.color.Green));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio23, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio169, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio11, getResources().getColor(R.color.Transparent));
 
-        ar1 = arrAspects.get(3);
+        AspectRatioPair ar1 = arrAspects.get(3);
         ar1.wasFirstClick = false;
         LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio23, ar1.drawableMain);
         ar1 = arrAspects.get(2);
@@ -592,30 +549,43 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
 
         ar1 = arrAspects.get(1);
 
-        cropImageView.setFixedAspectRatio(true);
-        if(ar1.wasFirstClick) {
+        if (ar1.wasFirstClick) {
             ar1.wasFirstClick = false;
             cropImageView.setAspectRatio(3, 4);
             GlobalClass.AR = "3:4";
             GlobalClass.ARLast = "3:4";
             LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio43, ar1.drawableReverse);
-        }
-        else {
+        } else {
             ar1.wasFirstClick = true;
             cropImageView.setAspectRatio(4, 3);
             GlobalClass.AR = "4:3";
             GlobalClass.ARLast = "4:3";
             LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio43, ar1.drawableMain);
         }
+        cropImageView.setFixedAspectRatio(true);
     }
 
-    private void clickARatio16_9(AspectRatioPair ar1){
+    private void clickFreeTransform() {
+        cropImageView.setFixedAspectRatio(false);
+        LogoliciousApp.sharedPreferenceSet(this, "isFixAspectRatio", false);
+
+        LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.freeTransform, getResources().getColor(R.color.Green));
+        LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio11, getResources().getColor(R.color.Transparent));
+        LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio23, getResources().getColor(R.color.Transparent));
+        LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio43, getResources().getColor(R.color.Transparent));
+        LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio169, getResources().getColor(R.color.Transparent));
+    }
+
+    private void clickARatio16_9() {
+        cropImageView.setFixedAspectRatio(true);
+        LogoliciousApp.sharedPreferenceSet(this, "isFixAspectRatio", true);
+        LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.freeTransform, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio169, getResources().getColor(R.color.Green));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio23, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio43, getResources().getColor(R.color.Transparent));
         LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio11, getResources().getColor(R.color.Transparent));
 
-        ar1 = arrAspects.get(3);
+        AspectRatioPair ar1 = arrAspects.get(3);
         ar1.wasFirstClick = false;
         LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio23, ar1.drawableMain);
         ar1 = arrAspects.get(1);
@@ -624,21 +594,20 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
 
         ar1 = arrAspects.get(2);
 
-        cropImageView.setFixedAspectRatio(true);
-        if(ar1.wasFirstClick) {
+        if (ar1.wasFirstClick) {
             ar1.wasFirstClick = false;
             cropImageView.setAspectRatio(9, 16);
             GlobalClass.AR = "9:16";
             GlobalClass.ARLast = "9:16";
             LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio169, ar1.drawableReverse);
-        }
-        else {
+        } else {
             ar1.wasFirstClick = true;
             cropImageView.setAspectRatio(16, 9);
             GlobalClass.AR = "16:9";
             GlobalClass.ARLast = "16:9";
             LogoliciousApp.setImageViewImageAndRotate(ActivityImageCropNew.this, R.id.aspectRatio169, ar1.drawableMain);
         }
+        cropImageView.setFixedAspectRatio(true);
     }
 
 }

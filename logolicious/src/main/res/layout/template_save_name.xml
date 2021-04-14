@@ -9,8 +9,9 @@
     <EditText
         android:id="@+id/templateName"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dip"
         android:layout_margin="10dp"
+        android:background="@color/white"
         android:ems="10" >
 
         <requestFocus />

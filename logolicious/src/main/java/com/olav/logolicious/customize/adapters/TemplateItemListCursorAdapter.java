@@ -5,7 +5,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;

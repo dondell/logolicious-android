@@ -31,12 +31,13 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.Spanned;
@@ -75,6 +76,7 @@ import com.olav.logolicious.customize.adapters.AdapterFontDetails;
 import com.olav.logolicious.customize.adapters.AdapterFonts;
 import com.olav.logolicious.customize.adapters.AlbumDetails;
 import com.olav.logolicious.customize.adapters.ColorPickerAdapter;
+import com.olav.logolicious.customize.adapters.CustomColorAdapter;
 import com.olav.logolicious.customize.widgets.LayersContainerView;
 import com.olav.logolicious.screens.activities.ActivityImageCropNew;
 import com.olav.logolicious.screens.activities.ActivityMainEditor;
@@ -91,6 +93,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -658,7 +661,7 @@ public class LogoliciousApp {
 
                     // Create and show the dialog.
                     DialogFragment newFragment = TipFontFeature.newInstance("FontTipFragment", mStackLevel, R.layout.tip_add_font);
-                    newFragment.setStyle(DialogFragment.STYLE_NO_TITLE,  R.style.DialogStyle);
+                    newFragment.setStyle(DialogFragment.STYLE_NO_TITLE, R.style.DialogStyle);
                     newFragment.show(ft, "dialog");
                 }
             });
@@ -1127,48 +1130,6 @@ public class LogoliciousApp {
         d.show();
     }
 
-    public static void showColorPicker(final Activity context, final LayersContainerView layeredLogos, RelativeLayout listRight) {
-        ActivityMainEditor.removePopupFunnySelection();
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View viewColor = inflater.inflate(R.layout.grid_colorpicker, null);
-
-        // Dialog Popup
-        final Dialog dialog = new Dialog(context);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(viewColor);
-        dialog.setCancelable(true);
-
-        dialog.getWindow().getAttributes();
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-        lp.x = listRight.getWidth();
-        lp.y = 200;
-        lp.width = 430;
-        lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-
-        GridView gridview = (GridView) viewColor.findViewById(R.id.gridViewColors);
-        gridview.setAdapter(new ColorPickerAdapter(context.getApplicationContext()));
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                if (layeredLogos.targetSelected != null && layeredLogos.targetSelected.isTextMode == true) {
-                    layeredLogos.targetSelected.changeTextColor(Color.parseColor(ColorPickerAdapter.colorList.get(position)));
-//                    layeredLogos.colorHistory = Color.parseColor(ColorPickerAdapter.colorList.get(position));
-//                    layeredLogos.putToHistory();
-                    layeredLogos.invalidate();
-                }
-                dialog.cancel();
-                ActivityMainEditor.removePopupFunnySelection();
-            }
-        });
-
-        dialog.show();
-        dialog.getWindow().setAttributes(lp);
-        // set transparent background
-        Drawable d = new ColorDrawable(Color.BLACK);
-        d.setAlpha(130);
-        dialog.getWindow().setBackgroundDrawable(d);
-    }
-
     public static void templateOption(final Activity context, final LayersContainerView layeredLogos, final ImageView backgroundImage, final String template_name, final Handler mHandler) {
         final Dialog d = new Dialog(context);
         d.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -1572,7 +1533,95 @@ public class LogoliciousApp {
     public static boolean isSubBtnClick = false;
     public static Dialog subsDialog;
 
-    public static void showSubscription(final ActivityMainEditor act, final int count) {
+    private static boolean okToClose = false;
+
+    public static void showSubscription(final Activity act, final int count) {
+
+        subsDialog = new Dialog(act);
+        subsDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        subsDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        subsDialog.setContentView(R.layout.subscription);
+
+        if (null == subsDialog) {
+            return;
+        }
+
+        final TextView tvTimer = (TextView) subsDialog.findViewById(R.id.tvTimer);
+        final ImageView button_maybe_later = (ImageView) subsDialog.findViewById(R.id.button_maybe_later);
+        final ImageView subscribe = (ImageView) subsDialog.findViewById(R.id.buttonSubscribe);
+        final Button promoCode = (Button) subsDialog.findViewById(R.id.promoCode);
+        //add shadow to buy button
+        final Bitmap src = BitmapFactory.decodeResource(act.getResources(), R.drawable.buy_button);
+        final Bitmap shadow = ImageHelper.addShadow(src, src.getHeight(), src.getWidth(), act.getResources().getColor(R.color.style_grey700), 3, 1, 3);
+        subscribe.setImageBitmap(shadow);
+
+        final int deviceWidth = act.getWindowManager().getDefaultDisplay().getWidth();
+        subsDialog.getWindow().setLayout((int) (deviceWidth * .9), ViewGroup.LayoutParams.WRAP_CONTENT);
+        subsDialog.setCancelable(false);
+
+        int milleSecDelay = (int) (count * 1000 * 0.33);
+        Log.i("xxx", "xxx milleSecDelay " + milleSecDelay);
+
+        button_maybe_later.setEnabled(false);
+        button_maybe_later.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                button_maybe_later.setEnabled(true);
+            }
+        }, milleSecDelay);
+
+        //accumulated timer
+        new CountDownTimer(milleSecDelay, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                tvTimer.setText(String.format(Locale.US, "%d", millisUntilFinished / 1000));
+            }
+
+            public void onFinish() {
+                okToClose = true;
+                tvTimer.setText("");
+            }
+        }.start();
+
+        button_maybe_later.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (okToClose && null != subsDialog) {
+                    subsDialog.cancel();
+                    subsDialog = null;
+
+                    isSubBtnClick = false;
+                    GlobalClass.subscriptionOkToShow = false;
+                    Log.i("xxx", "xxx close subscription");
+                }
+
+                if (GlobalClass.pendingShowMemAlert) {
+                    ActivityMainEditor.showMemError();
+                }
+            }
+        });
+
+        subscribe.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isSubBtnClick = true;
+                ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
+            }
+        });
+
+        promoCode.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                enterPromoCode(act);
+            }
+        });
+
+        subsDialog.show();
+        Log.i("xxx", "xxx showing subscription");
+    }
+
+    public static void showSubscriptionFirstPopup(final ActivityMainEditor act, final int count) {
 
         subsDialog = new Dialog(act);
         subsDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -1701,6 +1750,25 @@ public class LogoliciousApp {
         return strRet;
     }
 
+    public static boolean sharedPreferenceGet(Context context, String strKey, boolean bolDefaultValue) {
+        SharedPreferences spf = sharedPreferenceGet(context);
+        if (null == spf)
+            return bolDefaultValue;
+
+        boolean bolRet = spf.getBoolean(strKey, bolDefaultValue);
+        return bolRet;
+    }
+
+    public static void sharedPreferenceSet(Context context, String strKey, boolean bValue) {
+        SharedPreferences spf = sharedPreferenceGet(context);
+        if (null == spf)
+            return;
+
+        SharedPreferences.Editor ed = spf.edit();
+        ed.putBoolean(strKey, bValue);
+        ed.apply();
+    }
+
     public static void sharedPreferenceSet(Context context, String strKey, int nValue) {
         SharedPreferences spf = sharedPreferenceGet(context);
         if (null == spf)
@@ -1802,21 +1870,22 @@ public class LogoliciousApp {
         @Override
         protected String doInBackground(String... strings) {
             File[] files = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles();
-            for (File f : files) {
-                if (f.getName().contains(".ttf")) {
-                    Log.d(this.getClass().getSimpleName(), "xxx " + f.getAbsolutePath());
-                    try {
-                        File file = new File(ActivityMainEditor.fontsDir + f.getName());
-                        if (!file.exists()) {
-                            FileUtil.copyFile(new FileInputStream(f.getAbsoluteFile()), new FileOutputStream(ActivityMainEditor.fontsDir + f.getName()));
-                            GlobalClass.sqLiteHelper.insertFont(ActivityMainEditor.fontsDir + f.getName());
+            if (null != files && files.length > 0) {
+                for (File f : files) {
+                    if (f.getName().contains(".ttf")) {
+                        Log.d(this.getClass().getSimpleName(), "xxx " + f.getAbsolutePath());
+                        try {
+                            File file = new File(ActivityMainEditor.fontsDir + f.getName());
+                            if (!file.exists()) {
+                                FileUtil.copyFile(new FileInputStream(f.getAbsoluteFile()), new FileOutputStream(ActivityMainEditor.fontsDir + f.getName()));
+                                GlobalClass.sqLiteHelper.insertFont(ActivityMainEditor.fontsDir + f.getName());
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             }
-
             return "";
         }
 
@@ -1827,5 +1896,29 @@ public class LogoliciousApp {
             new LoadFontsTask().execute();
         }
     }
+
+    public static final int FLIP_VERTICAL = 1;
+    public static final int FLIP_HORIZONTAL = 2;
+
+    public static Bitmap flip(Bitmap src, int type) {
+        Matrix matrix = new Matrix();
+
+        if (type == FLIP_VERTICAL) {
+            matrix.preScale(1.0f, -1.0f);
+        } else if (type == FLIP_HORIZONTAL) {
+            matrix.preScale(-1.0f, 1.0f);
+        } else {
+            return src;
+        }
+
+        return Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), matrix, true);
+    }
+
+    public static void setEditTextMaxLength(EditText editText, int length) {
+        InputFilter[] FilterArray = new InputFilter[1];
+        FilterArray[0] = new InputFilter.LengthFilter(length);
+        editText.setFilters(FilterArray);
+    }
+
 
 }

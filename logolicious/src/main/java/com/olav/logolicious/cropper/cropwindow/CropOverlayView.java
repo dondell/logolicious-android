@@ -1,14 +1,14 @@
 /*
- * Copyright 2013, Edmodo, Inc. 
+ * Copyright 2013, Edmodo, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this work except in compliance with the License.
  * You may obtain a copy of the License in the LICENSE file, or at:
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" 
- * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language 
- * governing permissions and limitations under the License. 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS"
+ * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
  */
 
 package com.olav.logolicious.cropper.cropwindow;
@@ -35,6 +35,7 @@ import com.olav.logolicious.cropper.util.AspectRatioUtil;
 import com.olav.logolicious.cropper.util.HandleUtil;
 import com.olav.logolicious.screens.activities.ActivityImageCropNew;
 import com.olav.logolicious.util.GlobalClass;
+import com.olav.logolicious.util.LogoliciousApp;
 import com.olav.logolicious.util.PaintUtil;
 
 /**
@@ -143,7 +144,7 @@ public class CropOverlayView extends View {
 
     private float mCornerLength;
     //endregion
-    
+
     //Dondell
     public int LEFT = 0;
     public int TOP = 0;
@@ -195,7 +196,7 @@ public class CropOverlayView extends View {
      * show when resizing the application.
      *
      * @param guidelines Integer that signals whether the guidelines should be
-     * on, off, or only showing when resizing.
+     *                   on, off, or only showing when resizing.
      */
     public void setGuidelines(int guidelines) {
         if (guidelines < 0 || guidelines > 2)
@@ -215,7 +216,7 @@ public class CropOverlayView extends View {
      * ratio, while false allows it to be changed.
      *
      * @param fixAspectRatio Boolean that signals whether the aspect ratio
-     * should be maintained.
+     *                       should be maintained.
      */
     public void setFixedAspectRatio(boolean fixAspectRatio) {
         mFixAspectRatio = fixAspectRatio;
@@ -230,7 +231,7 @@ public class CropOverlayView extends View {
      * Sets the X value of the aspect ratio; is defaulted to 1.
      *
      * @param aspectRatioX int that specifies the new X value of the aspect
-     * ratio
+     *                     ratio
      */
     public void setAspectRatioX(int aspectRatioX) {
         if (aspectRatioX <= 0)
@@ -250,7 +251,7 @@ public class CropOverlayView extends View {
      * Sets the Y value of the aspect ratio; is defaulted to 1.
      *
      * @param aspectRatioY int that specifies the new Y value of the aspect
-     * ratio
+     *                     ratio
      */
     public void setAspectRatioY(int aspectRatioY) {
         if (aspectRatioY <= 0)
@@ -270,14 +271,14 @@ public class CropOverlayView extends View {
      * Sets all initial values, but does not call initCropWindow to reset the
      * views. Used once at the very start to initialize the attributes.
      *
-     * @param guidelines Integer that signals whether the guidelines should be
-     * on, off, or only showing when resizing.
+     * @param guidelines     Integer that signals whether the guidelines should be
+     *                       on, off, or only showing when resizing.
      * @param fixAspectRatio Boolean that signals whether the aspect ratio
-     * should be maintained.
-     * @param aspectRatioX float that specifies the new X value of the aspect
-     * ratio
-     * @param aspectRatioY float that specifies the new Y value of the aspect
-     * ratio
+     *                       should be maintained.
+     * @param aspectRatioX   float that specifies the new X value of the aspect
+     *                       ratio
+     * @param aspectRatioY   float that specifies the new Y value of the aspect
+     *                       ratio
      */
     public void setInitialAttributeValues(int guidelines, boolean fixAspectRatio, int aspectRatioX, int aspectRatioY) {
         if (guidelines < 0 || guidelines > 2)
@@ -609,7 +610,7 @@ public class CropOverlayView extends View {
         canvas.drawLine(r + mCornerOffset, b + mCornerExtension, r + mCornerOffset, b - mCornerLength, mCornerPaint);
         canvas.drawLine(r, b + mCornerOffset, r - mCornerLength, b + mCornerOffset, mCornerPaint);
         canvas.drawCircle(r, b, 10, mCornerCirPaint);
-        
+
         LEFT = (int) (l - mCornerOffset);
         TOP = (int) t;
         RIGHT = (int) (r + mCornerOffset);
@@ -637,42 +638,44 @@ public class CropOverlayView extends View {
         int centerTouchMargin = 50;
         // detect if it is touch on the inside of the Cropper Window
         if
-                (
+        (
                 (left + centerTouchMargin) <= x &&    //left Line
-                (right - centerTouchMargin) >= x &&   //right Line
-                (top + centerTouchMargin) <= y &&     //top line
-                (bottom - centerTouchMargin) >= y     //bottom line
-                )
-        {
-            Log.i("","xxx Center Touch");
+                        (right - centerTouchMargin) >= x &&   //right Line
+                        (top + centerTouchMargin) <= y &&     //top line
+                        (bottom - centerTouchMargin) >= y     //bottom line
+        ) {
+            Log.i("", "xxx Center Touch");
         } else if
-                //Detect the four edge corners
-                (
-        // Top left
-                ((x+50) > left && (x-50) < left &&
-                (y+50) > top && (y-50) < top) ||
-        // Top right
-                 ((x+50) > right && (x-50) < right &&
-                 (y+50) > top && (y-50) < top) ||
-        // Bottom left
-                 ((x+50) > left && (x-50) < left &&
-                 (y+50) > bottom && (y-50) < bottom) ||
+            //Detect the four edge corners
+        (
+            // Top left
+                ((x + 50) > left && (x - 50) < left &&
+                        (y + 50) > top && (y - 50) < top) ||
+                        // Top right
+                        ((x + 50) > right && (x - 50) < right &&
+                                (y + 50) > top && (y - 50) < top) ||
+                        // Bottom left
+                        ((x + 50) > left && (x - 50) < left &&
+                                (y + 50) > bottom && (y - 50) < bottom) ||
 
-        // Bottom right
-                 ((x+50) > right && (x-50) < right &&
-                 (y+50) > bottom && (y-50) < bottom)
-                )
-        {
-            Log.i("","xxx Edge Touch");
-             mFixAspectRatio = true;
-            GlobalClass.AR = mAspectRatioX + ":" + mAspectRatioY;
+                        // Bottom right
+                        ((x + 50) > right && (x - 50) < right &&
+                                (y + 50) > bottom && (y - 50) < bottom)
+        ) {
+            Log.i("", "xxx Edge Touch");
+            mFixAspectRatio = LogoliciousApp.sharedPreferenceGet(getContext(), "isFixAspectRatio", false);
+            if (!LogoliciousApp.sharedPreferenceGet(getContext(), "isFixAspectRatio", false)) {
+                GlobalClass.AR = "";
+            } else {
+                GlobalClass.AR = mAspectRatioX + ":" + mAspectRatioY;
+            }
             GlobalClass.isFreeChoosenAR = false;
         } else {
 //            Log.i("","xxx Not-Center Touch");
             //detect side lines
             if
                 // Right Line
-                    ((x < (right + detectSize) && x > (right - detectSize)) && (y > (top + detectSize) && y < (bottom + detectSize))
+            ((x < (right + detectSize) && x > (right - detectSize)) && (y > (top + detectSize) && y < (bottom + detectSize))
                     ||
                     // Bottom Line
                     ((x > (left + detectSize) && x < (right - detectSize)) && (y < (bottom + detectSize) && y > (bottom - detectSize)))
@@ -682,21 +685,21 @@ public class CropOverlayView extends View {
                     ||
                     // Top Line
                     ((x > (left + detectSize) && x < (right - detectSize)) && (y < (top + detectSize) && y > (top - detectSize)))
-                    ) {
+            ) {
 
                 Log.i("", "xxx Side Line Detect");
                 //GlobalClass.ARFirst = false;
-                mFixAspectRatio = false;
+                //mFixAspectRatio = false;
                 GlobalClass.AR = "";
                 invalidate();
             }
 
         }
-        
+
         if (mPressedHandle == null) {
             return;
         }
-        
+
         // Calculate the offset of the touch point from the precise location
         // of the handle. Save these values in a member variable since we want
         // to maintain this offset as we drag the handle.

@@ -303,6 +303,10 @@ public class CropImageView extends FrameLayout {
         }
     }
 
+    public Bitmap getmBitmap() {
+        return mBitmap;
+    }
+
     /**
      * Sets a Bitmap and initializes the image rotation according to the EXIT data.<br>
      * <br>

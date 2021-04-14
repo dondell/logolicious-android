@@ -9,13 +9,9 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.text.Html;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -27,7 +23,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.olav.logolicious.R;
-import com.olav.logolicious.screens.activities.ActivityMainEditor;
 import com.olav.logolicious.util.GlobalClass;
 import com.olav.logolicious.util.LogoliciousApp;
 
