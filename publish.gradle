@@ -1,0 +1,11 @@
+apply plugin: 'com.novoda.bintray-release'
+publish {
+    userOrg = 'devmagician'
+    groupId = 'com.github.skydoves'
+    artifactId = 'colorpickerview'
+    publishVersion = versions.versionName
+    desc = '🎨 Android colorpicker for getting colors from any images by tapping on the desired color.'
+    website = 'https://github.com/skydoves/ColorPickerView'
+    issueTracker = "${website}/issues"
+    repository = "${website}.git"
+}
