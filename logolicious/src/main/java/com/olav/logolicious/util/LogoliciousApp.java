@@ -26,7 +26,6 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -36,8 +35,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.Spanned;
@@ -61,7 +58,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -71,12 +67,14 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.android.billingclient.api.BillingFlowParams;
 import com.olav.logolicious.R;
 import com.olav.logolicious.customize.adapters.AdapterFontDetails;
 import com.olav.logolicious.customize.adapters.AdapterFonts;
 import com.olav.logolicious.customize.adapters.AlbumDetails;
-import com.olav.logolicious.customize.adapters.ColorPickerAdapter;
-import com.olav.logolicious.customize.adapters.CustomColorAdapter;
 import com.olav.logolicious.customize.widgets.LayersContainerView;
 import com.olav.logolicious.screens.activities.ActivityImageCropNew;
 import com.olav.logolicious.screens.activities.ActivityMainEditor;
@@ -93,7 +91,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -104,6 +101,8 @@ import java.util.Locale;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static com.olav.logolicious.screens.activities.ActivityMainEditor.act;
+import static com.olav.logolicious.screens.activities.ActivityMainEditor.billingClient;
+import static com.olav.logolicious.screens.activities.ActivityMainEditor.skuDetailsList;
 
 /**
  * Created by ASUS on 2/15/2017.
@@ -1606,7 +1605,15 @@ public class LogoliciousApp {
             @Override
             public void onClick(View v) {
                 isSubBtnClick = true;
-                ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
+                //ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
+
+                // Retrieve a value for "skuDetails" by calling querySkuDetailsAsync().
+                if (skuDetailsList.size() > 0) {
+                    BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+                            .setSkuDetails(skuDetailsList.get(0))
+                            .build();
+                    int responseCode = billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
+                }
             }
         });
 
@@ -1674,7 +1681,13 @@ public class LogoliciousApp {
             @Override
             public void onClick(View v) {
                 isSubBtnClick = true;
-                ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
+                //ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
+                if (skuDetailsList.size() > 0) {
+                    BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+                            .setSkuDetails(skuDetailsList.get(0))
+                            .build();
+                    int responseCode = billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
+                }
             }
         });
 
