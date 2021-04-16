@@ -5,7 +5,7 @@ apply from: '../spotless.gradle'
 android {
     signingConfigs {
         release {
-            storeFile file('/home/dmj/Documents/Clients/Direct - OlavAndMic/keystore/original keystore')
+            storeFile file('D:\\Clients\\Direct - OlavAndMic\\keystore\\original keystore')
             storePassword password
             keyAlias = 'll'
             keyPassword password

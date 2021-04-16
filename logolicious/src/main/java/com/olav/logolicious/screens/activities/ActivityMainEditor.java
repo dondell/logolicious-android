@@ -37,10 +37,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.StrictMode;
 import android.provider.MediaStore;
-import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -72,14 +70,22 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchaseHistoryRecord;
+import com.android.billingclient.api.PurchaseHistoryResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.SkuDetailsParams;
+import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.olav.logolicious.BuildConfig;
 import com.olav.logolicious.R;
 import com.olav.logolicious.customize.adapters.AdapterGridLogos;
@@ -94,7 +100,6 @@ import com.olav.logolicious.customize.widgets.MarginDecoration;
 import com.olav.logolicious.supertooltips.ToolTip;
 import com.olav.logolicious.supertooltips.ToolTipRelativeLayout;
 import com.olav.logolicious.supertooltips.ToolTipView;
-import com.olav.logolicious.util.BillingService;
 import com.olav.logolicious.util.ClickColorListener;
 import com.olav.logolicious.util.FileUtil;
 import com.olav.logolicious.util.GlobalClass;
@@ -102,7 +107,6 @@ import com.olav.logolicious.util.HexColorValidator;
 import com.olav.logolicious.util.LogoliciousApp;
 import com.olav.logolicious.util.SQLiteHelper;
 import com.olav.logolicious.util.SubscriptionUtil.AppStatitics;
-import com.olav.logolicious.util.SubscriptionUtil.SubscriptionUtil;
 import com.olav.logolicious.util.camera.CameraUtils;
 import com.olav.logolicious.util.camera.ScreenDimensions;
 import com.olav.logolicious.util.image.BitmapSaver;
@@ -129,24 +133,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import top.defaults.colorpicker.ColorObserver;
 
 import static com.olav.logolicious.util.GlobalClass.PICK_FONT_RESULT_CODE;
 import static com.olav.logolicious.util.GlobalClass.sqLiteHelper;
+import static com.olav.logolicious.util.SubscriptionUtil.SubscriptionUtil.SUBSCRIPTION_SKU;
 
 @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class ActivityMainEditor extends Activity implements
         OnTouchListener,
         ToolTipView.OnToolTipViewClickedListener,
-        OnClickListener,
-        BillingProcessor.IBillingHandler {
+        OnClickListener {
 
-    public static BillingProcessor bp;
-    public static TransactionDetails td;
-    public static PurchaseInfo pInfo;
     private static final String TAG = "ActivityMainEditor";
     public static final String App_Files_location = ".Logolicious";
     public static Activity act = null;
@@ -247,51 +244,102 @@ public class ActivityMainEditor extends Activity implements
     private Handler handlerColorPickerDetector = new Handler();
 
     //Billing implementation
+    public static BillingClient billingClient = null;
+    public static List<SkuDetails> skuDetailsList;
+    public static List<Purchase> purchasesList;
     private PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
         @Override
         public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
-            // To be implemented in a later section.
+            Log.i("xxx", "xxx onProductPurchased Subscription Success!");
+            purchasesList = purchases;
+            AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
+            if (null != LogoliciousApp.subsDialog) {
+                LogoliciousApp.subsDialog.cancel();
+            }
+            getPurchases();
         }
     };
 
-    private BillingClient billingClient = BillingClient.newBuilder(getApplicationContext())
-            .setListener(purchasesUpdatedListener)
-            .enablePendingPurchases()
-            .build();
-
-
-    @Override
+    /*@Override
     public void onProductPurchased(String productId, TransactionDetails details) {
-        /*
-         * Called when requested PRODUCT ID was successfully purchased
-         */
-        Log.i("xxx", "xxx onProductPurchased Subscription Success!");
-        AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
-        if (null != LogoliciousApp.subsDialog) {
-            LogoliciousApp.subsDialog.cancel();
-        }
-    }
+        *//*
+     * Called when requested PRODUCT ID was successfully purchased
+     *//*
 
-    @Override
+    }*/
+
+    /*@Override
     public void onBillingError(int errorCode, Throwable error) {
-        /*
-         * Called when some error occurred. See Constants class for more details
-         *
-         * Note - this includes handling the case where the user canceled the buy dialog:
-         * errorCode = Constants.BILLING_RESPONSE_RESULT_USER_CANCELED
-         */
+        *//*
+     * Called when some error occurred. See Constants class for more details
+     *
+     * Note - this includes handling the case where the user canceled the buy dialog:
+     * errorCode = Constants.BILLING_RESPONSE_RESULT_USER_CANCELED
+     *//*
         Log.i("xxx", "xxx Subscription Failed!");
         AppStatitics.sharedPreferenceSet(act, "isSubscribed", 0);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void onPurchaseHistoryRestored() {
-        /*
-         * Called when purchase history was restored and the list of all owned PRODUCT ID's
-         * was loaded from Google Play
-         */
+        *//*
+     * Called when purchase history was restored and the list of all owned PRODUCT ID's
+     * was loaded from Google Play
+     *//*
 //        Toast.makeText(this, "Subscription Has been Restored!", Toast.LENGTH_SHORT).show();
         Log.i("xxx", "xxx Subscription Restored!");
+    }*/
+
+    private void initBilling() {
+        billingClient = BillingClient.newBuilder(this)
+                .setListener(purchasesUpdatedListener)
+                .enablePendingPurchases()
+                .build();
+
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(BillingResult billingResult) {
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    // The BillingClient is ready. You can query purchases here.
+                    retrieveSKUDetails();
+                }
+            }
+
+            @Override
+            public void onBillingServiceDisconnected() {
+                // Try to restart the connection on the next request to
+                // Google Play by calling the startConnection() method.
+            }
+        });
+    }
+
+    private void retrieveSKUDetails() {
+        List<String> skuList = new ArrayList<>();
+        skuList.add(SUBSCRIPTION_SKU);
+        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+        params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS);
+        billingClient.querySkuDetailsAsync(params.build(),
+                new SkuDetailsResponseListener() {
+                    @Override
+                    public void onSkuDetailsResponse(BillingResult billingResult,
+                                                     List<SkuDetails> skuDetailsList) {
+                        for (SkuDetails skuDetails : skuDetailsList) {
+                            Log.e("xxx", "xxx  retrieveSKUDetails skuDetails " + skuDetails.toString());
+                        }
+                    }
+                });
+
+    }
+
+    private void getPurchases() {
+        billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.SUBS, new PurchaseHistoryResponseListener() {
+            @Override
+            public void onPurchaseHistoryResponse(@NonNull BillingResult billingResult, @Nullable List<PurchaseHistoryRecord> list) {
+                for (PurchaseHistoryRecord purchaseHistoryRecord : list) {
+                    Log.e("xxx", "xxx  getPurchases purchaseHistoryRecord " + purchaseHistoryRecord.toString());
+                }
+            }
+        });
     }
 
     public enum Live_Camera {
@@ -398,12 +446,12 @@ public class ActivityMainEditor extends Activity implements
 
         gc = (GlobalClass) this.getApplicationContext();
 
-        if (null == bp) {
+        /*if (null == bp) {
             bp = new BillingProcessor(this, SubscriptionUtil.base64EncodedPublicKey, this);
             bp.initialize();
             // or bp = BillingProcessor.newBillingProcessor(this, "YOUR LICENSE KEY FROM GOOGLE PLAY CONSOLE HERE", this);
             // See below on why this is a useful alternative
-        }
+        }*/
 
         res = getResources();
         act = ActivityMainEditor.this;
@@ -594,6 +642,8 @@ public class ActivityMainEditor extends Activity implements
             sqLiteHelper.deleteAllUserFonts();
             LogoliciousApp.sharedPreferenceSet(this, "delete_old_fonts", 1);
         }
+
+        initBilling();
     }
 
     @Override
@@ -615,9 +665,9 @@ public class ActivityMainEditor extends Activity implements
 
     @Override
     public void onDestroy() {
-        if (bp != null) {
+        /*if (bp != null) {
             bp.release();
-        }
+        }*/
         super.onDestroy();
         Log.i(TAG, "xxx onDestroy");
         if (null != GlobalClass.diskCache)
@@ -651,8 +701,8 @@ public class ActivityMainEditor extends Activity implements
         //Statistics
         AppStatitics.initializeSaveCount(act);
         //Check Subscription
-        bp.loadOwnedPurchasesFromGoogle();
-        td = bp.getSubscriptionTransactionDetails(SubscriptionUtil.SUBSCRIPTION_SKU);
+        /*bp.loadOwnedPurchasesFromGoogle();
+        td = bp.getSubscriptionTransactionDetails(SUBSCRIPTION_SKU);
         if (null != td) {
             Log.i(TAG, "xxx transaction " + td.toString());
             //get purchased info
@@ -666,7 +716,7 @@ public class ActivityMainEditor extends Activity implements
                     AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
                 }
             }
-        }
+        }*/
 
     }
 
@@ -697,7 +747,7 @@ public class ActivityMainEditor extends Activity implements
     public void onResume() {
         super.onResume();
         Log.i(TAG, "xxx onResume");
-        bp = new BillingProcessor(this, SubscriptionUtil.base64EncodedPublicKey, this);
+        //bp = new BillingProcessor(this, SubscriptionUtil.base64EncodedPublicKey, this);
         checkSubscription(this);
         isSomeActivityIsRunning = false;
         mOrientation = this.getResources().getConfiguration().orientation;
@@ -786,9 +836,9 @@ public class ActivityMainEditor extends Activity implements
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
-        if (!bp.handleActivityResult(requestCode, resultCode, data)) {
+        /*if (!bp.handleActivityResult(requestCode, resultCode, data)) {
             super.onActivityResult(requestCode, resultCode, data);
-        }
+        }*/
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
@@ -876,19 +926,6 @@ public class ActivityMainEditor extends Activity implements
                     e.printStackTrace();
                 }
 
-            } else if (requestCode == BillingService.RESULT_CODE_PURCHASE) {
-                int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
-                String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
-                String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
-
-                try {
-                    JSONObject jo = new JSONObject(purchaseData);
-                    String sku = jo.getString("productId");
-                    LogoliciousApp.toast(getApplicationContext(), "You have subsribed to the " + sku + ". Excellent choice adventurer", Toast.LENGTH_SHORT);
-                } catch (JSONException e) {
-                    LogoliciousApp.toast(getApplicationContext(), "Failed to parse subscription data.", Toast.LENGTH_SHORT);
-                    e.printStackTrace();
-                }
             } else if (requestCode == REQUEST_CODE_UPLOAD_LOGOS) {
                 if (data == null) {
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.NoLogoSelected), Toast.LENGTH_LONG).show();
@@ -909,6 +946,19 @@ public class ActivityMainEditor extends Activity implements
                 try {
                     FileUtil.copyFile(new FileInputStream(content_describer.getPath()), new FileOutputStream(fontsDir + content_describer.getLastPathSegment()));
                 } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
+                String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
+                String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
+
+                try {
+                    JSONObject jo = new JSONObject(purchaseData);
+                    String sku = jo.getString("productId");
+                    LogoliciousApp.toast(getApplicationContext(), "You have subsribed to the " + sku + ". Excellent choice adventurer", Toast.LENGTH_SHORT);
+                } catch (JSONException e) {
+                    LogoliciousApp.toast(getApplicationContext(), "Failed to parse subscription data.", Toast.LENGTH_SHORT);
                     e.printStackTrace();
                 }
             }

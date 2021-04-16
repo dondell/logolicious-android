@@ -1,3 +1,4 @@
+/*
 package com.olav.logolicious.util;
 
 import android.app.Activity;
@@ -18,9 +19,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/**
+*
  * Created by Dondell A. Batac on 9/6/2017.
- */
+
+
 
 public class BillingService {
 
@@ -118,10 +120,11 @@ public class BillingService {
         }
     }
 
-    /**
+*
      * Querying for items available for purchase
      * @param context
-     */
+
+
     public void queryItemsForPurchase(Activity context){
         ArrayList<String> skuList = new ArrayList<String> ();
         skuList.add("premiumUpgrade");
@@ -161,12 +164,13 @@ public class BillingService {
         }
     }
 
-    /**
+*
      * Purchasing an item
      * @param context
      * @param packageName
      * @param sku
-     */
+
+
     public void purchase(Activity context, String packageName, String sku){
         Bundle buyIntentBundle = null;
         try {
@@ -193,11 +197,12 @@ public class BillingService {
         }
     }
 
-    /**
+*
      * Querying for purchased items
      * @param packageName
      *
-     */
+
+
     public void queryPurchases(String packageName){
         Bundle ownedItems = null;
         try {
@@ -233,3 +238,4 @@ public class BillingService {
     }
 
 }
+*/
