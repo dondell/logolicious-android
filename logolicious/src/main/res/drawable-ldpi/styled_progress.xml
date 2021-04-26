@@ -4,6 +4,7 @@
     <item
         android:id="@+id/SecondaryProgress"
         android:drawable="@drawable/sliderbar_progress_background"/>
+
     <item
         android:id="@+android:id/progress"
         android:drawable="@drawable/sliderbar_progress"/>

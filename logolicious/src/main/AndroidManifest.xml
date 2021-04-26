@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.olav.logolicious"
     android:installLocation="preferExternal"
-    android:versionCode="202104121"
-    android:versionName="2021.04.12.1">
+    android:versionCode="202104261"
+    android:versionName="2021.04.26.1"
+    tools:ignore="MissingLeanbackLauncher">
 
     <!-- Some Chromebooks don't support touch. Although not essential,
          it's a good idea to explicitly include this declaration. -->
@@ -15,6 +17,9 @@
         android:required="false" />
     <uses-feature
         android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.software.leanback"
         android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -58,7 +63,7 @@
         </provider>-->
 
         <activity
-            android:name="com.olav.logolicious.screens.activities.ActivityMainEditor"
+            android:name=".screens.activities.ActivityMainEditor"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="true"
             android:label="@string/app_name"
@@ -101,6 +106,24 @@
             android:name=".screens.activities.AboutSaveSettings"
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Dialog" />
+
+        <service
+            android:name=".billingv3.InstanceIDService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".billingv3.data.network.firebase.SubscriptionMessageService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

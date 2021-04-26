@@ -72,6 +72,7 @@ import androidx.core.content.ContextCompat;
 
 import com.android.billingclient.api.BillingFlowParams;
 import com.olav.logolicious.R;
+import com.olav.logolicious.billingv3.Constants;
 import com.olav.logolicious.customize.adapters.AdapterFontDetails;
 import com.olav.logolicious.customize.adapters.AdapterFonts;
 import com.olav.logolicious.customize.adapters.AlbumDetails;
@@ -81,7 +82,6 @@ import com.olav.logolicious.screens.activities.ActivityMainEditor;
 import com.olav.logolicious.screens.activities.Activity_Tip;
 import com.olav.logolicious.screens.fragments.TipFontFeature;
 import com.olav.logolicious.util.SubscriptionUtil.AppStatitics;
-import com.olav.logolicious.util.SubscriptionUtil.SubscriptionUtil;
 import com.olav.logolicious.util.camera.ScreenDimensions;
 import com.olav.logolicious.util.image.ImageHelper;
 
@@ -103,6 +103,7 @@ import static android.content.Context.ACTIVITY_SERVICE;
 import static com.olav.logolicious.screens.activities.ActivityMainEditor.act;
 import static com.olav.logolicious.screens.activities.ActivityMainEditor.billingClient;
 import static com.olav.logolicious.screens.activities.ActivityMainEditor.skuDetailsList;
+import static com.olav.logolicious.screens.activities.ActivityMainEditor.store;
 
 /**
  * Created by ASUS on 2/15/2017.
@@ -1613,6 +1614,7 @@ public class LogoliciousApp {
                             .setSkuDetails(skuDetailsList.get(0))
                             .build();
                     int responseCode = billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
+                    store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
                 }
             }
         });
@@ -1687,6 +1689,7 @@ public class LogoliciousApp {
                             .setSkuDetails(skuDetailsList.get(0))
                             .build();
                     int responseCode = billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
+                    store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
                 }
             }
         });

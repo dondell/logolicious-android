@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1043685341748",
+    "firebase_url": "https://logolicious-183414.firebaseio.com",
+    "project_id": "logolicious-183414",
+    "storage_bucket": "logolicious-183414.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1043685341748:android:4d85798815431ae2622861",
+        "android_client_info": {
+          "package_name": "com.olav.logolicious"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1043685341748-0b8ulfutnnbu2vbd0mcn0p0t8ko6nomj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDC6W-APxz0xMr218n3sgGJRXTib50DY_o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1043685341748-0b8ulfutnnbu2vbd0mcn0p0t8ko6nomj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1043685341748-arrqsrfqcks9fi1puoi5u6qit7dh5p86.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.logolicious.addyourlogoapp",
+                "app_store_id": "1472688083"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

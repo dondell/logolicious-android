@@ -71,23 +71,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchaseHistoryRecord;
-import com.android.billingclient.api.PurchaseHistoryResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.olav.logolicious.BuildConfig;
 import com.olav.logolicious.R;
+import com.olav.logolicious.billingv3.Constants;
 import com.olav.logolicious.customize.adapters.AdapterGridLogos;
 import com.olav.logolicious.customize.adapters.ArrayHolderLogos;
 import com.olav.logolicious.customize.adapters.ColorPickerAdapter;
@@ -105,6 +105,7 @@ import com.olav.logolicious.util.FileUtil;
 import com.olav.logolicious.util.GlobalClass;
 import com.olav.logolicious.util.HexColorValidator;
 import com.olav.logolicious.util.LogoliciousApp;
+import com.olav.logolicious.util.PrefStore;
 import com.olav.logolicious.util.SQLiteHelper;
 import com.olav.logolicious.util.SubscriptionUtil.AppStatitics;
 import com.olav.logolicious.util.camera.CameraUtils;
@@ -119,6 +120,7 @@ import com.skydoves.colorpickerview.sliders.AlphaSlideBar;
 import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
 
 import org.acra.ACRA;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -136,7 +138,6 @@ import java.util.Locale;
 
 import static com.olav.logolicious.util.GlobalClass.PICK_FONT_RESULT_CODE;
 import static com.olav.logolicious.util.GlobalClass.sqLiteHelper;
-import static com.olav.logolicious.util.SubscriptionUtil.SubscriptionUtil.SUBSCRIPTION_SKU;
 
 @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class ActivityMainEditor extends Activity implements
@@ -242,21 +243,59 @@ public class ActivityMainEditor extends Activity implements
     public static String colorSelected;
     private boolean initColor = true;
     private Handler handlerColorPickerDetector = new Handler();
+    public static PrefStore store;
 
     //Billing implementation
     public static BillingClient billingClient = null;
-    public static List<SkuDetails> skuDetailsList;
+    public static List<SkuDetails> skuDetailsList = new ArrayList<>();
     public static List<Purchase> purchasesList;
-    private PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
+
+    private final BillingClientStateListener billingClientStateListener = new BillingClientStateListener() {
+        @Override
+        public void onBillingSetupFinished(BillingResult billingResult) {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                // The BillingClient is ready. You can query purchases here.
+                querySKUDetails();
+                queryPurchases();
+            }
+        }
+
+        @Override
+        public void onBillingServiceDisconnected() {
+            // Try to restart the connection on the next request to
+            // Google Play by calling the startConnection() method.
+            if (billingClient.isReady()) {
+                billingClient.startConnection(billingClientStateListener);
+            }
+        }
+    };
+
+    private final PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
         @Override
         public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
             Log.i("xxx", "xxx onProductPurchased Subscription Success!");
             purchasesList = purchases;
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
+                    && purchases != null) {
+                for (Purchase purchase : purchases) {
+                    handlePurchase(purchase);
+                }
+            } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
+                // Handle an error caused by a user cancelling the purchase flow.
+            } else {
+                // Handle any other error codes.
+            }
+        }
+    };
+
+    private final AcknowledgePurchaseResponseListener acknowledgePurchaseResponseListener = new AcknowledgePurchaseResponseListener() {
+        @Override
+        public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
             AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
             if (null != LogoliciousApp.subsDialog) {
                 LogoliciousApp.subsDialog.cancel();
             }
-            getPurchases();
+            Toast.makeText(ActivityMainEditor.this, "onAcknowledgePurchaseResponse Successfully subscribed", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -295,35 +334,22 @@ public class ActivityMainEditor extends Activity implements
                 .setListener(purchasesUpdatedListener)
                 .enablePendingPurchases()
                 .build();
-
-        billingClient.startConnection(new BillingClientStateListener() {
-            @Override
-            public void onBillingSetupFinished(BillingResult billingResult) {
-                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                    // The BillingClient is ready. You can query purchases here.
-                    retrieveSKUDetails();
-                }
-            }
-
-            @Override
-            public void onBillingServiceDisconnected() {
-                // Try to restart the connection on the next request to
-                // Google Play by calling the startConnection() method.
-            }
-        });
+        billingClient.startConnection(billingClientStateListener);
     }
 
-    private void retrieveSKUDetails() {
+    private void querySKUDetails() {
         List<String> skuList = new ArrayList<>();
-        skuList.add(SUBSCRIPTION_SKU);
+        skuList.add(Constants.PREMIUM_SKU);
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
         params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS);
         billingClient.querySkuDetailsAsync(params.build(),
                 new SkuDetailsResponseListener() {
                     @Override
-                    public void onSkuDetailsResponse(BillingResult billingResult,
+                    public void onSkuDetailsResponse(@NotNull BillingResult billingResult,
                                                      List<SkuDetails> skuDetailsList) {
                         for (SkuDetails skuDetails : skuDetailsList) {
+                            ActivityMainEditor.skuDetailsList.add(skuDetails);
+                            Toast.makeText(ActivityMainEditor.this, skuDetails.getSku(), Toast.LENGTH_SHORT).show();
                             Log.e("xxx", "xxx  retrieveSKUDetails skuDetails " + skuDetails.toString());
                         }
                     }
@@ -331,16 +357,120 @@ public class ActivityMainEditor extends Activity implements
 
     }
 
-    private void getPurchases() {
-        billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.SUBS, new PurchaseHistoryResponseListener() {
+    private void queryPurchases() {
+        /*billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.SUBS, new PurchaseHistoryResponseListener() {
             @Override
             public void onPurchaseHistoryResponse(@NonNull BillingResult billingResult, @Nullable List<PurchaseHistoryRecord> list) {
                 for (PurchaseHistoryRecord purchaseHistoryRecord : list) {
-                    Log.e("xxx", "xxx  getPurchases purchaseHistoryRecord " + purchaseHistoryRecord.toString());
+                    if (purchaseHistoryRecord.getSku().equalsIgnoreCase(Constants.PREMIUM_SKU)) {
+                        AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
+                        Toast.makeText(ActivityMainEditor.this, "queryPurchases Successfully subscribed " + purchaseHistoryRecord.getPurchaseTime(), Toast.LENGTH_SHORT).show();
+                        if (null != LogoliciousApp.subsDialog) {
+                            LogoliciousApp.subsDialog.cancel();
+                        }
+                    }
+                    Log.e("xxx", "xxx  getPurchases purchaseHistoryRecord " + new Gson().toJson(purchaseHistoryRecord));
                 }
             }
-        });
+        });*/
+        if (!billingClient.isReady()) {
+            Log.e(TAG, "queryPurchases: BillingClient is not ready");
+        }
+        Log.d(TAG, "queryPurchases: SUBS");
+        Purchase.PurchasesResult result = billingClient.queryPurchases(BillingClient.SkuType.SUBS);
+        if (result == null) {
+            Log.i(TAG, "queryPurchases: null purchase result");
+            processPurchases(null);
+        } else {
+            if (result.getPurchasesList() == null) {
+                Log.i(TAG, "queryPurchases: null purchase list");
+                processPurchases(null);
+            } else {
+                processPurchases(result.getPurchasesList());
+            }
+        }
     }
+
+    /**
+     * Send purchase SingleLiveEvent and update purchases LiveData.
+     * <p>
+     * The SingleLiveEvent will trigger network call to verify the subscriptions on the sever.
+     * The LiveData will allow Google Play settings UI to update based on the latest purchase data.
+     */
+    private void processPurchases(List<Purchase> purchasesList) {
+        if (purchasesList != null) {
+            Log.d(TAG, "processPurchases: " + purchasesList.size() + " purchase(s)");
+        } else {
+            Log.d(TAG, "processPurchases: with no purchases");
+        }
+
+        if (purchasesList != null) {
+            if (purchasesList.size() == 0) {
+                AppStatitics.sharedPreferenceSet(act, "isSubscribed", 0);
+                Toast.makeText(ActivityMainEditor.this, "Not subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(ActivityMainEditor.this, "Has subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
+            }
+
+            for (Purchase purchase : purchasesList) {
+                String sku = purchase.getSku();
+                String purchaseToken = purchase.getPurchaseToken();
+                if (sku.equalsIgnoreCase(Constants.PREMIUM_SKU)) {
+                    if (null != LogoliciousApp.subsDialog) {
+                        LogoliciousApp.subsDialog.cancel();
+                    }
+                }
+                Log.d(TAG, "Register purchase with sku: " + sku + ", token: " + purchaseToken);
+            }
+        } else {
+            AppStatitics.sharedPreferenceSet(act, "isSubscribed", 0);
+            Toast.makeText(ActivityMainEditor.this, "queryPurchases Not subscribed ", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void handlePurchase(Purchase purchase) {
+        // Purchase retrieved from BillingClient#queryPurchases or your PurchasesUpdatedListener.
+
+        // Verify the purchase.
+        // Ensure entitlement was not already granted for this purchaseToken.
+        // Grant entitlement to the user.
+
+        /*
+        //This is for consumable item
+        ConsumeParams consumeParams =
+                ConsumeParams.newBuilder()
+                        .setPurchaseToken(purchase.getPurchaseToken())
+                        .build();
+
+        ConsumeResponseListener listener = new ConsumeResponseListener() {
+            @Override
+            public void onConsumeResponse(BillingResult billingResult, String purchaseToken) {
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    // Handle the success of the consume operation.
+                    AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
+                    if (null != LogoliciousApp.subsDialog) {
+                        LogoliciousApp.subsDialog.cancel();
+                    }
+                    Toast.makeText(ActivityMainEditor.this, "Successfully subscribed", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        billingClient.consumeAsync(consumeParams, listener);*/
+
+        //This is for subscription/non-consumable
+        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+            if (!purchase.isAcknowledged()) {
+                AcknowledgePurchaseParams acknowledgePurchaseParams =
+                        AcknowledgePurchaseParams.newBuilder()
+                                .setPurchaseToken(purchase.getPurchaseToken())
+                                .build();
+                billingClient.acknowledgePurchase(acknowledgePurchaseParams, acknowledgePurchaseResponseListener);
+            }
+        }
+
+    }
+
 
     public enum Live_Camera {
         LIVE_PICTURE,
@@ -443,6 +573,7 @@ public class ActivityMainEditor extends Activity implements
             return;
         }
         setContentView(R.layout.main_editor);
+        store = new PrefStore(this);
 
         gc = (GlobalClass) this.getApplicationContext();
 
@@ -753,6 +884,10 @@ public class ActivityMainEditor extends Activity implements
         mOrientation = this.getResources().getConfiguration().orientation;
         isMinimized = false;
         gc.setCurrentActivity(this);
+
+        if (null != billingClient && billingClient.isReady()) {
+            queryPurchases();
+        }
     }
 
     private void initPaths() {

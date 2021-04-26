@@ -14,6 +14,16 @@ import android.util.Log;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.olav.logolicious.R;
+import com.olav.logolicious.billingv3.AppExecutors;
+import com.olav.logolicious.billingv3.Constants;
+import com.olav.logolicious.billingv3.billing.BillingClientLifecycle;
+import com.olav.logolicious.billingv3.data.DataRepository;
+import com.olav.logolicious.billingv3.data.disk.AppDatabase;
+import com.olav.logolicious.billingv3.data.disk.LocalDataSource;
+import com.olav.logolicious.billingv3.data.network.WebDataSource;
+import com.olav.logolicious.billingv3.data.network.firebase.FakeServerFunctions;
+import com.olav.logolicious.billingv3.data.network.firebase.ServerFunctions;
+import com.olav.logolicious.billingv3.data.network.firebase.ServerFunctionsImpl;
 import com.olav.logolicious.customize.datamodel.ImageExif;
 import com.olav.logolicious.util.cacher.DiskLruImageCache;
 
@@ -246,6 +256,37 @@ public class GlobalClass extends Application {
                 }
             }
         }
+    }
+
+    private final AppExecutors executors = new AppExecutors();
+
+    public AppDatabase getDatabase() {
+        return AppDatabase.getInstance(this);
+    }
+
+    public LocalDataSource getLocalDataSource() {
+        return LocalDataSource.getInstance(executors, getDatabase());
+    }
+
+    public ServerFunctions getServerFunctions() {
+        if (Constants.USE_FAKE_SERVER) {
+            return FakeServerFunctions.getInstance();
+        } else {
+            return ServerFunctionsImpl.getInstance();
+        }
+    }
+
+    public WebDataSource getWebDataSource() {
+        return WebDataSource.getInstance(executors, getServerFunctions());
+    }
+
+    public BillingClientLifecycle getBillingClientLifecycle() {
+        return BillingClientLifecycle.getInstance(this);
+    }
+
+    public DataRepository getRepository() {
+        return DataRepository
+                .getInstance(getLocalDataSource(), getWebDataSource(), getBillingClientLifecycle());
     }
 
 }

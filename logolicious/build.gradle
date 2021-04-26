@@ -1,10 +1,17 @@
 apply plugin: 'com.android.application'
 apply from: '../dependencies.gradle'
 apply from: '../spotless.gradle'
+apply plugin: 'com.google.gms.google-services'  // Google Services plugin
 
 android {
     signingConfigs {
         release {
+            storeFile file('D:\\Clients\\Direct - OlavAndMic\\keystore\\original keystore')
+            storePassword password
+            keyAlias = 'll'
+            keyPassword password
+        }
+        debug {
             storeFile file('D:\\Clients\\Direct - OlavAndMic\\keystore\\original keystore')
             storePassword password
             keyAlias = 'll'
@@ -33,9 +40,9 @@ android {
 
     defaultConfig {
         applicationId "com.olav.logolicious"
-        minSdkVersion 16
+        minSdkVersion 17
         targetSdkVersion 29
-
+        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -74,7 +81,7 @@ android {
              applicationId 'com.olav.logolicious.test'*/
             dimension "version"
             apkName = "demo"
-            applicationIdSuffix ".demo"
+            //applicationIdSuffix ".demo"
             versionNameSuffix "-demo"
         }
         full {
@@ -97,6 +104,9 @@ android {
         }
     }
 
+    dataBinding {
+        enabled = true
+    }
 }
 
 repositories {
@@ -104,6 +114,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+
     //noinspection GradleCompatible
     def billing_version = "3.0.0"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
@@ -123,4 +135,24 @@ dependencies {
     implementation project(":colorpickerview")
     implementation "com.github.skydoves:powermenu:$versions.powermenu"
     implementation "com.jakewharton.timber:timber:$versions.timber"
+    implementation 'androidx.leanback:leanback-preference:1.0.0'
+
+    // Room Architecture Components.
+    implementation 'android.arch.persistence.room:runtime:1.1.1'
+    annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
+
+    // Firebase libraries.
+    // These libraries versions are known to be compatible with each other.
+    // If you encounter a build error "Cannot Access Hide", it means the Firebase libraries'
+    // versions you are using are not compatible.
+    implementation 'com.firebaseui:firebase-ui-auth:3.3.0'
+    implementation 'com.google.firebase:firebase-auth:20.0.4'
+    implementation 'com.google.firebase:firebase-core:18.0.3'
+    implementation 'com.google.firebase:firebase-functions:19.2.0'
+    implementation 'com.google.firebase:firebase-messaging:21.1.0'
+
+    implementation 'com.google.code.gson:gson:2.8.6'
+
+    // Glide image library.
+    implementation 'com.github.bumptech.glide:glide:4.4.0'
 }
