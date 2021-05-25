@@ -121,8 +121,6 @@ import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
 
 import org.acra.ACRA;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -349,7 +347,7 @@ public class ActivityMainEditor extends Activity implements
                                                      List<SkuDetails> skuDetailsList) {
                         for (SkuDetails skuDetails : skuDetailsList) {
                             ActivityMainEditor.skuDetailsList.add(skuDetails);
-                            Toast.makeText(ActivityMainEditor.this, skuDetails.getSku(), Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(ActivityMainEditor.this, skuDetails.getSku(), Toast.LENGTH_SHORT).show();
                             Log.e("xxx", "xxx  retrieveSKUDetails skuDetails " + skuDetails.toString());
                         }
                     }
@@ -407,9 +405,9 @@ public class ActivityMainEditor extends Activity implements
         if (purchasesList != null) {
             if (purchasesList.size() == 0) {
                 AppStatitics.sharedPreferenceSet(act, "isSubscribed", 0);
-                Toast.makeText(ActivityMainEditor.this, "Not subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(ActivityMainEditor.this, "Not subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(ActivityMainEditor.this, "Has subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(ActivityMainEditor.this, "Has subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
             }
 
             for (Purchase purchase : purchasesList) {
@@ -424,7 +422,7 @@ public class ActivityMainEditor extends Activity implements
             }
         } else {
             AppStatitics.sharedPreferenceSet(act, "isSubscribed", 0);
-            Toast.makeText(ActivityMainEditor.this, "queryPurchases Not subscribed ", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(ActivityMainEditor.this, "queryPurchases Not subscribed ", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -1084,7 +1082,7 @@ public class ActivityMainEditor extends Activity implements
                     e.printStackTrace();
                 }
             } else {
-                int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
+                /*int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
                 String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
                 String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
 
@@ -1095,7 +1093,7 @@ public class ActivityMainEditor extends Activity implements
                 } catch (JSONException e) {
                     LogoliciousApp.toast(getApplicationContext(), "Failed to parse subscription data.", Toast.LENGTH_SHORT);
                     e.printStackTrace();
-                }
+                }*/
             }
         }
     }

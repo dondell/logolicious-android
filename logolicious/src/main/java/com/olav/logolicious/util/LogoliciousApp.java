@@ -1615,6 +1615,8 @@ public class LogoliciousApp {
                             .build();
                     int responseCode = billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
                     store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
+                } else {
+                    Toast.makeText(GlobalClass.getAppContext(), "Unable to load subscription.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
