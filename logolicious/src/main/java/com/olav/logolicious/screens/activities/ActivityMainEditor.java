@@ -414,9 +414,18 @@ public class ActivityMainEditor extends Activity implements
                 String sku = purchase.getSku();
                 String purchaseToken = purchase.getPurchaseToken();
                 if (sku.equalsIgnoreCase(Constants.PREMIUM_SKU)) {
+                    //Only show subscription restored popup when isSubscribed key returned 0
+                    if (AppStatitics.sharedPreferenceGet(act, "isSubscribed", 0) == 0) {
+                        LogoliciousApp.showMessageOK(ActivityMainEditor.this,
+                                "Update successful. Your subscription is restored!",
+                                (dialogInterface, i) -> dialogInterface.dismiss());
+                    }
+
+                    AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
                     if (null != LogoliciousApp.subsDialog) {
                         LogoliciousApp.subsDialog.cancel();
                     }
+                    break;
                 }
                 Log.d(TAG, "Register purchase with sku: " + sku + ", token: " + purchaseToken);
             }
