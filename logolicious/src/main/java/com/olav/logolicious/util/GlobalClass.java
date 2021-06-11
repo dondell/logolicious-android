@@ -8,8 +8,9 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Environment;
-import androidx.collection.LruCache;
 import android.util.Log;
+
+import androidx.collection.LruCache;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -23,7 +24,6 @@ import com.olav.logolicious.billingv3.data.disk.LocalDataSource;
 import com.olav.logolicious.billingv3.data.network.WebDataSource;
 import com.olav.logolicious.billingv3.data.network.firebase.FakeServerFunctions;
 import com.olav.logolicious.billingv3.data.network.firebase.ServerFunctions;
-import com.olav.logolicious.billingv3.data.network.firebase.ServerFunctionsImpl;
 import com.olav.logolicious.customize.datamodel.ImageExif;
 import com.olav.logolicious.util.cacher.DiskLruImageCache;
 
@@ -32,6 +32,7 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -135,13 +136,20 @@ public class GlobalClass extends Application {
 
         mContext = getApplicationContext();
         //malloc(100 * 1024 * 1024);
-        File root = Environment.getExternalStorageDirectory();
+        File root;
+        File dataFolder = new File(GlobalClass.getAppContext().getExternalFilesDir(null).getAbsolutePath(), "LogoLicious");
+        Log.d("xxx parent", dataFolder.getParent());
+        if (!dataFolder.exists()) {
+            Log.d("xxx mkdir_success", "xxx Succesfully created directory: " + dataFolder.mkdirs());
+        } else {
+            Log.d("xxx fileexists", "xxx true");
+        }
+        root = FileUtil.getAppRootFolder();
         String fs = File.separator;
         log_path = root + fs + App_Files_location + fs + "LogoLiciousLog.txt";
-        if (null != log_path) {
-            FileUtil.deleteDirectoryFiles(new File(log_path));
-            FileUtil.fileWrite(log_path, "Starting Logolicious", true);
-        }
+        Log.i("xxx", "xxx log_path " + log_path);
+        FileUtil.deleteDirectoryFiles(new File(log_path));
+        FileUtil.fileWrite(log_path, "Starting Logolicious", true);
         // initialize only if the activity call is not from the cropper.
         if (LogoliciousApp.verifyStoragePermissionsWithoutPrompt(this))
             initDiskCache(this);
@@ -271,9 +279,10 @@ public class GlobalClass extends Application {
     public ServerFunctions getServerFunctions() {
         if (Constants.USE_FAKE_SERVER) {
             return FakeServerFunctions.getInstance();
-        } else {
+        }/* else {
             return ServerFunctionsImpl.getInstance();
-        }
+        }*/
+        return null;
     }
 
     public WebDataSource getWebDataSource() {

@@ -40,7 +40,7 @@ android {
 
     defaultConfig {
         applicationId "com.olav.logolicious"
-        minSdkVersion 17
+        minSdkVersion 14
         targetSdkVersion 30
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -129,13 +129,10 @@ dependencies {
     //implementation 'com.anjlab.android.iab.v3:library:1.0.44'
     implementation "com.android.billingclient:billing:$billing_version"
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
-    implementation 'com.google.firebase:firebase-auth:20.0.3'
     implementation files('libs/acra-4.5.0.jar')
     implementation 'com.github.duanhong169:colorpicker:1.1.6'
     implementation project(":colorpickerview")
-    implementation "com.github.skydoves:powermenu:$versions.powermenu"
     implementation "com.jakewharton.timber:timber:$versions.timber"
-    implementation 'androidx.leanback:leanback-preference:1.0.0'
 
     // Room Architecture Components.
     implementation 'android.arch.persistence.room:runtime:1.1.1'
@@ -145,11 +142,6 @@ dependencies {
     // These libraries versions are known to be compatible with each other.
     // If you encounter a build error "Cannot Access Hide", it means the Firebase libraries'
     // versions you are using are not compatible.
-    implementation 'com.firebaseui:firebase-ui-auth:3.3.0'
-    implementation 'com.google.firebase:firebase-auth:20.0.4'
-    implementation 'com.google.firebase:firebase-core:18.0.3'
-    implementation 'com.google.firebase:firebase-functions:19.2.0'
-    implementation 'com.google.firebase:firebase-messaging:21.1.0'
 
     implementation 'com.google.code.gson:gson:2.8.6'
 

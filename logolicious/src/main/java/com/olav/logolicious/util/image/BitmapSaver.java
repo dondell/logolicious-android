@@ -131,6 +131,7 @@ public class BitmapSaver {
                 strRealPath = getImagePathFromInputStreamUri(context, uri);
                 realImage = BitmapFactory.decodeFile(strRealPath);
             }
+            Log.i("xxx", "xxx extracting ExifData " + strRealPath);
             exif = new ExifInterface(strRealPath);
         } catch (IOException e) {
             e.printStackTrace();
@@ -272,7 +273,7 @@ public class BitmapSaver {
 
 	public static void saveBitmap(String filename, String pathToSave, View view){
 		myCanvasBitmap = view.getDrawingCache().copy(Config.ARGB_8888, false);
-		String root = Environment.getExternalStorageDirectory().toString();
+		String root = FileUtil.getAppRootFolder().toString();
 		File myDir = new File(root + pathToSave);
 		myDir.mkdirs();
 //	    Random generator = new Random();

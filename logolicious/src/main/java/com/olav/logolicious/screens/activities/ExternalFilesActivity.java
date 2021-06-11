@@ -194,7 +194,7 @@ public class ExternalFilesActivity extends Activity implements OnClickListener{
 		 * Environment.getExternalStorageDirectory().getPath() but instead we use "/storage/".
 		 */
 //		 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getPath();
-		INTERNAL_PATH =  Environment.getExternalStorageDirectory().getPath();
+		INTERNAL_PATH =  FileUtil.getAppRootFolder().getPath();
 			
 		displayInternalAndExternalPath();
 	}

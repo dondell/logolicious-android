@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.olav.logolicious.R;
 import com.olav.logolicious.screens.activities.Activity_Tip;
 import com.olav.logolicious.util.GlobalClass;
@@ -37,7 +38,7 @@ public class TipThird extends Fragment{
 		});
 
         imageView1 = (ImageView) v.findViewById(R.id.imageView1);
-        GlobalClass.imageLoader.displayImage(Uri.parse("drawable://" + R.drawable.tip_step3_4).toString(), imageView1);
+		Glide.with(GlobalClass.getAppContext()).load(R.drawable.tip_step3_4).into(imageView1);
         return v;
     }
 	

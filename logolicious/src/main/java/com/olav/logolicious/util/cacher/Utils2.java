@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 
+import com.olav.logolicious.util.FileUtil;
+
 import java.io.File;
 
 public class Utils2 {
@@ -25,7 +27,7 @@ public class Utils2 {
 
 		// Before Froyo we need to construct the external cache dir ourselves
 		final String cacheDir = "/Android/data/" + context.getPackageName() + "/cache/";
-		return new File(Environment.getExternalStorageDirectory().getPath() + cacheDir);
+		return new File(FileUtil.getAppRootFolder().getPath() + cacheDir);
 	}
 
 	public static boolean hasExternalCacheDir() {

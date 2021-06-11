@@ -14,6 +14,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.olav.logolicious.R;
 import com.olav.logolicious.customize.adapters.AlbumDetails;
 import com.olav.logolicious.util.GlobalClass;
@@ -127,7 +128,7 @@ public class Pictures extends AppCompatActivity{
             });
 
             String imgUri = Uri.fromFile(new File(mAlbumsList.get(position).path)).toString();
-            GlobalClass.imageLoader.displayImage(imgUri, holder.imageview);
+            Glide.with(GlobalClass.getAppContext()).load(imgUri).into(holder.imageview);
 
             if (mAlbumsList.get(position).isAlbum)
                 holder.checkbox.setVisibility(View.INVISIBLE);

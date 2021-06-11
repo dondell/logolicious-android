@@ -14,6 +14,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.olav.logolicious.R;
 import com.olav.logolicious.screens.activities.Activity_Tip;
 import com.olav.logolicious.util.GlobalClass;
@@ -29,7 +30,7 @@ public class TipMain extends Fragment {
 		View v = inflater.inflate(R.layout.tip_first, container, false);
 
 		ImageView imageView1 = (ImageView) v.findViewById(R.id.imageView1);
-		GlobalClass.imageLoader.displayImage(Uri.parse("drawable://" + R.drawable.tip_start).toString(), imageView1);
+		Glide.with(GlobalClass.getAppContext()).load(R.drawable.tip_start).into(imageView1);
 
 		ImageButton btnOk = (ImageButton) v.findViewById(R.id.buttonOk);
 		btnOk.setOnClickListener(new OnClickListener() {

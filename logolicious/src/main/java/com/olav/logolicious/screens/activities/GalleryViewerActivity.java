@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.olav.logolicious.R;
 import com.olav.logolicious.customize.adapters.AlbumDetails;
 import com.olav.logolicious.util.GlobalClass;
@@ -296,7 +297,7 @@ public class GalleryViewerActivity extends AppCompatActivity implements OnClickL
                 //new LoadGalleryTask().execute(mAlbumsList.get(position).path);
 //                Bitmap bm = ImageHelper.decodeSampledBitmapFromPath(mAlbumsList.get(position).path, 40, 40);
                 String imgUri = Uri.fromFile(new File(mAlbumsList.get(position).path)).toString();
-                GlobalClass.imageLoader.displayImage(imgUri, holder.imageview);
+                Glide.with(GlobalClass.getAppContext()).load(imgUri).into(holder.imageview);
 //                holder.imageview.setImageBitmap(bm);
             }
 

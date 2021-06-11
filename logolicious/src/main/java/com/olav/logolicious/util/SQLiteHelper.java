@@ -508,7 +508,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 
     public static void exportDatabase(Context context) {
         try {
-            File sd = Environment.getExternalStorageDirectory();
+            File sd = FileUtil.getAppRootFolder();
             File data = Environment.getDataDirectory();
 
             if (sd.canWrite()) {

@@ -898,7 +898,7 @@ public class ActivityMainEditor extends Activity implements
     }
 
     private void initPaths() {
-        root = Environment.getExternalStorageDirectory();
+        root = new File(GlobalClass.getAppContext().getExternalFilesDir(null).getAbsolutePath(), "LogoLicious");
         String fs = File.separator;
         logoDir = root + fs + App_Files_location + fs + ".logos" + fs;
         tempDir = root + fs + App_Files_location + fs + ".temp" + fs;
