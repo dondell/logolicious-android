@@ -995,7 +995,7 @@ public class ActivityMainEditor extends Activity implements
                         public void onClick(DialogInterface dialogInterface, int i) {
                             switch (i) {
                                 case DialogInterface.BUTTON_POSITIVE:
-                                    onResultFromCamera();
+                                    onResultFromCamera(data);
                                     break;
                                 case DialogInterface.BUTTON_NEGATIVE:
                                     dialogInterface.cancel();
@@ -1004,7 +1004,7 @@ public class ActivityMainEditor extends Activity implements
                         }
                     });
                 } else {
-                    onResultFromCamera();
+                    onResultFromCamera(data);
                 }
             } else if (requestCode == REQUEST_CODE_CHOOSE_FROM_GALLERY) {
 
@@ -2049,6 +2049,25 @@ public class ActivityMainEditor extends Activity implements
 
     }
 
+    String currentPhotoPath, currentPhotoDirPath;
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        currentPhotoDirPath = image.getParent();
+        return image;
+    }
+
     public void callCamera(View v) {
         if (LogoliciousApp.verifyCameraPermissions(this, LogoliciousApp.PERMISSIONS_CAMERA, REQUEST_CAMERA)) {
             Log.i(TAG, "Permission Storage Granted.");
@@ -2059,16 +2078,31 @@ public class ActivityMainEditor extends Activity implements
             resetSnapOnGrid();
             resetAcraData();
 
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            // set orientation as portrait
-            File f = new File(tempDir, res.getString(R.string.PictureViaCamFName));
-            //We change from Uri.fromFile(f) to FileProvider.getUriForFile because of error android.os.FileUriExposedException since we target to api 27 from 24.
-            //We now need to use 'content://' instead of 'file://'
-            //we put back Uri.fromFile(f); because //FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".com.olav.logolicious.fileprovider", f); will have error on camera
-            Uri photoURI = Uri.fromFile(f);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivityForResult(intent, REQUEST_CODE_TAKE_PHOTO);
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            // Ensure that there's a camera activity to handle the intent
+            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                // Create the File where the photo should go
+                File photoFile = null;
+                try {
+                    photoFile = createImageFile();
+                    currentPhotoPath = photoFile.getPath();
+                } catch (IOException ex) {
+                    // Error occurred while creating the File
+                    LogoliciousApp.showMessageOK(this, "Error creating file " + ex.getMessage(), null);
+                }
+
+                /*// set orientation as portrait
+                File f = new File(tempDir, res.getString(R.string.PictureViaCamFName));
+                //We change from Uri.fromFile(f) to FileProvider.getUriForFile because of error android.os.FileUriExposedException since we target to api 27 from 24.
+                //We now need to use 'content://' instead of 'file://'
+                //we put back Uri.fromFile(f); because //FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".com.olav.logolicious.fileprovider", f); will have error on camera
+                */
+                Uri photoURI = FileProvider.getUriForFile(ActivityMainEditor.this,
+                        BuildConfig.APPLICATION_ID + ".fileprovider", photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivityForResult(takePictureIntent, REQUEST_CODE_TAKE_PHOTO);
+            }
         }
     }
 
@@ -2594,33 +2628,36 @@ public class ActivityMainEditor extends Activity implements
     public void onTrimMemory(int level) {
     }
 
-    private void onResultFromCamera() {
-        File f = new File(tempDir);
-        for (File temp : f.listFiles()) {
-            if (temp.getName().contains(res.getString(R.string.PictureViaCamFName))) {
-                f = temp;
-                GlobalClass.picturePath = f.getAbsolutePath();
-                Log.i(TAG, "REQUEST_CODE_TAKE_PHOTO = " + GlobalClass.picturePath);
+    private void onResultFromCamera(Intent data) {
+        //Bundle extras = data.getExtras();
+        //Bitmap imageBitmap = (Bitmap) extras.get("data");
 
-                //Compress picture from Camera (Has been discussed before) due to OOM issue.
-                //LogoliciousApp.malloc(getApplicationContext(), (int) LogoliciousApp.fileSizeInBytes(GlobalClass.picturePath));
-                GlobalClass.picturePath = BitmapSaver.saveBitmape(preferences, tempDir, "picture_taken", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, GlobalClass.picturePath));
-                try {
-                    /**
-                     * No need to copy since this path is the final when taking picture.
-                     * //Save Exif to new path
-                     GlobalClass.baseImageExif.copyExif(GlobalClass.picturePath, GlobalClass.picturePath);
-                     */
-                    //Correct orientation
-                    ImageExif.updateExif(ExifInterface.TAG_ORIENTATION, "" + ExifInterface.ORIENTATION_NORMAL, GlobalClass.picturePath);
-                    //Parse Exif
-                    GlobalClass.baseImageExif.parse(GlobalClass.picturePath);
-                } catch (Exception e) {
-                    Log.i("xxx", "xxx There's problem in parsing Exif.");
-                }
-                break;
-            }
+//        File f = new File(tempDir);
+//        for (File temp : f.listFiles()) {
+//            if (temp.getName().contains(res.getString(R.string.PictureViaCamFName))) {
+//                f = temp;
+        GlobalClass.picturePath = currentPhotoPath;
+        Log.i(TAG, "REQUEST_CODE_TAKE_PHOTO = " + GlobalClass.picturePath);
+
+        //Compress picture from Camera (Has been discussed before) due to OOM issue.
+        //LogoliciousApp.malloc(getApplicationContext(), (int) LogoliciousApp.fileSizeInBytes(GlobalClass.picturePath));
+        GlobalClass.picturePath = BitmapSaver.saveBitmape(preferences, currentPhotoDirPath + "/", "picture_taken", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, GlobalClass.picturePath));
+        try {
+            /**
+             * No need to copy since this path is the final when taking picture.
+             * //Save Exif to new path
+             GlobalClass.baseImageExif.copyExif(GlobalClass.picturePath, GlobalClass.picturePath);
+             */
+            //Correct orientation
+            ImageExif.updateExif(ExifInterface.TAG_ORIENTATION, "" + ExifInterface.ORIENTATION_NORMAL, GlobalClass.picturePath);
+            //Parse Exif
+            GlobalClass.baseImageExif.parse(GlobalClass.picturePath);
+        } catch (Exception e) {
+            Log.i("xxx", "xxx There's problem in parsing Exif.");
         }
+//                break;
+//            }
+//        }
 
         GlobalClass.baseBitmap = BitmapFactory.decodeFile(GlobalClass.picturePath); //ImageHelper.decodeBitmapPath(GlobalClass.picturePath); //ImageHelper.correctBitmapRotation(GlobalClass.picturePath, ImageHelper.decodeBitmapPath(GlobalClass.picturePath));
 

@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.olav.logolicious"
     android:installLocation="preferExternal"
-    android:versionCode="202106071"
-    android:versionName="2021.06.07.1"
+    android:versionCode="202106175"
+    android:versionName="2021.06.17.5"
     tools:ignore="MissingLeanbackLauncher">
 
     <!-- Some Chromebooks don't support touch. Although not essential,
@@ -25,6 +25,12 @@
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
+
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -48,7 +54,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
