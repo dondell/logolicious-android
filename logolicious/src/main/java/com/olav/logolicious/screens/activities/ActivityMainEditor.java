@@ -885,7 +885,6 @@ public class ActivityMainEditor extends Activity implements
     public void onResume() {
         super.onResume();
         Log.i(TAG, "xxx onResume");
-        //bp = new BillingProcessor(this, SubscriptionUtil.base64EncodedPublicKey, this);
         checkSubscription(this);
         isSomeActivityIsRunning = false;
         mOrientation = this.getResources().getConfiguration().orientation;
@@ -904,7 +903,7 @@ public class ActivityMainEditor extends Activity implements
         tempDir = root + fs + App_Files_location + fs + ".temp" + fs;
         tempShareDir = root + fs + App_Files_location + fs + ".temp" + fs + "sharedPictures";
         liveDir = root + fs + App_Files_location + fs + ".live" + fs;
-        tempSavedPics = root.getAbsolutePath() + fs + "LogoLicious";
+        tempSavedPics = Environment.getExternalStorageDirectory().getAbsolutePath()+"/Pictures/LogoLicious/"; //root.getAbsolutePath() + fs + "LogoLicious";
         designedLogos = root + fs + App_Files_location + fs + ".designedLogos";
         fontsDir = root + fs + App_Files_location + fs + ".fonts" + fs;
     }
@@ -1380,7 +1379,7 @@ public class ActivityMainEditor extends Activity implements
          * This method is highly recommended because its public directory and compatible to attaching via email.
          */
         String dirToSave;
-        if (isForSharing == false) {
+        if (!isForSharing) {
             // save to Pictures Directory if save to device device
             dirToSave = tempSavedPics;
             File pictureDir = new File(dirToSave);
@@ -1418,6 +1417,13 @@ public class ActivityMainEditor extends Activity implements
             out.close();
             //Save Exif
             GlobalClass.baseImageExif.save(fileToSave);
+
+            //Add to gallery
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            Uri contentUri = Uri.fromFile(fileToSave);
+            mediaScanIntent.setData(contentUri);
+            this.sendBroadcast(mediaScanIntent);
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1484,7 +1490,7 @@ public class ActivityMainEditor extends Activity implements
 
             // retrieve my logos except prefab logos
             File f = new File(logoDir);
-            File file[] = f.listFiles(new FilenameFilter() {
+            File[] file = f.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
                     boolean bRet = true;
@@ -1620,7 +1626,6 @@ public class ActivityMainEditor extends Activity implements
                         }
                     }
                 });
-                return;
             } else {
                 rateApp();
                 System.gc();
@@ -1628,7 +1633,7 @@ public class ActivityMainEditor extends Activity implements
                 AppStatitics.addSaveShareCount(ActivityMainEditor.this);
                 // success saved message
                 if (!layeredLogos.isLayerEmpty()) {
-                    LogoliciousApp.toast(getApplicationContext(), getString(R.string.AfterSavingMessage), Toast.LENGTH_LONG);
+                    LogoliciousApp.toast(getApplicationContext(), getString(R.string.AfterSavingMessage) + fileToSave.toString(), Toast.LENGTH_LONG);
                 }
 
                 if (1 == AppStatitics.sharedPreferenceGet(ActivityMainEditor.this, "hasOOM", 0)) {
@@ -1724,7 +1729,6 @@ public class ActivityMainEditor extends Activity implements
                         }
                     }
                 });
-                return;
             } else {
                 rateApp();
                 System.gc();
@@ -1739,7 +1743,7 @@ public class ActivityMainEditor extends Activity implements
                 String shareText = getResources().getString(R.string.label_sharetext);
                 shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "LogoLicious");
                 shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareText);
-                Uri uri = FileProvider.getUriForFile(ActivityMainEditor.this, BuildConfig.APPLICATION_ID, new File(photoUri.getPath()));
+                Uri uri = FileProvider.getUriForFile(ActivityMainEditor.this, BuildConfig.APPLICATION_ID + ".fileprovider", new File(photoUri.getPath()));
                 shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 shareIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                 shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -2054,7 +2058,7 @@ public class ActivityMainEditor extends Activity implements
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
+        String imageFileName = res.getString(R.string.PictureViaCamFName); //"JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
@@ -2091,12 +2095,6 @@ public class ActivityMainEditor extends Activity implements
                     LogoliciousApp.showMessageOK(this, "Error creating file " + ex.getMessage(), null);
                 }
 
-                /*// set orientation as portrait
-                File f = new File(tempDir, res.getString(R.string.PictureViaCamFName));
-                //We change from Uri.fromFile(f) to FileProvider.getUriForFile because of error android.os.FileUriExposedException since we target to api 27 from 24.
-                //We now need to use 'content://' instead of 'file://'
-                //we put back Uri.fromFile(f); because //FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".com.olav.logolicious.fileprovider", f); will have error on camera
-                */
                 Uri photoURI = FileProvider.getUriForFile(ActivityMainEditor.this,
                         BuildConfig.APPLICATION_ID + ".fileprovider", photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
@@ -2629,13 +2627,6 @@ public class ActivityMainEditor extends Activity implements
     }
 
     private void onResultFromCamera(Intent data) {
-        //Bundle extras = data.getExtras();
-        //Bitmap imageBitmap = (Bitmap) extras.get("data");
-
-//        File f = new File(tempDir);
-//        for (File temp : f.listFiles()) {
-//            if (temp.getName().contains(res.getString(R.string.PictureViaCamFName))) {
-//                f = temp;
         GlobalClass.picturePath = currentPhotoPath;
         Log.i(TAG, "REQUEST_CODE_TAKE_PHOTO = " + GlobalClass.picturePath);
 
@@ -2655,9 +2646,6 @@ public class ActivityMainEditor extends Activity implements
         } catch (Exception e) {
             Log.i("xxx", "xxx There's problem in parsing Exif.");
         }
-//                break;
-//            }
-//        }
 
         GlobalClass.baseBitmap = BitmapFactory.decodeFile(GlobalClass.picturePath); //ImageHelper.decodeBitmapPath(GlobalClass.picturePath); //ImageHelper.correctBitmapRotation(GlobalClass.picturePath, ImageHelper.decodeBitmapPath(GlobalClass.picturePath));
 

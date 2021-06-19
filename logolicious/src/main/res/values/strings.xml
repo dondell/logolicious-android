@@ -65,7 +65,7 @@
     <string name="SharingImageWhileonLiveMessage">"You cannot share while you are in live mode."</string>
     <string name="SavingTemplateMessage">"Be sure you are not in live mode."</string>
     <string name="SharingImageMessage">"Nothing to Share! Add logo or text."</string>
-    <string name="PictureViaCamFName">"picture_taken.jpg"</string>
+    <string name="PictureViaCamFName">"picture_taken"</string>
     <string name="ErrorMultipleBaseImgSelect">Our app can only cater 1 image at a time.</string>
     <string name="AddTextAlertMessage">Please enter text first.</string>
     <string name="crash_toast_text">Ooooops ! I crashed, but a report has been sent to my developer to help fix the issue !</string>
@@ -84,7 +84,8 @@
         \n \u0020\u0020\u0020>> Settings tab</string>
     <string name="AfterSavingMessage">You can find the saved items in your
          \nGallery/Logolicious or
-         \nGallery/Others/Logolicious</string>
+         \nGallery/Others/Logolicious or</string>
+         \n
     <string name="OrderEmail">"order@logolicious.com"</string>
     <string name="ClickHereToOrder">
 <![CDATA[<!DOCTYPE html><html><body>

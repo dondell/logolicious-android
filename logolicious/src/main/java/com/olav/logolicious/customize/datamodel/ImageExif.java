@@ -480,7 +480,6 @@ public class ImageExif {
 
             exif.saveAttributes();
         } catch (IOException e) {
-            // do something
             return false;
         }
         return  true;
