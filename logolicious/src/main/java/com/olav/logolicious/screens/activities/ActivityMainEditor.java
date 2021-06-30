@@ -107,6 +107,7 @@ import com.olav.logolicious.util.HexColorValidator;
 import com.olav.logolicious.util.LogoliciousApp;
 import com.olav.logolicious.util.PrefStore;
 import com.olav.logolicious.util.SQLiteHelper;
+import com.olav.logolicious.util.SavingTemplateListener;
 import com.olav.logolicious.util.SubscriptionUtil.AppStatitics;
 import com.olav.logolicious.util.camera.CameraUtils;
 import com.olav.logolicious.util.camera.ScreenDimensions;
@@ -141,7 +142,8 @@ import static com.olav.logolicious.util.GlobalClass.sqLiteHelper;
 public class ActivityMainEditor extends Activity implements
         OnTouchListener,
         ToolTipView.OnToolTipViewClickedListener,
-        OnClickListener {
+        OnClickListener,
+        SavingTemplateListener {
 
     private static final String TAG = "ActivityMainEditor";
     public static final String App_Files_location = ".Logolicious";
@@ -247,6 +249,8 @@ public class ActivityMainEditor extends Activity implements
     public static BillingClient billingClient = null;
     public static List<SkuDetails> skuDetailsList = new ArrayList<>();
     public static List<Purchase> purchasesList;
+    ProgressDialog mProgressDialog;
+    AlertDialog mDialog;
 
     private final BillingClientStateListener billingClientStateListener = new BillingClientStateListener() {
         @Override
@@ -476,6 +480,13 @@ public class ActivityMainEditor extends Activity implements
             }
         }
 
+    }
+
+    @Override
+    public void onSuccessSavingTemplate() {
+        if (null != mDialog && mDialog.isShowing() && !isFinishing()) {
+            layeredLogos.invalidate(0,0,0,0);
+        }
     }
 
 
@@ -903,7 +914,7 @@ public class ActivityMainEditor extends Activity implements
         tempDir = root + fs + App_Files_location + fs + ".temp" + fs;
         tempShareDir = root + fs + App_Files_location + fs + ".temp" + fs + "sharedPictures";
         liveDir = root + fs + App_Files_location + fs + ".live" + fs;
-        tempSavedPics = Environment.getExternalStorageDirectory().getAbsolutePath()+"/Pictures/LogoLicious/"; //root.getAbsolutePath() + fs + "LogoLicious";
+        tempSavedPics = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Pictures/LogoLicious/"; //root.getAbsolutePath() + fs + "LogoLicious";
         designedLogos = root + fs + App_Files_location + fs + ".designedLogos";
         fontsDir = root + fs + App_Files_location + fs + ".fonts" + fs;
     }
@@ -1308,7 +1319,9 @@ public class ActivityMainEditor extends Activity implements
                                     d.dismiss();
                                     GlobalClass.sqLiteHelper.deleteTemplate(templateName.getText().toString() + GlobalClass.getAR());
                                     GlobalClass.sqLiteHelper.deleteTemplatePreview(templateName.getText().toString() + GlobalClass.getAR());
-                                    layeredLogos.saveAsTemplate(getApplicationContext(), templateName.getText().toString() + GlobalClass.getAR());
+
+                                    showMessage("Template Saved");
+                                    layeredLogos.saveAsTemplate(ActivityMainEditor.this, templateName.getText().toString() + GlobalClass.getAR(), ActivityMainEditor.this);
                                     break;
                             }
                         }
@@ -1317,12 +1330,13 @@ public class ActivityMainEditor extends Activity implements
                 }
 
                 if (templateName.getText().toString().contains(".")) {
-                    LogoliciousApp.toast(getApplicationContext(), "Must not contain period in template name.", Toast.LENGTH_SHORT);
+                    LogoliciousApp.toast(ActivityMainEditor.this, "Must not contain period in template name.", Toast.LENGTH_SHORT);
                     return;
                 }
 
-                layeredLogos.saveAsTemplate(getApplicationContext(), templateName.getText().toString() + GlobalClass.getAR());
                 d.dismiss();
+                showMessage("Template Saved");
+                layeredLogos.saveAsTemplate(ActivityMainEditor.this, templateName.getText().toString() + GlobalClass.getAR(), ActivityMainEditor.this);
             }
         });
 
@@ -1583,8 +1597,6 @@ public class ActivityMainEditor extends Activity implements
 
     private class SaveFinalImageTask extends AsyncTask<Integer, Integer, String> {
 
-        ProgressDialog mDialog;
-
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -1595,10 +1607,7 @@ public class ActivityMainEditor extends Activity implements
             forSharing = false;
             GlobalClass.freeMem();
 
-            mDialog = new ProgressDialog(ActivityMainEditor.this);
-            mDialog.setMessage("Saving your file. \nGive us a moment while we save this in " + FileUtil.getImageQualityTypeDescription(preferences) + ".");
-            mDialog.setCancelable(false);
-            mDialog.show();
+            showProgress("Saving your file. \nGive us a moment while we save this in " + FileUtil.getImageQualityTypeDescription(preferences) + ".");
         }
 
         protected String doInBackground(Integer... task) {
@@ -1606,7 +1615,7 @@ public class ActivityMainEditor extends Activity implements
         }
 
         protected void onPostExecute(String result) {
-            mDialog.dismiss();
+            mProgressDialog.dismiss();
 
             if (result.equalsIgnoreCase("not enough memory")) {
                 LogoliciousApp.showYesNoAlertWithoutTitle(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), "Continue", "Ok", new DialogInterface.OnClickListener() {
@@ -1688,7 +1697,6 @@ public class ActivityMainEditor extends Activity implements
     public static boolean forSharing = false;
 
     private class SharingFinalImageTask extends AsyncTask<String, Integer, String> {
-        ProgressDialog mDialog;
 
         @Override
         protected void onPreExecute() {
@@ -1698,10 +1706,7 @@ public class ActivityMainEditor extends Activity implements
                 LogoliciousApp.showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), null);
 
             forSharing = true;
-            mDialog = new ProgressDialog(ActivityMainEditor.this);
-            mDialog.setMessage("Sharing your file. \nGive us a moment while we share this in " + FileUtil.getImageQualityTypeDescription(preferences) + ".");
-            mDialog.setCancelable(false);
-            mDialog.show();
+            showProgress("Sharing your file. \nGive us a moment while we share this in " + FileUtil.getImageQualityTypeDescription(preferences) + ".");
         }
 
         protected String doInBackground(String... param) {
@@ -1709,7 +1714,7 @@ public class ActivityMainEditor extends Activity implements
         }
 
         protected void onPostExecute(String picturePath) {
-            mDialog.dismiss();
+            mProgressDialog.dismiss();
 
             if (picturePath.equalsIgnoreCase("not enough memory")) {
                 LogoliciousApp.showYesNoAlertWithoutTitle(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), "Continue", "Ok", new DialogInterface.OnClickListener() {
@@ -1785,17 +1790,12 @@ public class ActivityMainEditor extends Activity implements
 
     private class UploadLogoTask extends AsyncTask<String, String, String> {
 
-        ProgressDialog mDialog;
-
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             GlobalClass.freeMem();
 
-            mDialog = new ProgressDialog(ActivityMainEditor.this);
-            mDialog.setMessage("Uploading Logo");
-            mDialog.setCancelable(false);
-            mDialog.show();
+            showProgress("Uploading Logo");
         }
 
         @Override
@@ -1815,7 +1815,7 @@ public class ActivityMainEditor extends Activity implements
 
                 @Override
                 public void run() {
-                    mDialog.dismiss();
+                    mProgressDialog.dismiss();
                     // Add the first logo to the screen
                     if (!LogoliciousApp.strIsNullOrEmpty(result)) {
                         addFirstLogoSelectedToScreen(result);
@@ -3009,4 +3009,33 @@ public class ActivityMainEditor extends Activity implements
         d.show();
         d.getWindow().setLayout((int) LogoliciousApp.convertDpToPixel(30 * 9, this), ViewGroup.LayoutParams.WRAP_CONTENT);
     }
+
+    private void showProgress(String message) {
+        if (null != mProgressDialog && mProgressDialog.isShowing() && !isFinishing()) {
+            mProgressDialog.dismiss();
+        }
+
+        mProgressDialog = new ProgressDialog(ActivityMainEditor.this);
+        mProgressDialog.setMessage(message);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.show();
+    }
+
+    private void showMessage(String message) {
+        if (null != mDialog && mDialog.isShowing() && !isFinishing()) {
+            mDialog.dismiss();
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(ActivityMainEditor.this);
+        builder.setMessage(message);
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
+        mDialog = builder.create();
+        mDialog.show();
+    }
+
 }

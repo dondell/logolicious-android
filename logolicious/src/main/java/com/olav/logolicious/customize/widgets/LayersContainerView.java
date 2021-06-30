@@ -25,6 +25,7 @@ import com.olav.logolicious.util.FileUtil;
 import com.olav.logolicious.util.GlobalClass;
 import com.olav.logolicious.util.LogoliciousApp;
 import com.olav.logolicious.util.PaintUtil;
+import com.olav.logolicious.util.SavingTemplateListener;
 import com.olav.logolicious.util.image.DbBitmapUtility;
 import com.olav.logolicious.util.image.ImageHelper;
 
@@ -517,7 +518,7 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         return template;
     }
 
-    public void saveAsTemplate(Context context, String t_name) {
+    public void saveAsTemplate(Context context, String t_name, SavingTemplateListener listener) {
         int index = 0;
         for (Layer l : layers) {
             float[] values = new float[9];
@@ -559,6 +560,8 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         if (b != null) {
             b.recycle();
         }
+
+        listener.onSuccessSavingTemplate();
     }
 
     public boolean applyTemplate(Cursor c, View v, boolean isTemplateMismatch) {
