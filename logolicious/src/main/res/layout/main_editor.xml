@@ -1,596 +1,643 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:baselineAligned="false"
     tools:context=".screens.activities.ActivityMainEditor">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_right_sidebar"
+        android:layout_width="1sp"
+        android:layout_height="12sp"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".82" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_bottom_menus"
+        android:layout_width="1sp"
+        android:layout_height="12sp"
         android:orientation="horizontal"
-        android:weightSum="2" android:baselineAligned="false">
+        app:layout_constraintGuide_percent="0.82" />
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="fill_parent"
-            android:layout_weight="1.65"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraint_rightPanel"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight=".35"
+        android:orientation="vertical"
+        android:weightSum="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/guideline_right_sidebar"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_right_bottom"
+            android:layout_width="1sp"
+            android:layout_height="12sp"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.82" />
+
+        <RelativeLayout
+            android:id="@+id/menuRight"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:background="@color/DodgerBlue"
             android:orientation="vertical"
-            android:weightSum="2">
+            app:layout_constraintBottom_toTopOf="@+id/guideline_right_bottom"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <RelativeLayout
-                android:id="@+id/photo"
-                android:layout_width="fill_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1.64"
-                android:background="@drawable/backrepeat">
-
-                <include
-                    android:id="@+id/live_include"
-                    layout="@layout/live_surface"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone" />
-
-                <com.olav.logolicious.customize.widgets.DynamicImageView
-                    android:id="@+id/backgroundImage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:adjustViewBounds="true"
-                    android:scaleType="fitCenter"
-                    android:visibility="visible" />
-
-                <com.olav.logolicious.customize.widgets.LayersContainerView
-                    android:id="@+id/layeredLogos"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_centerHorizontal="true"
-                    android:layout_centerVertical="true"
-                    android:contentDescription="@string/app_name"
-                    android:scaleType="matrix" />
-
-                <Button
-                    android:id="@+id/buttonDoneLive"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_centerHorizontal="true"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/button_white_edge"
-                    android:padding="10dp"
-                    android:text="@string/done"
-                    android:textColor="@color/Black"
-                    android:visibility="visible" />
-
-                <Button
-                    android:id="@+id/flipCamera"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignBaseline="@+id/buttonDoneLive"
-                    android:layout_alignBottom="@+id/buttonDoneLive"
-                    android:layout_alignParentLeft="true"
-                    android:layout_margin="10dp"
-                    android:background="@drawable/button_white_edge"
-                    android:padding="10dp"
-                    android:text="FLIP"
-                    android:textColor="@color/Black"
-                    android:visibility="visible" />
-
-                <ProgressBar
-                    android:id="@+id/templateProgress"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
-                    android:indeterminateDrawable="@drawable/progress"
-                    android:indeterminateOnly="true"
-                    android:maxHeight="30dip"
-                    android:minHeight="30dip"
-                    android:progress="50"
-                    android:visibility="invisible" />
-            </RelativeLayout>
+            <com.olav.logolicious.customize.widgets.DynamicImageView
+                android:id="@+id/imageViewLogo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="5dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/app_name"
+                android:scaleType="fitCenter"
+                android:src="@drawable/logolicious_white_txt" />
 
             <LinearLayout
-                android:id="@+id/menuBottom"
+                android:id="@+id/linearLayout_select_image"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight=".38"
-                android:orientation="vertical"
-                android:weightSum="2">
-
-                <LinearLayout
-                    android:id="@+id/menuBottomUpper"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_gravity="center"
-                    android:layout_weight="1.4"
-                    android:background="@color/Black"
-                    android:gravity="center"
-                    android:weightSum="2">
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:layout_weight=".08" />
-
-                    <ImageButton
-                        android:id="@+id/loadLogo"
-                        android:layout_width="0dp"
-                        android:layout_height="fill_parent"
-                        android:layout_weight=".43"
-                        android:background="@color/Black"
-                        android:contentDescription="@string/contentdesc_icon_eraser"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/load_logo" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_weight="1.19"
-                        android:orientation="vertical"
-                        android:layout_height="fill_parent">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:paddingTop="3dp"
-                            android:gravity="center"
-                            android:layout_weight=".6">
-
-                            <ImageView
-                                android:id="@+id/undo"
-                                android:layout_width="@dimen/SaveButtonWidth"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginRight="5dp"
-                                android:padding="3dp"
-                                android:adjustViewBounds="true"
-                                android:gravity="center"
-                                android:onClick="undo"
-                                android:scaleType="fitCenter"
-                                android:src="@drawable/undo"
-                                android:textColor="@color/White" android:contentDescription="TODO"/>
-
-                            <ImageView
-                                android:id="@+id/redo"
-                                android:layout_width="@dimen/SaveButtonWidth"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:layout_marginLeft="5dp"
-                                android:layout_marginRight="5dp"
-                                android:padding="3dp"
-                                android:adjustViewBounds="true"
-                                android:gravity="center"
-                                android:scaleType="fitCenter"
-                                android:src="@drawable/redo"
-                                android:onClick="redo"
-                                android:textColor="@color/White" android:contentDescription="TODO"/>
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="fill_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="horizontal"
-                            android:paddingBottom="5dp"
-                            android:paddingTop="5dp"
-                            android:weightSum="3">
-
-                            <ImageView
-                                android:id="@+id/buttonAddText"
-                                android:layout_width="0dp"
-                                android:layout_height="fill_parent"
-                                android:layout_weight="1"
-                                android:scaleType="fitCenter"
-                                android:src="@drawable/addtext" android:contentDescription="TODO"/>
-
-                            <ImageView
-                                android:id="@+id/buttonTextColor"
-                                android:layout_width="0dp"
-                                android:layout_height="fill_parent"
-                                android:layout_weight="1"
-                                android:scaleType="fitCenter"
-                                android:src="@drawable/color_palette" android:contentDescription="TODO"/>
-
-                            <ImageButton
-                                android:id="@+id/buttonTrashcan"
-                                android:layout_width="0dp"
-                                android:layout_height="fill_parent"
-                                android:layout_weight="1"
-                                android:background="@color/Transparent"
-                                android:contentDescription="@string/contentdesc_bin"
-                                android:scaleType="fitCenter"
-                                android:src="@drawable/doubletap_trash" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight=".30"
-                        android:orientation="vertical">
-
-                        <ImageButton
-                            android:id="@+id/buttonRotZero"
-                            android:layout_width="fill_parent"
-                            android:layout_height="0dp"
-                            android:layout_marginRight="15dp"
-                            android:layout_weight="1"
-                            android:background="@color/Transparent"
-                            android:contentDescription="@string/label_button_undo"
-                            android:onClick="rotateLogo0"
-                            android:scaleType="fitStart"
-                            android:src="@drawable/zero_degrees" />
-
-                        <ImageView
-                            android:layout_width="fill_parent"
-                            android:layout_height="0dp"
-                            android:layout_marginRight="15dp"
-                            android:layout_weight="1"
-                            android:contentDescription="@string/label_button_share"
-                            android:onClick="rotateLogo90"
-                            android:scaleType="fitStart"
-                            android:src="@drawable/ninety_degrees" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/LinearAdjustment"
-                    android:layout_width="fill_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight=".6"
-                    android:background="@color/Black"
-                    android:weightSum="2">
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:layout_weight=".08" />
-
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight=".2"
-                        android:background="@color/Black"
-                        android:contentDescription="@string/contentdesc_icon_saturation"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/trans" />
-
-                    <LinearLayout
-                        android:id="@+id/bottomSlidersContainer"
-                        android:layout_width="0dp"
-                        android:layout_height="fill_parent"
-                        android:layout_marginBottom="0dp"
-                        android:layout_weight="1.72"
-                        android:background="@color/Black"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <RelativeLayout
-                            android:layout_width="fill_parent"
-                            android:layout_height="10dp">
-
-                            <com.olav.logolicious.customize.widgets.RulerView
-                                android:layout_width="fill_parent"
-                                android:layout_height="fill_parent"
-                                android:layout_marginBottom="1dp"
-                                android:layout_marginLeft="13dp"
-                                android:layout_marginRight="43dp"
-                                android:rotation="180" />
-
-                            <TextView
-                                android:id="@+id/textViewFontPreview"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_alignParentLeft="true"
-                                android:layout_alignParentTop="true"
-                                android:layout_marginLeft="3dp"
-                                android:text="@string/_0"
-                                android:textAppearance="?android:attr/textAppearanceSmall"
-                                android:textSize="4pt" />
-
-                            <TextView
-                                android:id="@+id/TextView01"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_alignParentRight="true"
-                                android:layout_alignParentTop="true"
-                                android:layout_marginRight="20dp"
-                                android:text="@string/_100"
-                                android:textAppearance="?android:attr/textAppearanceSmall"
-                                android:textSize="4pt" />
-                        </RelativeLayout>
-
-                        <SeekBar
-                            android:id="@+id/seekBarTrans"
-                            android:layout_width="fill_parent"
-                            android:layout_height="fill_parent"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginBottom="9.5dp"
-                            android:layout_marginLeft="3dp"
-                            android:layout_marginRight="25dp"
-                            android:indeterminate="false"
-                            android:max="255"
-                            android:paddingBottom="3dp"
-                            android:progress="155"
-                            android:progressDrawable="@drawable/styled_progress2"
-                            android:thumb="@drawable/slider_indicator_01" />
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="fill_parent"
-            android:layout_weight=".35"
-            android:orientation="vertical"
-            android:weightSum="2">
-
-            <RelativeLayout
-                android:id="@+id/menuRight"
-                android:layout_width="fill_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1.64"
-                android:background="@color/DodgerBlue"
-                android:orientation="vertical">
-
-                <com.olav.logolicious.customize.widgets.DynamicImageView
-                    android:id="@+id/imageViewLogo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:layout_marginTop="5dp"
-                    android:adjustViewBounds="true"
-                    android:contentDescription="@string/app_name"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/logolicious_white_txt" />
-
-                <LinearLayout
-                    android:id="@+id/LinearOtherBtns"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/buttonLive"
-                        android:layout_width="match_parent"
-                        android:layout_height="35dp"
-                        android:layout_gravity="center_horizontal"
-                        android:background="@color/Transparent"
-                        android:contentDescription="@string/live"
-                        android:onClick="selectLiveOption"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/live"
-                        android:visibility="gone" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@color/White"
-                        android:visibility="gone" />
-
-                    <ImageView
-                        android:id="@+id/buttonGallery"
-                        android:layout_width="@dimen/SaveButtonWidth"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:adjustViewBounds="true"
-                        android:contentDescription="@string/contentdesc_icon_eraser"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/select_image" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="7dp"
-                        android:layout_marginRight="7dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@color/White"
-                        android:visibility="visible" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/linearLayout1"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_below="@+id/imageViewLogo"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:id="@+id/buttonShowMyLogos"
-                        android:layout_width="@dimen/SaveButtonWidth"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:adjustViewBounds="true"
-                        android:gravity="center"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/mylogos"
-                        android:textColor="@color/White" />
-
-                    <ImageView
-                        android:id="@+id/buttonPrefab"
-                        android:layout_width="@dimen/SaveButtonWidth"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:adjustViewBounds="true"
-                        android:gravity="center"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/prefablogo_category"
-                        android:textColor="@color/White" />
-
-                    <ImageView
-                        android:id="@+id/buttonSnapOnGrid"
-                        android:layout_width="@dimen/SaveButtonWidth"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:adjustViewBounds="true"
-                        android:gravity="center"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/snap_on_grid"
-                        android:textColor="@color/White" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="8dp"
-                        android:layout_marginRight="8dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@color/White" />
-
-                    <ImageView
-                        android:id="@+id/savedTemplates"
-                        android:layout_width="@dimen/SaveButtonWidth"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:adjustViewBounds="true"
-                        android:gravity="center"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/saved_templated"
-                        android:textColor="@color/White" />
-
-                    <ImageView
-                        android:layout_width="@dimen/SaveButtonWidth"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:adjustViewBounds="true"
-                        android:gravity="center"
-                        android:onClick="saveTemplate"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/save_as_template"
-                        android:textColor="@color/White" android:contentDescription="TODO"/>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="8dp"
-                        android:layout_marginRight="8dp"
-                        android:layout_marginTop="5dp"
-                        android:visibility="invisible" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:gravity="center"
-                        android:text="@string/resize"
-                        android:textColor="@color/WhiteSmoke"
-                        android:textStyle="bold"
-                        android:visibility="gone" />
-
-                    <EditText
-                        android:id="@+id/EditTextResizeVal"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:hint="@string/_100"
-                        android:inputType="number"
-                        android:visibility="gone"
-                        android:focusable="false"/>
-
-                    <View
-                        android:id="@+id/spacerNoLogo"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="8dp"
-                        android:layout_marginRight="8dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@color/White"
-                        android:visibility="gone" />
-
-                    <ImageView
-                        android:id="@+id/noLogo"
-                        android:layout_width="@dimen/SaveButtonWidth"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="5dp"
-                        android:adjustViewBounds="true"
-                        android:src="@drawable/no_logo_button"
-                        android:visibility="gone" />
-
-                    <TextView
-                        android:id="@+id/cppText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentLeft="true"
-                        android:layout_alignParentStart="true"
-                        android:layout_marginLeft="13dp"
-                        android:layout_marginStart="13dp"
-                        android:text="Mem"
-                        android:textColor="@color/Black"
-                        android:visibility="gone" />
-
-                </LinearLayout>
-            </RelativeLayout>
-
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="0dp"
-                android:layout_weight=".36"
-                android:background="@color/DodgerBlue"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:gravity="center"
                 android:orientation="vertical">
 
                 <ImageView
-                    android:id="@+id/save"
+                    android:id="@+id/buttonLive"
+                    android:layout_width="match_parent"
+                    android:layout_height="35dp"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@color/Transparent"
+                    android:contentDescription="@string/live"
+                    android:onClick="selectLiveOption"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/live"
+                    android:visibility="gone" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginRight="5dp"
+                    android:background="@color/White"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/buttonGallery"
+                    android:layout_width="@dimen/SaveButtonWidth"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@string/contentdesc_icon_eraser"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/select_image" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="7dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginRight="7dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@color/White"
+                    android:visibility="visible" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linearLayout_top_right_buttons"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/imageViewLogo"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/buttonShowMyLogos"
+                    android:layout_width="@dimen/SaveButtonWidth"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:adjustViewBounds="true"
+                    android:gravity="center"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/mylogos"
+                    android:textColor="@color/White" />
+
+                <ImageView
+                    android:id="@+id/buttonPrefab"
+                    android:layout_width="@dimen/SaveButtonWidth"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:adjustViewBounds="true"
+                    android:gravity="center"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/prefablogo_category"
+                    android:textColor="@color/White" />
+
+                <ImageView
+                    android:id="@+id/buttonSnapOnGrid"
                     android:layout_width="@dimen/SaveButtonWidth"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
                     android:adjustViewBounds="true"
-                    android:background="@color/DodgerBlue"
+                    android:gravity="center"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/save" android:contentDescription="@string/todo" />
+                    android:src="@drawable/snap_on_grid"
+                    android:textColor="@color/White" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@color/White" />
 
                 <ImageView
-                    android:id="@+id/sharePic"
-                    android:layout_width="fill_parent"
+                    android:id="@+id/savedTemplates"
+                    android:layout_width="@dimen/SaveButtonWidth"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:adjustViewBounds="true"
+                    android:gravity="center"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/saved_templated"
+                    android:textColor="@color/White" />
+
+                <ImageView
+                    android:layout_width="@dimen/SaveButtonWidth"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="TODO"
+                    android:gravity="center"
+                    android:onClick="saveTemplate"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/save_as_template"
+                    android:textColor="@color/White" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginBottom="5dp"
+                    android:visibility="invisible" />
+
+                <TextView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
+                    android:gravity="center"
+                    android:text="@string/resize"
+                    android:textColor="@color/WhiteSmoke"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+                <EditText
+                    android:id="@+id/EditTextResizeVal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:focusable="false"
+                    android:hint="@string/_100"
+                    android:inputType="number"
+                    android:visibility="gone" />
+
+                <View
+                    android:id="@+id/spacerNoLogo"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginLeft="8dp"
                     android:layout_marginTop="5dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@color/White"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/noLogo"
+                    android:layout_width="@dimen/SaveButtonWidth"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
                     android:adjustViewBounds="true"
-                    android:background="@color/DodgerBlue"
-                    android:contentDescription="@string/contentdesc_icon_saturation"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/share_icon" />
+                    android:src="@drawable/no_logo_button"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/cppText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginStart="13dp"
+                    android:layout_marginLeft="13dp"
+                    android:text="Mem"
+                    android:textColor="@color/Black"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout_save_share"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:background="@color/DodgerBlue"
+            android:gravity="bottom"
+            android:orientation="vertical"
+            android:paddingBottom="10sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/guideline_right_bottom">
+
+            <ImageView
+                android:id="@+id/save"
+                android:layout_width="@dimen/SaveButtonWidth"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:adjustViewBounds="true"
+                android:background="@color/DodgerBlue"
+                android:contentDescription="@string/todo"
+                android:scaleType="fitCenter"
+                android:src="@drawable/save" />
+
+            <LinearLayout
+                android:layout_width="@dimen/SaveButtonWidth"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="5dp"
+                android:background="@drawable/menu_bg_edge">
+
+                <ImageView
+                    android:id="@+id/sharePic"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginTop="10sp"
+                    android:layout_marginBottom="10sp"
+                    android:padding="3sp"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/share_icon2" />
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <RelativeLayout
+        android:id="@+id/photo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1.64"
+        android:background="@drawable/backrepeat"
+        app:layout_constraintBottom_toTopOf="@id/guideline_bottom_menus"
+        app:layout_constraintEnd_toStartOf="@id/guideline_right_sidebar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/live_include"
+            layout="@layout/live_surface"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <com.olav.logolicious.customize.widgets.DynamicImageView
+            android:id="@+id/backgroundImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:visibility="visible" />
+
+        <com.olav.logolicious.customize.widgets.LayersContainerView
+            android:id="@+id/layeredLogos"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="@string/app_name"
+            android:scaleType="matrix" />
+
+        <Button
+            android:id="@+id/buttonDoneLive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="10dp"
+            android:background="@drawable/button_white_edge"
+            android:padding="10dp"
+            android:text="@string/done"
+            android:textColor="@color/Black"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/flipCamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/buttonDoneLive"
+            android:layout_alignBottom="@+id/buttonDoneLive"
+            android:layout_alignParentLeft="true"
+            android:layout_margin="10dp"
+            android:background="@drawable/button_white_edge"
+            android:padding="10dp"
+            android:text="FLIP"
+            android:textColor="@color/Black"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/templateProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:indeterminateDrawable="@drawable/progress"
+            android:indeterminateOnly="true"
+            android:maxHeight="30dip"
+            android:minHeight="30dip"
+            android:progress="50"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/menuBottom"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:weightSum="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guideline_right_sidebar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/guideline_bottom_menus">
+
+        <LinearLayout
+            android:id="@+id/menuBottomUpper"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="center"
+            android:layout_weight="1.4"
+            android:background="@color/Black"
+            android:gravity="center"
+            android:weightSum="2">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight=".08" />
+
+            <ImageButton
+                android:id="@+id/loadLogo"
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight=".43"
+                android:background="@color/Black"
+                android:contentDescription="@string/contentdesc_icon_eraser"
+                android:scaleType="fitCenter"
+                android:src="@drawable/load_logo" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1.19"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight=".6"
+                    android:gravity="center"
+                    android:paddingTop="3dp">
+
+                    <ImageView
+                        android:id="@+id/undo"
+                        android:layout_width="@dimen/SaveButtonWidth"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="TODO"
+                        android:gravity="center"
+                        android:onClick="undo"
+                        android:padding="3dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/undo"
+                        android:textColor="@color/White" />
+
+                    <ImageView
+                        android:id="@+id/redo"
+                        android:layout_width="@dimen/SaveButtonWidth"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="TODO"
+                        android:gravity="center"
+                        android:onClick="redo"
+                        android:padding="3dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/redo"
+                        android:textColor="@color/White" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:weightSum="3">
+
+                    <ImageView
+                        android:id="@+id/buttonAddText"
+                        android:layout_width="0dp"
+                        android:layout_height="fill_parent"
+                        android:layout_weight="1"
+                        android:contentDescription="TODO"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/addtext" />
+
+                    <ImageView
+                        android:id="@+id/buttonTextColor"
+                        android:layout_width="0dp"
+                        android:layout_height="fill_parent"
+                        android:layout_weight="1"
+                        android:contentDescription="TODO"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/color_palette" />
+
+                    <ImageButton
+                        android:id="@+id/buttonTrashcan"
+                        android:layout_width="0dp"
+                        android:layout_height="fill_parent"
+                        android:layout_weight="1"
+                        android:background="@color/Transparent"
+                        android:contentDescription="@string/contentdesc_bin"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/doubletap_trash" />
+                </LinearLayout>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".30"
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/buttonRotZero"
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_weight="1"
+                    android:background="@color/Transparent"
+                    android:contentDescription="@string/label_button_undo"
+                    android:onClick="rotateLogo0"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/zero_degrees" />
+
+                <ImageView
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/label_button_share"
+                    android:onClick="rotateLogo90"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/ninety_degrees" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/LinearAdjustment"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".6"
+            android:background="@color/Black"
+            android:weightSum="2">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight=".08" />
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".2"
+                android:background="@color/Black"
+                android:contentDescription="@string/contentdesc_icon_saturation"
+                android:scaleType="fitCenter"
+                android:src="@drawable/trans" />
+
+            <LinearLayout
+                android:id="@+id/bottomSlidersContainer"
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_marginBottom="0dp"
+                android:layout_weight="1.72"
+                android:background="@color/Black"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="10dp">
+
+                    <com.olav.logolicious.customize.widgets.RulerView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:layout_marginLeft="13dp"
+                        android:layout_marginRight="43dp"
+                        android:layout_marginBottom="1dp"
+                        android:rotation="180" />
+
+                    <TextView
+                        android:id="@+id/textViewFontPreview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_marginLeft="3dp"
+                        android:text="@string/_0"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textSize="4pt" />
+
+                    <TextView
+                        android:id="@+id/TextView01"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginRight="20dp"
+                        android:text="@string/_100"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:textSize="4pt" />
+                </RelativeLayout>
+
+                <SeekBar
+                    android:id="@+id/seekBarTrans"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="25dp"
+                    android:layout_marginBottom="9.5dp"
+                    android:indeterminate="false"
+                    android:max="255"
+                    android:paddingBottom="3dp"
+                    android:progress="155"
+                    android:progressDrawable="@drawable/styled_progress2"
+                    android:thumb="@drawable/slider_indicator_01" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -609,4 +656,4 @@
         android:layout_height="fill_parent"
         android:visibility="gone" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
