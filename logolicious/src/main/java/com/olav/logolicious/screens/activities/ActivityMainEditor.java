@@ -8,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -85,6 +86,15 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.InstallState;
+import com.google.android.play.core.install.InstallStateUpdatedListener;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.InstallStatus;
+import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.play.core.tasks.Task;
 import com.olav.logolicious.BuildConfig;
 import com.olav.logolicious.R;
 import com.olav.logolicious.billingv3.Constants;
@@ -251,6 +261,10 @@ public class ActivityMainEditor extends Activity implements
     public static List<Purchase> purchasesList;
     ProgressDialog mProgressDialog;
     AlertDialog mDialog;
+    private static final int UPDATE_APP_REQUEST_CODE = 1001;
+    public static final String IS_DONE_SHOWING_UPDATE_PROMPT = "IS_DONE_SHOWING_UPDATE_PROMPT";
+    private AppUpdateManager appUpdateManager;
+    private Task<AppUpdateInfo> appUpdateInfoTask;
 
     private final BillingClientStateListener billingClientStateListener = new BillingClientStateListener() {
         @Override
@@ -349,10 +363,8 @@ public class ActivityMainEditor extends Activity implements
                     @Override
                     public void onSkuDetailsResponse(@NotNull BillingResult billingResult,
                                                      List<SkuDetails> skuDetailsList) {
-                        for (SkuDetails skuDetails : skuDetailsList) {
-                            ActivityMainEditor.skuDetailsList.add(skuDetails);
-                            //Toast.makeText(ActivityMainEditor.this, skuDetails.getSku(), Toast.LENGTH_SHORT).show();
-                            Log.e("xxx", "xxx  retrieveSKUDetails skuDetails " + skuDetails.toString());
+                        if (null != skuDetailsList && skuDetailsList.size() > 0) {
+                            ActivityMainEditor.skuDetailsList.addAll(skuDetailsList);
                         }
                     }
                 });
@@ -485,7 +497,7 @@ public class ActivityMainEditor extends Activity implements
     @Override
     public void onSuccessSavingTemplate() {
         if (null != mDialog && mDialog.isShowing() && !isFinishing()) {
-            layeredLogos.invalidate(0,0,0,0);
+            layeredLogos.invalidate(0, 0, 0, 0);
         }
     }
 
@@ -793,6 +805,7 @@ public class ActivityMainEditor extends Activity implements
         }
 
         initBilling();
+        checkAppVersionUpdate();
     }
 
     @Override
@@ -810,6 +823,14 @@ public class ActivityMainEditor extends Activity implements
         isMinimized = true;
         System.gc();
         GlobalClass.freeMem();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (appUpdateManager != null) {
+            appUpdateManager.unregisterListener(installStateUpdatedListener);
+        }
     }
 
     @Override
@@ -844,6 +865,7 @@ public class ActivityMainEditor extends Activity implements
         }
 
         GlobalClass.pendingShowMemAlert = false;
+        store.setBoolean(IS_DONE_SHOWING_UPDATE_PROMPT, false);
     }
 
     private static void checkSubscription(Activity act) {
@@ -905,6 +927,7 @@ public class ActivityMainEditor extends Activity implements
         if (null != billingClient && billingClient.isReady()) {
             queryPurchases();
         }
+        newVersionHasDownloaded();
     }
 
     private void initPaths() {
@@ -1114,6 +1137,16 @@ public class ActivityMainEditor extends Activity implements
                     e.printStackTrace();
                 }*/
             }
+        }
+
+        if (requestCode == UPDATE_APP_REQUEST_CODE) {
+            if (resultCode != RESULT_OK) {
+                Log.e("xxx", "xxx onActivityResult: app download failed");
+                // If the update is cancelled or fails,
+                // you can request to start the update again.
+                checkAppVersionUpdate();
+            }
+
         }
     }
 
@@ -3036,6 +3069,161 @@ public class ActivityMainEditor extends Activity implements
 
         mDialog = builder.create();
         mDialog.show();
+    }
+
+    // Create a listener to track request state updates.
+    private final InstallStateUpdatedListener installStateUpdatedListener = new InstallStateUpdatedListener() {
+        @Override
+        public void onStateUpdate(InstallState state) {
+            // (Optional) Provide a download progress bar.
+            if (state.installStatus() == InstallStatus.DOWNLOADING) {
+                long bytesDownloaded = state.bytesDownloaded();
+                long totalBytesToDownload = state.totalBytesToDownload();
+                // Implement progress bar.
+            }
+            if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                //CHECK THIS if AppUpdateType.FLEXIBLE, otherwise you can skip
+                if (appUpdateManager != null) {
+                    appUpdateManager.completeUpdate();
+                }
+            } else if (state.installStatus() == InstallStatus.INSTALLED) {
+                if (appUpdateManager != null) {
+                    appUpdateManager.unregisterListener(installStateUpdatedListener);
+                }
+
+            } else {
+                Log.i("xxx", "InstallStateUpdatedListener: state: " + state.installStatus());
+            }
+        }
+    };
+
+    private void checkAppVersionUpdate() {
+        if (appUpdateManager == null) {
+            appUpdateManager = AppUpdateManagerFactory.create(this);
+            appUpdateManager.registerListener(installStateUpdatedListener);
+            appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+        }
+
+        // Checks that the platform will allow the specified type of update.
+        //if (!baseActivity.store.getBoolean(IS_DONE_SHOWING_UPDATE_PROMPT)) {
+        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                    // For a flexible update, use AppUpdateType.FLEXIBLE
+                    && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) &&
+                    appUpdateInfo.installStatus() != InstallStatus.INSTALLED) {
+                if (mDialog != null)
+                    mDialog.dismiss();
+
+                showSimpleDialog("Update Available",
+                        "There is a new version of Logolicious available. It is recommended to update to the latest version.",
+                        "Update now", "", v -> {
+                            editor.putBoolean(IS_DONE_SHOWING_UPDATE_PROMPT, true);
+                            editor.apply();
+                            mDialog.dismiss();
+                            try {
+                                appUpdateManager.startUpdateFlowForResult(
+                                        // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                                        appUpdateInfo,
+                                        // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
+                                        AppUpdateType.IMMEDIATE,
+                                        // The current activity making the update request.
+                                        this,
+                                        // Include a request code to later monitor this update request.
+                                        UPDATE_APP_REQUEST_CODE);
+                            } catch (IntentSender.SendIntentException e) {
+                                e.printStackTrace();
+                            }
+                        }, null, null,
+                        true,
+                        false,
+                        true,
+                        false,
+                        false);
+            }
+
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS &&
+                    appUpdateInfo.installStatus() != InstallStatus.INSTALLED) {
+                // If an in-app update is already running, resume the update.
+                try {
+                    appUpdateManager.startUpdateFlowForResult(
+                            appUpdateInfo,
+                            AppUpdateType.IMMEDIATE,
+                            this,
+                            UPDATE_APP_REQUEST_CODE);
+                } catch (IntentSender.SendIntentException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED &&
+                    appUpdateInfo.installStatus() != InstallStatus.INSTALLED) {
+                if (mDialog != null)
+                    mDialog.dismiss();
+                if (appUpdateManager != null) {
+                    appUpdateManager.completeUpdate();
+                }
+            }
+        });
+        //}
+    }
+
+    private void newVersionHasDownloaded() {
+        appUpdateManager
+                .getAppUpdateInfo()
+                .addOnSuccessListener(
+                        appUpdateInfo -> {
+                            if (appUpdateInfo.updateAvailability()
+                                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                                // If an in-app update is already running, resume the update.
+                                try {
+                                    appUpdateManager.startUpdateFlowForResult(
+                                            appUpdateInfo,
+                                            AppUpdateType.IMMEDIATE,
+                                            this,
+                                            UPDATE_APP_REQUEST_CODE);
+                                } catch (IntentSender.SendIntentException e) {
+
+                                }
+                            }
+                        });
+
+    }
+
+    public void showSimpleDialog(String title, String message, String yesLabel, String mainButtonLabel,
+                                 View.OnClickListener positiveButtonListener,
+                                 View.OnClickListener negativeButtonListener,
+                                 View.OnClickListener mainButtonListener,
+                                 boolean withTitle, boolean enableNo, boolean enableYes, boolean enableMainButton,
+                                 boolean cancellable) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.alert_dialog_custom_view, null);
+        dialogBuilder.setCancelable(cancellable);
+        dialogBuilder.setView(dialogView);
+        TextView titleTV = dialogView.findViewById(R.id.titleTv);
+        titleTV.setVisibility(withTitle ? View.VISIBLE : View.GONE);
+        TextView messageTV = dialogView.findViewById(R.id.messageTV);
+        TextView cancelTV = dialogView.findViewById(R.id.cancelTV);
+        TextView leaveTV = dialogView.findViewById(R.id.leaveTV);
+        Button positiveBT = dialogView.findViewById(R.id.positiveBT);
+        titleTV.setText(title);
+        messageTV.setText(message);
+        cancelTV.setVisibility(enableNo ? View.VISIBLE : View.GONE);
+        leaveTV.setVisibility(enableYes ? View.VISIBLE : View.GONE);
+        positiveBT.setVisibility(enableMainButton ? View.VISIBLE : View.GONE);
+        cancelTV.setText("No");
+        leaveTV.setText(yesLabel);
+        mDialog = dialogBuilder.create();
+        if (!isFinishing())
+            mDialog.show();
+
+        if (!TextUtils.isEmpty(mainButtonLabel)) {
+            positiveBT.setText(mainButtonLabel);
+        }
+
+        cancelTV.setOnClickListener(negativeButtonListener);
+        leaveTV.setOnClickListener(positiveButtonListener);
+        positiveBT.setOnClickListener(mainButtonListener);
     }
 
 }

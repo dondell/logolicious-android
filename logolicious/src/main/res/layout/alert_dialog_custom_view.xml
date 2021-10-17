@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/titleTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"
+        android:padding="10dp"
+        android:text="title"
+        android:textColor="@color/Black"
+        android:textSize="20dp" />
+
+    <TextView
+        android:id="@+id/messageTV"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:background="@color/transparent"
+        android:padding="10dp"
+        android:text=""
+        android:textColor="@color/textColorTwo"
+        android:textSize="@dimen/_18sdp" />
+
+    <RelativeLayout
+        android:id="@+id/rl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:id="@+id/cancelTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/_10sdp"
+            android:layout_toStartOf="@+id/leaveTV"
+            android:background="@color/transparent"
+            android:padding="10dp"
+            android:text="cancel"
+            android:textColor="@color/textColorTwo"
+            android:textSize="@dimen/_18sdp"
+            android:layout_marginRight="@dimen/_10sdp"
+            android:layout_toLeftOf="@+id/leaveTV" />
+
+        <TextView
+            android:id="@+id/leaveTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:layout_alignParentEnd="true"
+            android:background="@color/transparent"
+            android:padding="10dp"
+            android:text="LEAVE"
+            android:textColor="@color/blue"
+            android:textSize="@dimen/_18sdp"
+            android:layout_alignParentRight="true" />
+
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/positiveBT"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="10dp"
+        android:text="Okay" />
+
+
+</LinearLayout>

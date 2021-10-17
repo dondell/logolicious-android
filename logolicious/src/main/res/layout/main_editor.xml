@@ -14,18 +14,12 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent=".82" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_bottom_menus"
-        android:layout_width="1sp"
-        android:layout_height="12sp"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.82" />
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraint_rightPanel"
         android:layout_width="0dp"
         android:layout_height="fill_parent"
         android:layout_weight=".35"
+        android:background="@color/DodgerBlue"
         android:orientation="vertical"
         android:weightSum="2"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -44,7 +38,6 @@
             android:id="@+id/menuRight"
             android:layout_width="fill_parent"
             android:layout_height="0dp"
-            android:background="@color/DodgerBlue"
             android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="@+id/guideline_right_bottom"
             app:layout_constraintEnd_toEndOf="parent"
@@ -63,58 +56,6 @@
                 android:contentDescription="@string/app_name"
                 android:scaleType="fitCenter"
                 android:src="@drawable/logolicious_white_txt" />
-
-            <LinearLayout
-                android:id="@+id/linearLayout_select_image"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:id="@+id/buttonLive"
-                    android:layout_width="match_parent"
-                    android:layout_height="35dp"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@color/Transparent"
-                    android:contentDescription="@string/live"
-                    android:onClick="selectLiveOption"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/live"
-                    android:visibility="gone" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginRight="5dp"
-                    android:background="@color/White"
-                    android:visibility="gone" />
-
-                <ImageView
-                    android:id="@+id/buttonGallery"
-                    android:layout_width="@dimen/SaveButtonWidth"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:adjustViewBounds="true"
-                    android:contentDescription="@string/contentdesc_icon_eraser"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/select_image" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginLeft="7dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginRight="7dp"
-                    android:layout_marginBottom="5dp"
-                    android:background="@color/White"
-                    android:visibility="visible" />
-            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/linearLayout_top_right_buttons"
@@ -271,59 +212,115 @@
             </LinearLayout>
         </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/linearLayout_save_share"
-            android:layout_width="fill_parent"
-            android:layout_height="0dp"
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout_select_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout_save_share"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout_save_share">
+
+        <ImageView
+            android:id="@+id/buttonLive"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/Transparent"
+            android:contentDescription="@string/live"
+            android:onClick="selectLiveOption"
+            android:scaleType="fitCenter"
+            android:src="@drawable/live"
+            android:visibility="gone" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="5dp"
+            android:background="@color/White"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/buttonGallery"
+            android:layout_width="@dimen/SaveButtonWidth"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/contentdesc_icon_eraser"
+            android:scaleType="fitCenter"
+            android:src="@drawable/select_image" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="7dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="7dp"
+            android:layout_marginBottom="5dp"
+            android:background="@color/White"
+            android:visibility="visible" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout_save_share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/DodgerBlue"
+        android:gravity="bottom"
+        android:orientation="vertical"
+        android:paddingTop="10sp"
+        android:paddingBottom="10sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_right_sidebar">
+
+        <ImageView
+            android:id="@+id/save"
+            android:layout_width="@dimen/SaveButtonWidth"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:adjustViewBounds="true"
             android:background="@color/DodgerBlue"
-            android:gravity="bottom"
-            android:orientation="vertical"
-            android:paddingBottom="10sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/guideline_right_bottom">
+            android:contentDescription="@string/todo"
+            android:scaleType="fitCenter"
+            android:src="@drawable/save" />
+
+        <LinearLayout
+            android:layout_width="@dimen/SaveButtonWidth"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="5dp"
+            android:background="@drawable/menu_bg_edge">
 
             <ImageView
-                android:id="@+id/save"
-                android:layout_width="@dimen/SaveButtonWidth"
+                android:id="@+id/sharePic"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginLeft="5dp"
+                android:layout_marginTop="10sp"
                 android:layout_marginRight="5dp"
+                android:layout_marginBottom="10sp"
                 android:adjustViewBounds="true"
-                android:background="@color/DodgerBlue"
-                android:contentDescription="@string/todo"
-                android:scaleType="fitCenter"
-                android:src="@drawable/save" />
-
-            <LinearLayout
-                android:layout_width="@dimen/SaveButtonWidth"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginLeft="5dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginRight="5dp"
-                android:background="@drawable/menu_bg_edge">
-
-                <ImageView
-                    android:id="@+id/sharePic"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:layout_marginTop="10sp"
-                    android:layout_marginBottom="10sp"
-                    android:padding="3sp"
-                    android:adjustViewBounds="true"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/share_icon2" />
-            </LinearLayout>
-
-
+                android:padding="3sp"
+                android:scaleType="centerInside"
+                android:src="@drawable/share_icon2" />
         </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/photo"
@@ -331,7 +328,7 @@
         android:layout_height="0dp"
         android:layout_weight="1.64"
         android:background="@drawable/backrepeat"
-        app:layout_constraintBottom_toTopOf="@id/guideline_bottom_menus"
+        app:layout_constraintBottom_toTopOf="@id/menuBottom"
         app:layout_constraintEnd_toStartOf="@id/guideline_right_sidebar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -413,7 +410,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/guideline_right_sidebar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/guideline_bottom_menus">
+        app:layout_constraintTop_toTopOf="@+id/linearLayout_save_share">
 
         <LinearLayout
             android:id="@+id/menuBottomUpper"
