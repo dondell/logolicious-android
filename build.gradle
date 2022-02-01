@@ -14,7 +14,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.2'
+        classpath 'com.android.tools.build:gradle:4.0.1'
         classpath "com.diffplug.spotless:spotless-plugin-gradle:$versions.spotlessGradle"
         classpath "com.novoda:bintray-release:$versions.bintrayRelease"
         classpath 'com.google.gms:google-services:4.3.3'  // Google Services plugin

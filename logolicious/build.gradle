@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 apply from: '../dependencies.gradle'
 apply from: '../spotless.gradle'
-apply plugin: 'com.google.gms.google-services'  // Google Services plugin
+apply plugin: 'com.google.gms.google-services'
 
 android {
     signingConfigs {
         release {
-            storeFile file('D:\\Clients\\Direct - OlavAndMic\\keystore\\original keystore')
+            storeFile file('original keystore')
             storePassword password
             keyAlias = 'll'
             keyPassword password
@@ -17,22 +17,13 @@ android {
             }
         }
         debug {
-            storeFile file('D:\\Clients\\Direct - OlavAndMic\\keystore\\original keystore')
+            storeFile file('original keystore')
             storePassword password
             keyAlias = 'll'
             keyPassword password
         }
     }
     compileSdkVersion 30
-
-    /*signingConfigs{
-        key{
-            keyAlias 'll'
-            keyPassword 'olav1234'
-            storeFile file('D:\\workspace\\Olav Keystore')
-            storePassword 'olav1234'
-        }
-    }*/
 
     compileOptions {
         sourceCompatibility 1.8
@@ -79,14 +70,8 @@ android {
 
     productFlavors {
         demo {
-            /*minSdkVersion 14
-             targetSdkVersion 24
-             versionCode 1
-             versionName '1.0'
-             applicationId 'com.olav.logolicious.test'*/
             dimension "version"
             apkName = "demo"
-            //applicationIdSuffix ".demo"
             versionNameSuffix "-demo"
         }
         full {

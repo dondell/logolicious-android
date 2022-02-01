@@ -6,7 +6,7 @@
         android:drawable="@drawable/sliderbar_progress_background"/>
 
     <item
-        android:id="@+android:id/progress"
+        android:id="@+id/progress"
         android:drawable="@drawable/sliderbar_progress"/>
 
 </layer-list>
