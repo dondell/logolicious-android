@@ -1012,8 +1012,15 @@ public class LayersContainerView extends ImageView implements OnTouchListener {
         }
     }
 
+    private ActivityMainEditor.TextLongClickForEdit longClickForTextEdit;
+
+    public void setLongClickInterface(ActivityMainEditor.TextLongClickForEdit longClickForTextEdit) {
+        this.longClickForTextEdit = longClickForTextEdit;
+    }
+
     private void longPressOptions(final MotionEvent e) {
-        LogoliciousApp.updateText(ActivityMainEditor.act, ActivityMainEditor.backgroundImage, ActivityMainEditor.layeredLogos, false);
+        if(null != longClickForTextEdit)
+            longClickForTextEdit.onLongClick();
     }
 
     private void lockUnlockItem(MotionEvent e) {

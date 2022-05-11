@@ -16,7 +16,6 @@
 
 package com.olav.logolicious.billingv3.billing;
 
-import android.app.Activity;
 import android.app.Application;
 import android.util.Log;
 
@@ -29,7 +28,6 @@ import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
@@ -53,7 +51,7 @@ public class BillingClientLifecycle implements LifecycleObserver, PurchasesUpdat
     private static final List<String> LIST_OF_SKUS = Collections.unmodifiableList(
             new ArrayList<String>() {{
                 add(Constants.BASIC_SKU);
-                add(Constants.PREMIUM_SKU);
+                add(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
             }});
 
     /**
@@ -330,25 +328,6 @@ public class BillingClientLifecycle implements LifecycleObserver, PurchasesUpdat
                 .build();
         Log.i(TAG, "querySkuDetailsAsync");
         billingClient.querySkuDetailsAsync(params, this);
-    }
-
-    /**
-     * Launching the billing flow.
-     * <p>
-     * Launching the UI to make a purchase requires a reference to the Activity.
-     */
-    public int launchBillingFlow(Activity activity, BillingFlowParams params) {
-        String sku = params.getSku();
-        String oldSku = params.getOldSku();
-        Log.i(TAG, "launchBillingFlow: sku: " + sku + ", oldSku: " + oldSku);
-        if (!billingClient.isReady()) {
-            Log.e(TAG, "launchBillingFlow: BillingClient is not ready");
-        }
-        BillingResult billingResult = billingClient.launchBillingFlow(activity, params);
-        int responseCode = billingResult.getResponseCode();
-        String debugMessage = billingResult.getDebugMessage();
-        Log.d(TAG, "launchBillingFlow: BillingResponse " + responseCode + " " + debugMessage);
-        return responseCode;
     }
 
     /**

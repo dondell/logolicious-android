@@ -154,7 +154,7 @@ public class FakeServerFunctions implements ServerFunctions {
             case Constants.BASIC_SKU:
                 subscriptions.postValue(Collections.singletonList(createFakeBasicSubscription()));
                 break;
-            case Constants.PREMIUM_SKU:
+            case Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION:
                 subscriptions.postValue(Collections.singletonList(createFakePremiumSubscription()));
                 break;
             default:
@@ -262,7 +262,7 @@ public class FakeServerFunctions implements ServerFunctions {
         SubscriptionStatus subscription = new SubscriptionStatus();
         subscription.isEntitlementActive = true;
         subscription.willRenew = true;
-        subscription.sku = Constants.PREMIUM_SKU;
+        subscription.sku = Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION;
         subscription.isAccountHold = false;
         subscription.isGracePeriod = false;
         subscription.purchaseToken = "FAKE_PURCHASE_TOKEN";
@@ -274,7 +274,7 @@ public class FakeServerFunctions implements ServerFunctions {
         SubscriptionStatus subscription = new SubscriptionStatus();
         subscription.isEntitlementActive = false;
         subscription.willRenew = true;
-        subscription.sku = Constants.PREMIUM_SKU;
+        subscription.sku = Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION;
         subscription.isAccountHold = true;
         subscription.isGracePeriod = false;
         subscription.purchaseToken = "FAKE_PURCHASE_TOKEN";
@@ -286,7 +286,7 @@ public class FakeServerFunctions implements ServerFunctions {
         SubscriptionStatus subscription = new SubscriptionStatus();
         subscription.isEntitlementActive = false;
         subscription.willRenew = true;
-        subscription.sku = Constants.PREMIUM_SKU;
+        subscription.sku = Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION;
         subscription.isPaused = true;
         subscription.isGracePeriod = false;
         subscription.purchaseToken = "FAKE_PURCHASE_TOKEN";
@@ -334,7 +334,7 @@ public class FakeServerFunctions implements ServerFunctions {
         SubscriptionStatus subscription = new SubscriptionStatus();
         subscription.isEntitlementActive = true;
         subscription.willRenew = false;
-        subscription.sku = Constants.PREMIUM_SKU;
+        subscription.sku = Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION;
         subscription.isAccountHold = false;
         subscription.isGracePeriod = false;
         subscription.purchaseToken = "FAKE_PURCHASE_TOKEN";

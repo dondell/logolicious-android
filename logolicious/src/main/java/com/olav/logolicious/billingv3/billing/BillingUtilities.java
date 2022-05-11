@@ -49,7 +49,7 @@ public class BillingUtilities {
     public static Purchase getPurchaseForSku(@Nullable List<Purchase> purchases, String sku) {
         if (purchases != null) {
             for (Purchase purchase : purchases) {
-                if (sku.equals(purchase.getSku())) {
+                if (purchase.getSkus().contains(sku)) {
                     return purchase;
                 }
             }
@@ -138,7 +138,7 @@ public class BillingUtilities {
     public static boolean isPremiumContent(@Nullable SubscriptionStatus subscription) {
         return subscription != null &&
                 subscription.isEntitlementActive &&
-                Constants.PREMIUM_SKU.equals(subscription.sku) &&
+                Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION.equals(subscription.sku) &&
                 !subscription.subAlreadyOwned;
     }
 

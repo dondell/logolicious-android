@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">LogoLicious</string>
+    <string name="app_name">LOGOLICIOUS-kotlin</string>
     <string name="package_name">com.olav.logolicious</string>
     <string name="crash_report">Crash Report</string>
     <string name="app_about_info">For more information visit:</string>
@@ -184,14 +184,14 @@
     <string name="Continue">CONTINUE</string>
     <string name="Cancel">CANCEL</string>
     <string name="Warning">Warning</string>
-    <string name="SuccessFontSync">Successfully sync fonts</string>
+    <string name="SuccessFontSync">Successfully synced fonts</string>
     <string name="SCREEN_LAYOUT_SIZE">normal</string>
     <string name="font_feature_tip" formatted="true"><![CDATA[
-    New feature: Add your own font to Logolicious
+    Add your own font
         <br><br>
-    <b>Step 1</b>: Save a font (.ttf file) to your phones\' standard \'downloads\' folder.
+    <b>1</b>. Save your font files (.ttf) on your device
     <br><br>
-    <b>Step 2</b>: Simply click the \'SCAN FOR FONTS\' button right here and the font(s) in your download folder will become available automatically.
+    <b>2</b>. Simply hit \'ADD FONT\' - browse and locate your font (.ttf): select and hit \'OK\'  and it will appear in your fontlist.
     ]]> </string>
     <string-array name="showGuidelinesArray">
         <item>Off</item>

@@ -662,7 +662,6 @@ public class CropOverlayView extends View {
                         ((x + 50) > right && (x - 50) < right &&
                                 (y + 50) > bottom && (y - 50) < bottom)
         ) {
-            Log.i("", "xxx Edge Touch");
             mFixAspectRatio = LogoliciousApp.sharedPreferenceGet(getContext(), "isFixAspectRatio", false);
             if (!LogoliciousApp.sharedPreferenceGet(getContext(), "isFixAspectRatio", false)) {
                 GlobalClass.AR = "";
@@ -670,6 +669,7 @@ public class CropOverlayView extends View {
                 GlobalClass.AR = mAspectRatioX + ":" + mAspectRatioY;
             }
             GlobalClass.isFreeChoosenAR = false;
+            Log.i("", "xxx Edge Touch AR " + mAspectRatioX + ":" + mAspectRatioY);
         } else {
 //            Log.i("","xxx Not-Center Touch");
             //detect side lines
@@ -690,7 +690,8 @@ public class CropOverlayView extends View {
                 Log.i("", "xxx Side Line Detect");
                 //GlobalClass.ARFirst = false;
                 //mFixAspectRatio = false;
-                GlobalClass.AR = "";
+                if (!mFixAspectRatio)
+                    GlobalClass.AR = "";
                 invalidate();
             }
 

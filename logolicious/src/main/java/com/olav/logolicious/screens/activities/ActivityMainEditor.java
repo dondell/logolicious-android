@@ -1,9 +1,21 @@
 package com.olav.logolicious.screens.activities;
 
+import static android.os.Build.VERSION.SDK_INT;
+import static com.olav.logolicious.util.GlobalClass.PICK_FONT_RESULT_CODE;
+import static com.olav.logolicious.util.GlobalClass.sqLiteHelper;
+import static com.olav.logolicious.util.LogoliciousApp.isLive;
+import static com.olav.logolicious.util.LogoliciousApp.selectedFontPath;
+import static com.olav.logolicious.util.LogoliciousApp.showMessageOK;
+import static com.olav.logolicious.util.LogoliciousApp.toast;
+
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,6 +32,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -37,9 +50,13 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.provider.MediaStore;
+import android.provider.Settings;
+import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -54,11 +71,13 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -71,21 +90,13 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.billingclient.api.AcknowledgePurchaseParams;
-import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
@@ -97,7 +108,9 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.play.core.tasks.Task;
 import com.olav.logolicious.BuildConfig;
 import com.olav.logolicious.R;
-import com.olav.logolicious.billingv3.Constants;
+import com.olav.logolicious.billingv4.MyBillingImpl;
+import com.olav.logolicious.customize.adapters.AdapterFontDetails;
+import com.olav.logolicious.customize.adapters.AdapterFonts;
 import com.olav.logolicious.customize.adapters.AdapterGridLogos;
 import com.olav.logolicious.customize.adapters.ArrayHolderLogos;
 import com.olav.logolicious.customize.adapters.ColorPickerAdapter;
@@ -107,11 +120,13 @@ import com.olav.logolicious.customize.datamodel.ImageExif;
 import com.olav.logolicious.customize.widgets.DynamicImageView;
 import com.olav.logolicious.customize.widgets.LayersContainerView;
 import com.olav.logolicious.customize.widgets.MarginDecoration;
+import com.olav.logolicious.screens.fragments.TipFontFeature;
 import com.olav.logolicious.supertooltips.ToolTip;
 import com.olav.logolicious.supertooltips.ToolTipRelativeLayout;
 import com.olav.logolicious.supertooltips.ToolTipView;
 import com.olav.logolicious.util.ClickColorListener;
 import com.olav.logolicious.util.FileUtil;
+import com.olav.logolicious.util.FileUtils;
 import com.olav.logolicious.util.GlobalClass;
 import com.olav.logolicious.util.HexColorValidator;
 import com.olav.logolicious.util.LogoliciousApp;
@@ -131,7 +146,6 @@ import com.skydoves.colorpickerview.sliders.AlphaSlideBar;
 import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
 
 import org.acra.ACRA;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -144,9 +158,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import static com.olav.logolicious.util.GlobalClass.PICK_FONT_RESULT_CODE;
-import static com.olav.logolicious.util.GlobalClass.sqLiteHelper;
 
 @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class ActivityMainEditor extends Activity implements
@@ -182,6 +193,8 @@ public class ActivityMainEditor extends Activity implements
     private static final int REQUEST_CODE_UPLOAD_LOGOS = 3;
     private static final int REQUEST_SHARE_ACTION = 4;
     private static final int REQUEST_CODE_CHOOSE_LOGO_FROM_GAL = 5;
+    private static final int REQUEST_BROWSE_FONT = 6;
+    private static final int REQUEST_MANAGE_ALL_FILES_PERM = 7;
 
     /**
      * Draggable ImageView for funny images
@@ -250,249 +263,27 @@ public class ActivityMainEditor extends Activity implements
     private View live_panel;
     private ArrayList<String> customColorsArray = new ArrayList<>();
     private CustomColorAdapter customColorAdapter;
-    public static String colorSelected;
+    public String colorSelected;
+    public String currentText = "";
+    public int colorSelectedText = Color.parseColor("#fffdff");
+    private static int mStackLevel = 0;
     private boolean initColor = true;
     private Handler handlerColorPickerDetector = new Handler();
     public static PrefStore store;
 
     //Billing implementation
-    public static BillingClient billingClient = null;
+    public static MyBillingImpl billingHelper = null;
     public static List<SkuDetails> skuDetailsList = new ArrayList<>();
-    public static List<Purchase> purchasesList;
+    public static List<Purchase> purchasesList = new ArrayList<>();
     ProgressDialog mProgressDialog;
     AlertDialog mDialog;
     private static final int UPDATE_APP_REQUEST_CODE = 1001;
     public static final String IS_DONE_SHOWING_UPDATE_PROMPT = "IS_DONE_SHOWING_UPDATE_PROMPT";
     private AppUpdateManager appUpdateManager;
     private Task<AppUpdateInfo> appUpdateInfoTask;
-
-    private final BillingClientStateListener billingClientStateListener = new BillingClientStateListener() {
-        @Override
-        public void onBillingSetupFinished(BillingResult billingResult) {
-            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                // The BillingClient is ready. You can query purchases here.
-                querySKUDetails();
-                queryPurchases();
-            }
-        }
-
-        @Override
-        public void onBillingServiceDisconnected() {
-            // Try to restart the connection on the next request to
-            // Google Play by calling the startConnection() method.
-            if (billingClient.isReady()) {
-                billingClient.startConnection(billingClientStateListener);
-            }
-        }
-    };
-
-    private final PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
-        @Override
-        public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
-            Log.i("xxx", "xxx onProductPurchased Subscription Success!");
-            purchasesList = purchases;
-            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
-                    && purchases != null) {
-                for (Purchase purchase : purchases) {
-                    handlePurchase(purchase);
-                }
-            } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
-                // Handle an error caused by a user cancelling the purchase flow.
-            } else {
-                // Handle any other error codes.
-            }
-        }
-    };
-
-    private final AcknowledgePurchaseResponseListener acknowledgePurchaseResponseListener = new AcknowledgePurchaseResponseListener() {
-        @Override
-        public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
-            AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
-            if (null != LogoliciousApp.subsDialog) {
-                LogoliciousApp.subsDialog.cancel();
-            }
-            Toast.makeText(ActivityMainEditor.this, "onAcknowledgePurchaseResponse Successfully subscribed", Toast.LENGTH_SHORT).show();
-        }
-    };
-
-    /*@Override
-    public void onProductPurchased(String productId, TransactionDetails details) {
-        *//*
-     * Called when requested PRODUCT ID was successfully purchased
-     *//*
-
-    }*/
-
-    /*@Override
-    public void onBillingError(int errorCode, Throwable error) {
-        *//*
-     * Called when some error occurred. See Constants class for more details
-     *
-     * Note - this includes handling the case where the user canceled the buy dialog:
-     * errorCode = Constants.BILLING_RESPONSE_RESULT_USER_CANCELED
-     *//*
-        Log.i("xxx", "xxx Subscription Failed!");
-        AppStatitics.sharedPreferenceSet(act, "isSubscribed", 0);
-    }*/
-
-    /*@Override
-    public void onPurchaseHistoryRestored() {
-        *//*
-     * Called when purchase history was restored and the list of all owned PRODUCT ID's
-     * was loaded from Google Play
-     *//*
-//        Toast.makeText(this, "Subscription Has been Restored!", Toast.LENGTH_SHORT).show();
-        Log.i("xxx", "xxx Subscription Restored!");
-    }*/
-
-    private void initBilling() {
-        billingClient = BillingClient.newBuilder(this)
-                .setListener(purchasesUpdatedListener)
-                .enablePendingPurchases()
-                .build();
-        billingClient.startConnection(billingClientStateListener);
-    }
-
-    private void querySKUDetails() {
-        List<String> skuList = new ArrayList<>();
-        skuList.add(Constants.PREMIUM_SKU);
-        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-        params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS);
-        billingClient.querySkuDetailsAsync(params.build(),
-                new SkuDetailsResponseListener() {
-                    @Override
-                    public void onSkuDetailsResponse(@NotNull BillingResult billingResult,
-                                                     List<SkuDetails> skuDetailsList) {
-                        if (null != skuDetailsList && skuDetailsList.size() > 0) {
-                            ActivityMainEditor.skuDetailsList.addAll(skuDetailsList);
-                        }
-                    }
-                });
-
-    }
-
-    private void queryPurchases() {
-        /*billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.SUBS, new PurchaseHistoryResponseListener() {
-            @Override
-            public void onPurchaseHistoryResponse(@NonNull BillingResult billingResult, @Nullable List<PurchaseHistoryRecord> list) {
-                for (PurchaseHistoryRecord purchaseHistoryRecord : list) {
-                    if (purchaseHistoryRecord.getSku().equalsIgnoreCase(Constants.PREMIUM_SKU)) {
-                        AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
-                        Toast.makeText(ActivityMainEditor.this, "queryPurchases Successfully subscribed " + purchaseHistoryRecord.getPurchaseTime(), Toast.LENGTH_SHORT).show();
-                        if (null != LogoliciousApp.subsDialog) {
-                            LogoliciousApp.subsDialog.cancel();
-                        }
-                    }
-                    Log.e("xxx", "xxx  getPurchases purchaseHistoryRecord " + new Gson().toJson(purchaseHistoryRecord));
-                }
-            }
-        });*/
-        if (!billingClient.isReady()) {
-            Log.e(TAG, "queryPurchases: BillingClient is not ready");
-        }
-        Log.d(TAG, "queryPurchases: SUBS");
-        Purchase.PurchasesResult result = billingClient.queryPurchases(BillingClient.SkuType.SUBS);
-        if (result == null) {
-            Log.i(TAG, "queryPurchases: null purchase result");
-            processPurchases(null);
-        } else {
-            if (result.getPurchasesList() == null) {
-                Log.i(TAG, "queryPurchases: null purchase list");
-                processPurchases(null);
-            } else {
-                processPurchases(result.getPurchasesList());
-            }
-        }
-    }
-
-    /**
-     * Send purchase SingleLiveEvent and update purchases LiveData.
-     * <p>
-     * The SingleLiveEvent will trigger network call to verify the subscriptions on the sever.
-     * The LiveData will allow Google Play settings UI to update based on the latest purchase data.
-     */
-    private void processPurchases(List<Purchase> purchasesList) {
-        if (purchasesList != null) {
-            Log.d(TAG, "processPurchases: " + purchasesList.size() + " purchase(s)");
-        } else {
-            Log.d(TAG, "processPurchases: with no purchases");
-        }
-
-        if (purchasesList != null) {
-            if (purchasesList.size() == 0) {
-                AppStatitics.sharedPreferenceSet(act, "isSubscribed", 0);
-                //Toast.makeText(ActivityMainEditor.this, "Not subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
-            } else {
-                //Toast.makeText(ActivityMainEditor.this, "Has subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
-            }
-
-            for (Purchase purchase : purchasesList) {
-                String sku = purchase.getSku();
-                String purchaseToken = purchase.getPurchaseToken();
-                if (sku.equalsIgnoreCase(Constants.PREMIUM_SKU)) {
-                    //Only show subscription restored popup when isSubscribed key returned 0
-                    if (AppStatitics.sharedPreferenceGet(act, "isSubscribed", 0) == 0) {
-                        LogoliciousApp.showMessageOK(ActivityMainEditor.this,
-                                "Update successful. Your subscription is restored!",
-                                (dialogInterface, i) -> dialogInterface.dismiss());
-                    }
-
-                    AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
-                    if (null != LogoliciousApp.subsDialog) {
-                        LogoliciousApp.subsDialog.cancel();
-                    }
-                    break;
-                }
-                Log.d(TAG, "Register purchase with sku: " + sku + ", token: " + purchaseToken);
-            }
-        } else {
-            AppStatitics.sharedPreferenceSet(act, "isSubscribed", 0);
-            //Toast.makeText(ActivityMainEditor.this, "queryPurchases Not subscribed ", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void handlePurchase(Purchase purchase) {
-        // Purchase retrieved from BillingClient#queryPurchases or your PurchasesUpdatedListener.
-
-        // Verify the purchase.
-        // Ensure entitlement was not already granted for this purchaseToken.
-        // Grant entitlement to the user.
-
-        /*
-        //This is for consumable item
-        ConsumeParams consumeParams =
-                ConsumeParams.newBuilder()
-                        .setPurchaseToken(purchase.getPurchaseToken())
-                        .build();
-
-        ConsumeResponseListener listener = new ConsumeResponseListener() {
-            @Override
-            public void onConsumeResponse(BillingResult billingResult, String purchaseToken) {
-                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                    // Handle the success of the consume operation.
-                    AppStatitics.sharedPreferenceSet(act, "isSubscribed", 1);
-                    if (null != LogoliciousApp.subsDialog) {
-                        LogoliciousApp.subsDialog.cancel();
-                    }
-                    Toast.makeText(ActivityMainEditor.this, "Successfully subscribed", Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
-
-        billingClient.consumeAsync(consumeParams, listener);*/
-
-        //This is for subscription/non-consumable
-        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-            if (!purchase.isAcknowledged()) {
-                AcknowledgePurchaseParams acknowledgePurchaseParams =
-                        AcknowledgePurchaseParams.newBuilder()
-                                .setPurchaseToken(purchase.getPurchaseToken())
-                                .build();
-                billingClient.acknowledgePurchase(acknowledgePurchaseParams, acknowledgePurchaseResponseListener);
-            }
-        }
-
-    }
+    public ArrayList<AdapterFontDetails> arrayFonts = new ArrayList<>();
+    private AdapterFonts adapterFonts;
+    private AlertDialog alert = null;
 
     @Override
     public void onSuccessSavingTemplate() {
@@ -500,7 +291,6 @@ public class ActivityMainEditor extends Activity implements
             layeredLogos.invalidate(0, 0, 0, 0);
         }
     }
-
 
     public enum Live_Camera {
         LIVE_PICTURE,
@@ -578,6 +368,14 @@ public class ActivityMainEditor extends Activity implements
         }
     };
 
+    public interface PermissionCallback {
+        void permGranted();
+
+        void permDenied();
+    }
+
+    public PermissionCallback permCallback;
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -621,6 +419,12 @@ public class ActivityMainEditor extends Activity implements
         backgroundImage = findViewById(R.id.backgroundImage);
         ivSOG = findViewById(R.id.buttonSnapOnGrid);
         layeredLogos = findViewById(R.id.layeredLogos);
+        layeredLogos.setLongClickInterface(new TextLongClickForEdit() {
+            @Override
+            public void onLongClick() {
+                updateText(ActivityMainEditor.this, backgroundImage, layeredLogos, false);
+            }
+        });
         imageViewLogo = findViewById(R.id.imageViewLogo);
         bottomSlidersContainer = findViewById(R.id.bottomSlidersContainer);
         listRight = findViewById(R.id.menuRight);
@@ -747,10 +551,10 @@ public class ActivityMainEditor extends Activity implements
 
         // get the last font selected
         Cursor c = GlobalClass.sqLiteHelper.getFontSelected();
-        LogoliciousApp.selectedFontPath = null;
+        selectedFontPath = null;
         if (c.getCount() > 0) {
             c.moveToNext();
-            LogoliciousApp.selectedFontPath = c.getString(0);
+            selectedFontPath = c.getString(0);
         }
 
         mOrientation = getApplicationContext().getResources().getConfiguration().orientation;
@@ -774,9 +578,9 @@ public class ActivityMainEditor extends Activity implements
         LogoliciousApp.setOnClickListener(this, R.id.buttonSnapOnGrid);
         LogoliciousApp.setOnClickListener(this, R.id.buttonGallery);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-            new LogoliciousApp.LoadFontsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            new LoadFontsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         else
-            new LogoliciousApp.LoadFontsTask().execute();
+            new LoadFontsTask().execute();
 
         LogoliciousApp.initPrefabLogos(act);
 
@@ -792,9 +596,6 @@ public class ActivityMainEditor extends Activity implements
 
         LogoliciousApp.getAvailableMemMB(this);
 
-        if (!LogoliciousApp.hasPermissionNeeded(ActivityMainEditor.this))
-            recievedImageFromOtherApps();
-
         if (!LogoliciousApp.sharedPreferenceExist(this, "delete_old_fonts")) {
             LogoliciousApp.sharedPreferenceSet(this, "delete_old_fonts", 0);
         }
@@ -804,8 +605,17 @@ public class ActivityMainEditor extends Activity implements
             LogoliciousApp.sharedPreferenceSet(this, "delete_old_fonts", 1);
         }
 
-        initBilling();
+        if (!LogoliciousApp.hasPermissionNeeded(ActivityMainEditor.this)) {
+            recievedImageFromOtherApps();
+        }
+
+        billingHelper = new MyBillingImpl(this, purchasesList);
         checkAppVersionUpdate();
+    }
+
+    public void appCheckSelfPermission(String[] perms, PermissionCallback permCallback) {
+        this.permCallback = permCallback;
+        ActivityCompat.requestPermissions(this, perms, 99);
     }
 
     @Override
@@ -924,8 +734,8 @@ public class ActivityMainEditor extends Activity implements
         isMinimized = false;
         gc.setCurrentActivity(this);
 
-        if (null != billingClient && billingClient.isReady()) {
-            queryPurchases();
+        if (null != billingHelper && billingHelper.billingClient.isReady()) {
+            billingHelper.queryPurchases();
         }
         newVersionHasDownloaded();
     }
@@ -993,7 +803,7 @@ public class ActivityMainEditor extends Activity implements
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
+        boolean permGrantedBool = false;
         switch (requestCode) {
             case REQUEST_EXTERNAL_STORAGE:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -1005,6 +815,48 @@ public class ActivityMainEditor extends Activity implements
             case LogoliciousApp.REQUEST_ID_MULTIPLE_PERMISSIONS:
                 initPaths();
                 FileUtil.createDirs(new String[]{GlobalClass.log_path, logoDir, tempDir, tempShareDir, tempSavedPics, liveDir});
+                break;
+            case 99:
+                for (int grantResult : grantResults) {
+                    if (grantResult == PackageManager.PERMISSION_DENIED) {
+                        /*showDialogMessageAndOkButton("Please allow needed permissions",
+                                "Okay",
+                                new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        if (null != alertDialog && !isFinishing())
+                                            alertDialog.dismiss();
+
+                                        Intent intent = new Intent(
+                                                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                                Uri.fromParts("package", getPackageName(), null));
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent);
+                                    }
+                                });*/
+                        permGrantedBool = false;
+                        break;
+                    } else if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                        permGrantedBool = true;
+                    }
+                }
+                if (permCallback != null) {
+                    if (permGrantedBool)
+                        permCallback.permGranted();
+                    else
+                        permCallback.permDenied();
+                }
+                break;
+            case 2296:
+                if (SDK_INT >= Build.VERSION_CODES.R) {
+                    if (Environment.isExternalStorageManager()) {
+                        // perform action when allow permission success
+                        permCallback.permGranted();
+                    } else {
+                        Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
+                        permCallback.permDenied();
+                    }
+                }
                 break;
         }
     }
@@ -1023,7 +875,7 @@ public class ActivityMainEditor extends Activity implements
             if (requestCode == REQUEST_CODE_TAKE_PHOTO) {
 
                 if (LogoliciousApp.isMemoryLow(ActivityMainEditor.this)) {
-                    LogoliciousApp.showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), new DialogInterface.OnClickListener() {
+                    showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             switch (i) {
@@ -1042,7 +894,7 @@ public class ActivityMainEditor extends Activity implements
             } else if (requestCode == REQUEST_CODE_CHOOSE_FROM_GALLERY) {
 
                 if (LogoliciousApp.isMemoryLow(ActivityMainEditor.this)) {
-                    LogoliciousApp.showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), new DialogInterface.OnClickListener() {
+                    showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             switch (i) {
@@ -1064,7 +916,7 @@ public class ActivityMainEditor extends Activity implements
                 String[] filePath = {MediaStore.Images.Media.DATA};
                 Cursor c = getContentResolver().query(selectedImage, filePath, null, null, null);
                 if (null == c) {
-                    LogoliciousApp.showMessageOK(ActivityMainEditor.this, getString(R.string.MessageErrorOnLogoUpload), null);
+                    showMessageOK(ActivityMainEditor.this, getString(R.string.MessageErrorOnLogoUpload), null);
                     return;
                 }
                 c.moveToFirst();
@@ -1123,19 +975,66 @@ public class ActivityMainEditor extends Activity implements
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else {
-                /*int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
-                String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
-                String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
+            }
 
-                try {
-                    JSONObject jo = new JSONObject(purchaseData);
-                    String sku = jo.getString("productId");
-                    LogoliciousApp.toast(getApplicationContext(), "You have subsribed to the " + sku + ". Excellent choice adventurer", Toast.LENGTH_SHORT);
-                } catch (JSONException e) {
-                    LogoliciousApp.toast(getApplicationContext(), "Failed to parse subscription data.", Toast.LENGTH_SHORT);
-                    e.printStackTrace();
-                }*/
+            if (requestCode == REQUEST_MANAGE_ALL_FILES_PERM) {
+                if (SDK_INT >= Build.VERSION_CODES.R) {
+                    if (Environment.isExternalStorageManager()) {
+                        addFont();
+                    } else {
+                        toast(this, "MANAGE_EXTERNAL_STORAGE permission is needed" +
+                                " in order to copy font file to app directory.", Toast.LENGTH_SHORT);
+                    }
+                }
+            }
+
+            if (requestCode == REQUEST_BROWSE_FONT) {
+                FileUtils fileUtils = new FileUtils(this);
+                Uri currFileURI = data.getData();
+                String path = fileUtils.getPath(currFileURI);
+                File font_file = new File(path);
+                toast(this, "Font path " + path, Toast.LENGTH_SHORT);
+
+                if (path.contains(".ttf")) {
+                    appCheckSelfPermission(new String[]{
+                                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                            },
+                            new PermissionCallback() {
+                                @Override
+                                public void permGranted() {
+
+                                    //Check if font already exist
+                                    if (sqLiteHelper.checkIfFontExist(path)) {
+                                        toast(ActivityMainEditor.this,
+                                                "This font already exist on your font list.", Toast.LENGTH_SHORT);
+                                        return;
+                                    }
+
+//                                    try {
+//                                        File file_copy = new File(ActivityMainEditor.fontsDir + font_file.getName());
+//                                        if (!file_copy.exists()) {
+//                                            FileUtil.copyFile(new FileInputStream(path),
+//                                                    new FileOutputStream(
+//                                                            ActivityMainEditor.fontsDir + font_file.getName()));
+                                    sqLiteHelper.insertFont(path);
+//                                        }
+                                    new LoadFontsTask().execute();
+//                                    } catch (IOException e) {
+//                                        e.printStackTrace();
+//                                    }
+                                }
+
+                                @Override
+                                public void permDenied() {
+
+                                }
+                            });
+                } else {
+                    toast(this,
+                            "Incorrect file type selected. \n" +
+                                    "LogoLicious only supports .ttf\nfont files", Toast.LENGTH_SHORT);
+                }
             }
         }
 
@@ -1149,6 +1048,21 @@ public class ActivityMainEditor extends Activity implements
 
         }
     }
+
+    public String getPath(Uri uri) {
+        String[] projection = {MediaStore.MediaColumns.DATA};
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if (cursor != null) {
+            // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
+            // THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
+            int column_index = cursor
+                    .getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } else
+            return "";
+    }
+
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -1176,7 +1090,7 @@ public class ActivityMainEditor extends Activity implements
         if (null == arr)
             return;
 
-        if (backgroundImage.getDrawable() == null && !LogoliciousApp.isLive) {
+        if (backgroundImage.getDrawable() == null && !isLive) {
             LogoliciousApp.showAlertOnUpLoadLogo(this, R.layout.upload_logo_alert, "Oops", "", true);
         } else {
             seekbarTrans.setProgress(252);
@@ -1194,7 +1108,7 @@ public class ActivityMainEditor extends Activity implements
                     DEVICE_HEIGHT);
 
             if (null == bmp2) {
-                LogoliciousApp.toast(getApplicationContext(), "The image you are trying to upload is big in file size.", Toast.LENGTH_LONG);
+                toast(getApplicationContext(), "The image you are trying to upload is big in file size.", Toast.LENGTH_LONG);
             }
 
             ImageHelper.clearBitmap(logoSelected);
@@ -1316,9 +1230,48 @@ public class ActivityMainEditor extends Activity implements
         }
     }
 
+    public void addFont() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            appCheckSelfPermission(new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, new PermissionCallback() {
+                @Override
+                public void permGranted() {
+                    browseFont();
+                }
+
+                @Override
+                public void permDenied() {
+
+                }
+            });
+        } else {
+            appCheckSelfPermission(new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, new PermissionCallback() {
+                @Override
+                public void permGranted() {
+                    browseFont();
+                }
+
+                @Override
+                public void permDenied() {
+
+                }
+            });
+        }
+    }
+
+    private void browseFont() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//        Uri uri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
+        intent.setType("*/*");
+        startActivityForResult(Intent.createChooser(intent, "Browse Font"), REQUEST_BROWSE_FONT);
+    }
+
     public void saveTemplate(View v) {
-        if (LogoliciousApp.isLive) {
-            LogoliciousApp.toast(getApplicationContext(), res.getString(R.string.SavingTemplateMessage), 1);
+        if (isLive) {
+            toast(getApplicationContext(), res.getString(R.string.SavingTemplateMessage), 1);
             return;
         }
 
@@ -1363,7 +1316,7 @@ public class ActivityMainEditor extends Activity implements
                 }
 
                 if (templateName.getText().toString().contains(".")) {
-                    LogoliciousApp.toast(ActivityMainEditor.this, "Must not contain period in template name.", Toast.LENGTH_SHORT);
+                    toast(ActivityMainEditor.this, "Must not contain period in template name.", Toast.LENGTH_SHORT);
                     return;
                 }
 
@@ -1384,7 +1337,7 @@ public class ActivityMainEditor extends Activity implements
         if (!layeredLogos.isLayerEmpty())
             d.show();
         else
-            LogoliciousApp.toast(getApplicationContext(), "No Template to save.", 1);
+            toast(getApplicationContext(), "No Template to save.", 1);
 
     }
 
@@ -1450,6 +1403,10 @@ public class ActivityMainEditor extends Activity implements
         if (fileToSave.exists()) {
             fileToSave = new File(dirToSave, fname + currentDateandTime + "." + FileUtil.getImageType(preferences));
         }
+
+        // set new date time
+        if (null != fileToSave)
+            fileToSave.setLastModified(SystemClock.currentThreadTimeMillis());
         try {
             FileOutputStream out = new FileOutputStream(fileToSave);
             if (savingType.contains(LogoliciousApp.TYPE_HR_PNG))
@@ -1635,7 +1592,7 @@ public class ActivityMainEditor extends Activity implements
             super.onPreExecute();
 
             if (LogoliciousApp.isMemoryLow(ActivityMainEditor.this))
-                LogoliciousApp.showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), null);
+                showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), null);
 
             forSharing = false;
             GlobalClass.freeMem();
@@ -1675,11 +1632,11 @@ public class ActivityMainEditor extends Activity implements
                 AppStatitics.addSaveShareCount(ActivityMainEditor.this);
                 // success saved message
                 if (!layeredLogos.isLayerEmpty()) {
-                    LogoliciousApp.toast(getApplicationContext(), getString(R.string.AfterSavingMessage) + fileToSave.toString(), Toast.LENGTH_LONG);
+                    toast(getApplicationContext(), getString(R.string.AfterSavingMessage) + fileToSave.toString(), Toast.LENGTH_LONG);
                 }
 
                 if (1 == AppStatitics.sharedPreferenceGet(ActivityMainEditor.this, "hasOOM", 0)) {
-                    LogoliciousApp.showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessageForLogo), null);
+                    showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessageForLogo), null);
                 }
 
                 GlobalClass.freeMem();
@@ -1736,7 +1693,7 @@ public class ActivityMainEditor extends Activity implements
             super.onPreExecute();
 
             if (LogoliciousApp.isMemoryLow(ActivityMainEditor.this))
-                LogoliciousApp.showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), null);
+                showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), null);
 
             forSharing = true;
             showProgress("Sharing your file. \nGive us a moment while we share this in " + FileUtil.getImageQualityTypeDescription(preferences) + ".");
@@ -1896,7 +1853,7 @@ public class ActivityMainEditor extends Activity implements
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.cppText:
-                LogoliciousApp.toast(getApplicationContext(), "malloc() called. Available mem = " + LogoliciousApp.getAvailableMemMB(getApplicationContext()), Toast.LENGTH_SHORT);
+                toast(getApplicationContext(), "malloc() called. Available mem = " + LogoliciousApp.getAvailableMemMB(getApplicationContext()), Toast.LENGTH_SHORT);
                 break;
             case R.id.buttonShowMyLogos:
                 if (LogoliciousApp.verifyStoragePermissions(this, LogoliciousApp.PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE)) {
@@ -1941,7 +1898,7 @@ public class ActivityMainEditor extends Activity implements
                 }
                 break;
             case R.id.buttonAddText:
-                LogoliciousApp.addText(act, backgroundImage, layeredLogos, false, false);
+                addText(act, backgroundImage, layeredLogos, false, false);
                 break;
             case R.id.buttonTextColor:
                 showColor();
@@ -1952,12 +1909,12 @@ public class ActivityMainEditor extends Activity implements
 
                 hideTips();
                 // Send a saving progress notification
-                if (LogoliciousApp.isLive) {
-                    LogoliciousApp.toast(getApplicationContext(), res.getString(R.string.SavingImageWhileonLiveMessage), 1);
+                if (isLive) {
+                    toast(getApplicationContext(), res.getString(R.string.SavingImageWhileonLiveMessage), 1);
                     break;
                 }
 
-                if ((backgroundImage.getDrawable() == null && !LogoliciousApp.isLive) || LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
+                if ((backgroundImage.getDrawable() == null && !isLive) || LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
                     LogoliciousApp.showAlertOnUpLoadLogo(this, R.layout.upload_logo_alert, "Oops", "", true);
                     break;
                 }
@@ -1975,12 +1932,12 @@ public class ActivityMainEditor extends Activity implements
             case R.id.sharePic:
                 isSomeActivityIsRunning = true;
                 hideTips();
-                if (LogoliciousApp.isLive) {
-                    LogoliciousApp.toast(getApplicationContext(), res.getString(R.string.SharingImageWhileonLiveMessage), 1);
+                if (isLive) {
+                    toast(getApplicationContext(), res.getString(R.string.SharingImageWhileonLiveMessage), 1);
                     break;
                 }
 
-                if ((backgroundImage.getDrawable() == null && !LogoliciousApp.isLive) || LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
+                if ((backgroundImage.getDrawable() == null && !isLive) || LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
                     LogoliciousApp.showAlertOnUpLoadLogo(this, R.layout.upload_logo_alert, "Oops", "", true);
                     break;
                 }
@@ -2009,7 +1966,7 @@ public class ActivityMainEditor extends Activity implements
                 LogoliciousApp.setViewVisibility(this, R.id.buttonDoneLive, false);
                 LogoliciousApp.setViewVisibility(this, R.id.flipCamera, false);
 
-                LogoliciousApp.isLive = false;
+                isLive = false;
                 break;
             case R.id.flipCamera:
                 mCamUtils.flipCamera();
@@ -2045,10 +2002,10 @@ public class ActivityMainEditor extends Activity implements
                     new SharingFinalImageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case MESSAGE_SAVING_IMAGE_ERROR:
-                    LogoliciousApp.toast(getApplicationContext(), res.getString(R.string.SavingImageMessage), 1);
+                    toast(getApplicationContext(), res.getString(R.string.SavingImageMessage), 1);
                     break;
                 case MESSAGE_SHARING_IMAGE_ERROR:
-                    LogoliciousApp.toast(getApplicationContext(), res.getString(R.string.SharingImageMessage), 1);
+                    toast(getApplicationContext(), res.getString(R.string.SharingImageMessage), 1);
                     break;
                 case MESSAGE_APPLY_TEMPLATE_ERROR:
                     LogoliciousApp.showAlertOnUpLoadLogo(act, R.layout.upload_logo_alert, "Oops", "", true);
@@ -2058,7 +2015,7 @@ public class ActivityMainEditor extends Activity implements
                     resetAcraLogoApplyTempate();
                     layeredLogos.applyTemplate(GlobalClass.sqLiteHelper.getTemplateLayers(LogoliciousApp.selected_template_name), backgroundImage, false);
                     if (LayersContainerView.geteMissingFonts().size() > 0) {
-                        LogoliciousApp.showMessageOK(getApplicationContext(),
+                        showMessageOK(ActivityMainEditor.this,
                                 "Your template used a font that lacked capital letters which lead to complaints from our users. "
                                         + "It was therefore removed. Please recreate your template with a new font.\n"
                                         + "Fonts: " + LayersContainerView.geteMissingFonts().toString().replace("[", "").replace("]", "") + "\n"
@@ -2079,7 +2036,7 @@ public class ActivityMainEditor extends Activity implements
             resetSnapOnGrid();
             resetAcraData();
 
-            LogoliciousApp.isLive = false;
+            isLive = false;
             Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(intent, REQUEST_CODE_CHOOSE_FROM_GALLERY);
         }
@@ -2108,7 +2065,7 @@ public class ActivityMainEditor extends Activity implements
     public void callCamera(View v) {
         if (LogoliciousApp.verifyCameraPermissions(this, LogoliciousApp.PERMISSIONS_CAMERA, REQUEST_CAMERA)) {
             Log.i(TAG, "Permission Storage Granted.");
-            LogoliciousApp.isLive = false;
+            isLive = false;
 
             freeUnneededMemory();
             resetTranparentSeeker();
@@ -2125,7 +2082,7 @@ public class ActivityMainEditor extends Activity implements
                     currentPhotoPath = photoFile.getPath();
                 } catch (IOException ex) {
                     // Error occurred while creating the File
-                    LogoliciousApp.showMessageOK(this, "Error creating file " + ex.getMessage(), null);
+                    showMessageOK(this, "Error creating file " + ex.getMessage(), null);
                 }
 
                 Uri photoURI = FileProvider.getUriForFile(ActivityMainEditor.this,
@@ -2138,7 +2095,7 @@ public class ActivityMainEditor extends Activity implements
     }
 
     public void callGalerryToSelectLogo(View v) {
-        if ((LogoliciousApp.isBaseImageNull(backgroundImage) == true && !LogoliciousApp.isLive) || GlobalClass.baseBitmap == null) {
+        if ((LogoliciousApp.isBaseImageNull(backgroundImage) == true && !isLive) || GlobalClass.baseBitmap == null) {
             LogoliciousApp.showAlertOnUpLoadLogo(this, R.layout.upload_logo_alert, "Oops", "", true);
             System.out.println("Base ImageView has no background!");
         } else {
@@ -2610,7 +2567,7 @@ public class ActivityMainEditor extends Activity implements
         } else {
             LIVE_SELECTED = LIVE_VIDEO;
         }
-        LogoliciousApp.isLive = true;
+        isLive = true;
     }
 
     private void initSnapOnGrid() {
@@ -2683,7 +2640,7 @@ public class ActivityMainEditor extends Activity implements
         GlobalClass.baseBitmap = BitmapFactory.decodeFile(GlobalClass.picturePath); //ImageHelper.decodeBitmapPath(GlobalClass.picturePath); //ImageHelper.correctBitmapRotation(GlobalClass.picturePath, ImageHelper.decodeBitmapPath(GlobalClass.picturePath));
 
         if (LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
-            LogoliciousApp.toast(ActivityMainEditor.this, res.getString(R.string.ErrorAfterCameraCapture), Toast.LENGTH_LONG);
+            toast(ActivityMainEditor.this, res.getString(R.string.ErrorAfterCameraCapture), Toast.LENGTH_LONG);
             return;
         }
 
@@ -2765,7 +2722,7 @@ public class ActivityMainEditor extends Activity implements
     }
 
     public static void showMemError() {
-        LogoliciousApp.showMessageOK(ActivityMainEditor.act, ActivityMainEditor.act.getString(R.string.MemoryLowAlertMessageV2), new DialogInterface.OnClickListener() {
+        showMessageOK(ActivityMainEditor.act, ActivityMainEditor.act.getString(R.string.MemoryLowAlertMessageV2), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 dialogInterface.cancel();
@@ -2941,7 +2898,7 @@ public class ActivityMainEditor extends Activity implements
                 Log.i(TAG, "xxx onColorSelected " + strColor);
                 if (changesFromKeyListener) {
                     etColorCode.setBackgroundColor(envelope.getColor());
-                    ActivityMainEditor.colorSelected = String.format("#%s", strColor);
+                    colorSelected = String.format("#%s", strColor);
                 } else {
                     etColorCode.setText(String.format("#%s", strColor.substring(2)));
                 }
@@ -2976,19 +2933,19 @@ public class ActivityMainEditor extends Activity implements
                     Color.parseColor(etColorCode.getText().toString());
                     colorPickerView.selectByHsv(Color.parseColor(etColorCode.getText().toString()));
 
-                    if (!TextUtils.isEmpty(ActivityMainEditor.colorSelected) && !ActivityMainEditor.colorSelected.equals("#FFFFFFFF")) {
+                    if (!TextUtils.isEmpty(colorSelected) && !colorSelected.equals("#FFFFFFFF")) {
                         Cursor colorCursor = GlobalClass.sqLiteHelper.getCustomColors();
                         if (colorCursor.getCount() >= 11) {
-                            LogoliciousApp.showMessageOK(ActivityMainEditor.this, "You can only add up to 11 custom colors.", null);
+                            showMessageOK(ActivityMainEditor.this, "You can only add up to 11 custom colors.", null);
                         } else {
-                            sqLiteHelper.addCustomColor(ActivityMainEditor.colorSelected);
+                            sqLiteHelper.addCustomColor(colorSelected);
                             showColor();
                         }
                     }
                     isInvalidColorVal = false;
                 } catch (IllegalArgumentException iae) {
                     isInvalidColorVal = true;
-                    LogoliciousApp.toast(ActivityMainEditor.this, "Invalid Color", Toast.LENGTH_SHORT);
+                    toast(ActivityMainEditor.this, "Invalid Color", Toast.LENGTH_SHORT);
                 }
 
                 if (!isInvalidColorVal) {
@@ -3010,7 +2967,7 @@ public class ActivityMainEditor extends Activity implements
                         changesFromKeyListener = true;
                     } catch (IllegalArgumentException iae) {
                         isInvalidColorVal = true;
-                        LogoliciousApp.toast(ActivityMainEditor.this, "Invalid Color", Toast.LENGTH_SHORT);
+                        toast(ActivityMainEditor.this, "Invalid Color", Toast.LENGTH_SHORT);
                     }
                 }
 
@@ -3224,6 +3181,472 @@ public class ActivityMainEditor extends Activity implements
         cancelTV.setOnClickListener(negativeButtonListener);
         leaveTV.setOnClickListener(positiveButtonListener);
         positiveBT.setOnClickListener(mainButtonListener);
+    }
+
+    public void addText(final Activity act,
+                        final ImageView backgroundImage,
+                        final LayersContainerView layeredView,
+                        boolean hasFontSelected,
+                        boolean isExternalFont) {
+        if (LogoliciousApp.isBaseImageNull(backgroundImage) && !isLive) {
+            LogoliciousApp.showAlertOnUpLoadLogo(act, R.layout.upload_logo_alert, "Oops", "", true);
+            System.out.println("Base ImageView has no background!");
+        } else {
+            final Dialog d = new Dialog(act);
+            d.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            d.setContentView(R.layout.add_text);
+            //d.setTitle("ADD TEXT");
+            d.setCancelable(true);
+
+            final TextView textViewFontPreview = (TextView) d.findViewById(R.id.textViewFontPreview);
+            Button buttonAddText = (Button) d.findViewById(R.id.buttonAddText);
+            Button buttonFonts = (Button) d.findViewById(R.id.buttonFonts);
+            ImageView cancelSaving = (ImageView) d.findViewById(R.id.cancelSaving);
+            final CheckBox checkboxShadow = (CheckBox) d.findViewById(R.id.checkboxShadow);
+
+            final EditText textToAdd = (EditText) d.findViewById(R.id.textToAdd);
+            Typeface type = null;
+
+            if (hasFontSelected) {
+                // add the default font
+                if (isExternalFont) {
+                    type = Typeface.createFromFile(selectedFontPath.replace("/mimetype//", ""));
+                } else {
+                    type = Typeface.createFromAsset(act.getAssets(), selectedFontPath);
+                }
+                Log.i("ActivityMainEditor", "db selectedFontPath " + selectedFontPath);
+            } else {
+                if (layeredView.targetSelected != null) {
+                    currentText = layeredView.targetSelected.text == null ? "" : layeredView.targetSelected.text;
+                    selectedFontPath = layeredView.targetSelected.font_style == null ? "new_fonts/Nobile-Regular.ttf" : layeredView.targetSelected.font_style;
+                    if (selectedFontPath.contains("new_fonts/"))
+                        type = Typeface.createFromAsset(act.getAssets(), selectedFontPath);
+                    else
+                        type = Typeface.createFromFile(selectedFontPath);
+                    Log.i("ActivityMainEditor", "from layer selectedFontPath " + selectedFontPath);
+                }
+            }
+
+            textToAdd.setText(currentText);
+            textViewFontPreview.setTypeface(type);
+            textViewFontPreview.setText(currentText);
+            textViewFontPreview.invalidate();
+
+            textToAdd.addTextChangedListener(new TextWatcher() {
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    textViewFontPreview.setText(textToAdd.getText().toString().trim());
+                }
+            });
+
+            buttonFonts.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    currentText = textToAdd.getText().toString().trim();
+                    d.dismiss();
+                    showFonts(act, backgroundImage, layeredView, false);
+                }
+            });
+
+            buttonAddText.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    ActivityMainEditor.seekbarTrans.setProgress(252);
+                    String textEntered = textToAdd.getText().toString().trim();
+                    if (textEntered.matches("") || textEntered == null || textEntered.equals("")) {
+                        toast(act.getApplicationContext(), act.getString(R.string.AddTextAlertMessage), 1);
+                        return;
+                    }
+                    layeredView.addItem(textEntered, v, colorSelectedText, selectedFontPath, checkboxShadow.isChecked());
+                    currentText = textEntered;
+                    d.dismiss();
+                }
+            });
+
+            cancelSaving.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    d.dismiss();
+                }
+            });
+
+            d.show();
+        }
+    }
+
+    public void updateText(final Activity act,
+                           final ImageView backgroundImage,
+                           final LayersContainerView layeredView,
+                           boolean hasFontSelected) {
+        if (LogoliciousApp.isBaseImageNull(backgroundImage) == true && !isLive) {
+            LogoliciousApp.showAlertOnUpLoadLogo(act, R.layout.upload_logo_alert, "Oops", "", true);
+            System.out.println("Base ImageView has no background!");
+        } else {
+            final Dialog d = new Dialog(act);
+            d.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            d.setContentView(R.layout.add_text);
+            d.setCancelable(true);
+
+            TextView addTextTitle = (TextView) d.findViewById(R.id.AddTextTitle);
+            if (null != addTextTitle) {
+                addTextTitle.setText("UPDATE TEXT");
+            }
+            final TextView textViewFontPreview = (TextView) d.findViewById(R.id.textViewFontPreview);
+            Button buttonAddText = (Button) d.findViewById(R.id.buttonAddText);
+            Button buttonFonts = (Button) d.findViewById(R.id.buttonFonts);
+            ImageView cancelSaving = (ImageView) d.findViewById(R.id.cancelSaving);
+            final CheckBox checkboxShadow = (CheckBox) d.findViewById(R.id.checkboxShadow);
+            checkboxShadow.setChecked(layeredView.targetSelected.shadow);
+
+            final EditText textToAdd = (EditText) d.findViewById(R.id.textToAdd);
+            Typeface type = null;
+
+            if (selectedFontPath.contains(".Logolicious/.fonts")) { //Android 9.0 above. From user uploaded fonts
+                type = Typeface.createFromFile(selectedFontPath);
+            } else if (selectedFontPath.contains("new_fonts")) { //From Prefabs fonts
+                type = Typeface.createFromAsset(act.getAssets(), selectedFontPath);
+            } else {
+                type = Typeface.createFromFile(selectedFontPath); //From user uploaded fonts
+            }
+
+            if (!hasFontSelected) {
+                if (layeredView.targetSelected != null) {
+                    currentText = layeredView.targetSelected.text == null ? "" : layeredView.targetSelected.text;
+                    selectedFontPath = layeredView.targetSelected.font_style == null ? "new_fonts/Nobile-Regular.ttf" : layeredView.targetSelected.font_style;
+                    Log.i("ActivityMainEditor", "from layer selectedFontPath " + selectedFontPath);
+                }
+            }
+
+            textToAdd.setText(currentText);
+            textViewFontPreview.setTypeface(type);
+            textViewFontPreview.setText(currentText);
+            textViewFontPreview.invalidate();
+
+            textToAdd.addTextChangedListener(new TextWatcher() {
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    textViewFontPreview.setText(textToAdd.getText().toString().trim());
+                }
+            });
+
+            buttonFonts.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    currentText = textToAdd.getText().toString().trim();
+                    d.dismiss();
+                    showFonts(act, backgroundImage, layeredView, true);
+                }
+            });
+
+            buttonAddText.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    ActivityMainEditor.seekbarTrans.setProgress(252);
+                    String textEntered = textToAdd.getText().toString().trim();
+                    if (textEntered.matches("") || textEntered == null || textEntered.equals("")) {
+                        toast(act.getApplicationContext(), act.getString(R.string.AddTextAlertMessage), 1);
+                        return;
+                    }
+                    layeredView.targetSelected.color = colorSelectedText;
+                    layeredView.targetSelected.font_style = selectedFontPath;
+                    layeredView.targetSelected.shadow = checkboxShadow.isChecked();
+                    layeredView.targetSelected.changeText(textToAdd.getText().toString().trim());
+                    layeredView.invalidate();
+                    currentText = textEntered;
+                    d.dismiss();
+                }
+            });
+
+            cancelSaving.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    d.dismiss();
+                }
+            });
+
+            d.show();
+        }
+    }
+
+    public void showFonts(final Activity act, final ImageView backgroundImage, final LayersContainerView layeredView, final boolean forUpdate) {
+        final Dialog dialog = new Dialog(act);
+        dialog.setContentView(R.layout.fonts);
+        dialog.setTitle("Select Font Style");
+
+        final ListView fontsList = (ListView) dialog.findViewById(R.id.fontsList);
+        Button buttonAddFont = (Button) dialog.findViewById(R.id.buttonAddFont);
+        ImageButton fontTip = (ImageButton) dialog.findViewById(R.id.fontTip);
+
+        fontTip.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mStackLevel++;
+
+                // DialogFragment.show() will take care of adding the fragment
+                // in a transaction.  We also want to remove any currently showing
+                // dialog, so make our own transaction and take care of that here.
+                FragmentTransaction ft = act.getFragmentManager().beginTransaction();
+                Fragment prev = act.getFragmentManager().findFragmentByTag("dialog");
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+
+                // Create and show the dialog.
+                DialogFragment newFragment = TipFontFeature.newInstance("FontTipFragment", mStackLevel, R.layout.tip_add_font);
+                newFragment.setStyle(DialogFragment.STYLE_NO_TITLE, R.style.DialogStyle);
+                newFragment.show(ft, "dialog");
+            }
+        });
+
+        adapterFonts = new AdapterFonts(act.getApplicationContext(), R.layout.fonts_item, arrayFonts);
+        fontsList.setAdapter(adapterFonts);
+        fontsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View v, int itemPosition, long id) {
+                LogoliciousApp.selectedFontPath = !arrayFonts.get(itemPosition).isExternal() ? arrayFonts.get(itemPosition).getFontType() : arrayFonts.get(itemPosition).getFontSDCardPath().replace("/mimetype//", "");
+                dialog.dismiss();
+                if (forUpdate) {
+                    updateText(act, backgroundImage, layeredView, true);
+                } else
+                    addText(act, backgroundImage, layeredView, true, arrayFonts.get(itemPosition).isExternal());
+            }
+        });
+
+        buttonAddFont.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (null != mDialog && mDialog.isShowing())
+                    mDialog.dismiss();
+
+                if (SDK_INT >= 30) {
+                    if (mDialog != null && mDialog.isShowing())
+                        mDialog.dismiss();
+
+                    if (!Environment.isExternalStorageManager()) {
+                        showSimpleDialog("Permission",
+                                "In order to locate fonts on your phone, LogoLicious needs to be allowed access to browse files." +
+                                        "No worries, everything is local on your device only and no information will be shared online.",
+                                "Agree",
+                                "",
+                                v -> {
+                                    if (mDialog != null && mDialog.isShowing())
+                                        mDialog.dismiss();
+
+                                    Intent getPermission = new Intent();
+                                    getPermission.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                                    startActivityForResult(getPermission, REQUEST_MANAGE_ALL_FILES_PERM);
+                                },
+                                view1 -> {
+                                    if (mDialog != null && mDialog.isShowing())
+                                        mDialog.dismiss();
+                                },
+                                null,
+                                true,
+                                true,
+                                true,
+                                false,
+                                false);
+                    } else {
+                        addFont();
+                    }
+                } else {
+                    addFont();
+                }
+            }
+        });
+
+        final Button buttonSelectFont = (Button) dialog.findViewById(R.id.buttonSelectFont);
+        buttonSelectFont.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                if (forUpdate)
+                    updateText(act, backgroundImage, layeredView, true);
+                else
+                    addText(act, backgroundImage, layeredView, true, false);
+            }
+        });
+
+        dialog.setCancelable(false);
+        dialog.show();
+    }
+
+    public class LoadFontsTask extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            // new fonts from Mics
+            arrayFonts.clear();
+            arrayFonts.add(new AdapterFontDetails("Display", "new_fonts/Display.ttf"));
+            arrayFonts.add(new AdapterFontDetails("IdolWild", "new_fonts/Idolwild.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Manteka", "new_fonts/Manteka.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Nexa Bold", "new_fonts/Nexa Bold.otf"));
+            arrayFonts.add(new AdapterFontDetails("Nexa Light", "new_fonts/Nexa Light.otf"));
+            arrayFonts.add(new AdapterFontDetails("Oswald-Bold", "new_fonts/Oswald-Bold.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Oswald-ExtraLight", "new_fonts/Oswald-ExtraLight.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Oswald-Regular", "new_fonts/Oswald-Regular.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Variane Script", "new_fonts/Variane Script.ttf"));
+            // 2016-10-22
+            arrayFonts.add(new AdapterFontDetails("Ansley Display-Outline", "new_fonts/Ansley Display-Outline.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Ansley Display-Regular", "new_fonts/Ansley Display-Regular.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Cornerstone", "new_fonts/Cornerstone.ttf"));
+            //			arrayFonts.add(new AdapterFontDetails("Hamurz Free Version", "new_fonts/Hamurz Free Version.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Lulo Clean", "new_fonts/Lulo Clean 1.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Mosk Semi-Bold 600", "new_fonts/Mosk Semi-Bold 600.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Mosk Thin 100", "new_fonts/Mosk Thin 100.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Mosk Ultra-Bold 900", "new_fonts/Mosk Ultra-Bold 900.ttf"));
+            arrayFonts.add(new AdapterFontDetails("ShellaheraLiteScript", "new_fonts/ShellaheraLiteScript.otf"));
+            //2016-12-08
+            arrayFonts.add(new AdapterFontDetails("AgreloyInT3", "new_fonts/AgreloyInT3.ttf"));
+            arrayFonts.add(new AdapterFontDetails("AgreloyS1", "new_fonts/AgreloyS1.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Berry Rotunda", "new_fonts/Berry Rotunda.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Bimbo_JVE", "new_fonts/Bimbo_JVE.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Dyer Arts and Crafts", "new_fonts/Dyer Arts and Crafts.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Essays1743", "new_fonts/Essays1743.ttf"));
+            arrayFonts.add(new AdapterFontDetails("JWerd", "new_fonts/JWerd.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Lemon Tuesday", "new_fonts/Lemon Tuesday.otf"));
+            arrayFonts.add(new AdapterFontDetails("LiberationSans-Bold", "new_fonts/LiberationSans-Bold.ttf"));
+            arrayFonts.add(new AdapterFontDetails("LiberationSans-Regular", "new_fonts/LiberationSans-Regular.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Nobile-Bold", "new_fonts/Nobile-Bold.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Nobile-Italic", "new_fonts/Nobile-Italic.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Nobile-Regular", "new_fonts/Nobile-Regular.ttf"));
+            arrayFonts.add(new AdapterFontDetails("OstrichSans-Heavy", "new_fonts/OstrichSans-Heavy.otf"));
+            arrayFonts.add(new AdapterFontDetails("Pacifico", "new_fonts/Pacifico.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Portmanteau Regular", "new_fonts/Portmanteau Regular.ttf"));
+            arrayFonts.add(new AdapterFontDetails("Ubuntu-Title", "new_fonts/Ubuntu-Title.ttf"));
+
+            //Load User Fonts
+            Cursor fontCursor = GlobalClass.sqLiteHelper.getFonts();
+            while (fontCursor.moveToNext()) {
+                String fontPath = fontCursor.getString(fontCursor.getColumnIndex("path"));
+                Log.i("xxx", "xxx fontPath " + fontPath);
+                if (!TextUtils.isEmpty(fontPath)) {
+                    String[] pathSplits = fontPath.split("/");
+                    if (pathSplits.length > 0 && pathSplits[pathSplits.length - 1].contains(".ttf")) {
+                        arrayFonts.add(new AdapterFontDetails(pathSplits[pathSplits.length - 1].replace(".ttf", ""),
+                                "",
+                                fontPath,
+                                true));
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            if (null != adapterFonts)
+                adapterFonts.notifyDataSetChanged();
+        }
+    }
+
+    public class SyncFontTask extends AsyncTask<String, String, String> {
+
+        private Activity context;
+        int count_new_fonts_added = 0;
+        private File[] files;
+        private StringBuilder sb;
+
+        public SyncFontTask(Activity act) {
+            this.context = act;
+            this.count_new_fonts_added = 0;
+        }
+
+        public void traverse(File dir) {
+            if (dir.exists()) {
+                File[] files = dir.listFiles();
+                if (files != null) {
+                    for (int i = 0; i < files.length; ++i) {
+                        File file = files[i];
+                        if (file.isDirectory()) {
+                            traverse(file);
+                        } else {
+                            if (file.getName().contains(".ttf")) {
+                                Log.d(this.getClass().getSimpleName(), "xxx " + file.getAbsolutePath());
+                                sb.append(file.getName()).append("\n");
+                                try {
+                                    File file_copy = new File(ActivityMainEditor.fontsDir + file.getName());
+                                    if (!file_copy.exists()) {
+                                        FileUtil.copyFile(new FileInputStream(file.getAbsoluteFile()), new FileOutputStream(ActivityMainEditor.fontsDir + file.getName()));
+                                        GlobalClass.sqLiteHelper.insertFont(ActivityMainEditor.fontsDir + file.getName());
+                                        count_new_fonts_added = count_new_fonts_added + 1;
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            sb = new StringBuilder();
+            files = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).listFiles();
+            traverse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS));
+            return "";
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            toast(act, "Files count " + files.length, Toast.LENGTH_SHORT);
+            showMessageOK(context,
+                    String.format(Locale.US, GlobalClass.getAppContext().getString(R.string.SuccessFontSync) +
+                                    ".\n\nWhen adding new fonts:" +
+                                    "\n1. Add new fonts on your sdcard download folder" +
+                                    "\n2. Make sure it is .tff file extension so our scanner will recognize it." +
+                                    "\n3. Done." +
+                                    "\n\n\n" +
+                                    "Scanned Directory: " + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() +
+                                    "\n\n%d fonts added.\n\n" +
+                                    "Found following fonts:\n" + sb.toString(),
+                            count_new_fonts_added),
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (alert != null) {
+                                alert.dismiss();
+                            }
+                        }
+                    });
+            new LoadFontsTask().execute();
+        }
+    }
+
+    public interface TextLongClickForEdit {
+        void onLongClick();
     }
 
 }

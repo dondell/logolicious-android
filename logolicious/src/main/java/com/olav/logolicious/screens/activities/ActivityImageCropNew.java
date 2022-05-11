@@ -95,6 +95,7 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
                 if (cropImageView != null) {
                     cropImageView.setAspectRatio(16, 9);
                     cropImageView.invalidate();
+                    clickARatio16_9();
                 }
 
             }
@@ -163,7 +164,7 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
             @Override
             public void onClick(View v) {
 
-                if(cropImageView.isRotated) {
+                if (cropImageView.isRotated) {
                     GlobalClass.baseBitmap = cropImageView.getNoCropBitmap();
                     GlobalClass.picturePath = BitmapSaver.saveBitmape(LogoliciousApp.sharedPreferenceGet(ActivityImageCropNew.this), ActivityMainEditor.tempDir, "rotated", cropImageView.getRotatedBitmap());
                     Log.i("xxx rotated bitmap", "xxx cropImageView.getRotatedBitmap()");
@@ -171,14 +172,14 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
                     GlobalClass.picturePath = BitmapSaver.saveBitmape(LogoliciousApp.sharedPreferenceGet(ActivityImageCropNew.this), ActivityMainEditor.tempDir, "crop", cropImageView.getNoCropBitmap());
                 }
 
-                if(GlobalClass.diskCache != null) {
-                    if(cropImageView.isRotated)
+                if (GlobalClass.diskCache != null) {
+                    if (cropImageView.isRotated)
                         GlobalClass.diskCache.put("BaseImage", cropImageView.getRotatedBitmap());
                     else
                         GlobalClass.diskCache.put("BaseImage", cropImageView.getNoCropBitmap());
                 }
-                if(GlobalClass.mMemoryCache != null) {
-                    if(cropImageView.isRotated)
+                if (GlobalClass.mMemoryCache != null) {
+                    if (cropImageView.isRotated)
                         GlobalClass.mMemoryCache.put("BaseImage", cropImageView.getRotatedBitmap());
                     else
                         GlobalClass.mMemoryCache.put("BaseImage", cropImageView.getNoCropBitmap());
@@ -188,40 +189,40 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
 
                 //Check AR of the picture when no AR selected
                 float bW, bH;
-                if(cropImageView.isRotated) {
-                    bW = (float)cropImageView.getRotatedBitmap().getWidth();
-                    bH = (float)cropImageView.getRotatedBitmap().getHeight();
+                if (cropImageView.isRotated) {
+                    bW = (float) cropImageView.getRotatedBitmap().getWidth();
+                    bH = (float) cropImageView.getRotatedBitmap().getHeight();
                 } else {
-                    bW = (float)cropImageView.getNoCropBitmap().getWidth();
-                    bH = (float)cropImageView.getNoCropBitmap().getHeight();
+                    bW = (float) cropImageView.getNoCropBitmap().getWidth();
+                    bH = (float) cropImageView.getNoCropBitmap().getHeight();
                 }
 
-                Log.i("xxx","xxx (bW) " + bW);
-                Log.i("xxx","xxx (bH) " + bH);
+                Log.i("xxx", "xxx (bW) " + bW);
+                Log.i("xxx", "xxx (bH) " + bH);
                 //AR 9:16
-                if((int)bW == (int)(bH * 0.5625)) {
+                if ((int) bW == (int) (bH * 0.5625)) {
                     GlobalClass.AR = "9:16";
                     GlobalClass.ARLast = "9:16";
-                    Log.i("xxx","xxx AR is 9:16");
+                    Log.i("xxx", "xxx AR is 9:16");
                     //AR 16:9
-                } else if((int)bW == (int)(bH * 1.778)) {
+                } else if ((int) bW == (int) (bH * 1.778)) {
                     GlobalClass.AR = "16:9";
                     GlobalClass.ARLast = "16:9";
-                    Log.i("xxx","xxx AR is 16:9");
+                    Log.i("xxx", "xxx AR is 16:9");
                     //AR 3:4
-                } else if((int)bW == (int)(bH * 0.75)) {
+                } else if ((int) bW == (int) (bH * 0.75)) {
                     GlobalClass.AR = "3:4";
                     GlobalClass.ARLast = "3:4";
-                    Log.i("xxx","xxx AR is 3:4");
+                    Log.i("xxx", "xxx AR is 3:4");
                     //AR 4:3
-                } else if((int)bW == (int)(bH * 1.333)) {
+                } else if ((int) bW == (int) (bH * 1.333)) {
                     GlobalClass.AR = "4:3";
                     GlobalClass.ARLast = "4:3";
-                    Log.i("xxx","xxx AR is 4:3");
+                    Log.i("xxx", "xxx AR is 4:3");
                 } else {
                     GlobalClass.AR = "";
                     GlobalClass.ARLast = "";
-                    Log.i("xxx","xxx AR is Free Transform");
+                    Log.i("xxx", "xxx AR is Free Transform");
                 }
 
                 startMainEditor();
@@ -365,7 +366,7 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
             LogoliciousApp.setImageViewTint(ActivityImageCropNew.this, R.id.aspectRatio169, getResources().getColor(R.color.Transparent));
         }
 
-        if(v.getId() == R.id.freeTransform) {
+        if (v.getId() == R.id.freeTransform) {
             clickFreeTransform();
         }
     }

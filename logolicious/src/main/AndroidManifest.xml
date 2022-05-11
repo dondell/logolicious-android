@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.olav.logolicious"
     android:installLocation="preferExternal"
-    android:versionCode="202110181"
-    android:versionName="2021.10.18.1"
+    android:versionCode="202205111"
+    android:versionName="2022.05.11.1"
     tools:ignore="MissingLeanbackLauncher">
 
     <!-- Some Chromebooks don't support touch. Although not essential,
@@ -33,11 +33,11 @@
     </queries>
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE " />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <!--<uses-permission android:name="android.permission.INTERNET" />-->
-    <uses-permission android:name="com.android.vending.BILLING" />
     <!-- Required permission to check licensing. -->
     <uses-permission android:name="com.android.vending.CHECK_LICENSE" />
 

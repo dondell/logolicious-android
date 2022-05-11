@@ -79,7 +79,7 @@ public class BillingViewModel extends AndroidViewModel {
         boolean hasBasic = BillingUtilities.deviceHasGooglePlaySubscription(
                 purchases.getValue(), Constants.BASIC_SKU);
         boolean hasPremium = BillingUtilities.deviceHasGooglePlaySubscription
-                (purchases.getValue(), Constants.PREMIUM_SKU);
+                (purchases.getValue(), Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
         Log.d("Billing", "hasBasic: $hasBasic, hasPremium: $hasPremium");
 
         if (hasBasic && !hasPremium) {
@@ -87,7 +87,7 @@ public class BillingViewModel extends AndroidViewModel {
             openPlayStoreSubscriptionsEvent.postValue(Constants.BASIC_SKU);
         } else if (!hasBasic && hasPremium) {
             // If we just have a premium subscription, open the premium SKU.
-            openPlayStoreSubscriptionsEvent.postValue(Constants.PREMIUM_SKU);
+            openPlayStoreSubscriptionsEvent.postValue(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
         } else {
             // If we do not have an active subscription,
             // or if we have multiple subscriptions, open the default subscription center.
@@ -103,7 +103,7 @@ public class BillingViewModel extends AndroidViewModel {
      */
     public void openSubscriptionPageOnGooglePlay() {
         boolean isPremiumOnServer = BillingUtilities
-                .serverHasSubscription(subscriptions.getValue(), Constants.PREMIUM_SKU);
+                .serverHasSubscription(subscriptions.getValue(), Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
         boolean isBasicOnServer = BillingUtilities
                 .serverHasSubscription(subscriptions.getValue(), Constants.BASIC_SKU);
         if (isPremiumOnServer) {
@@ -126,7 +126,7 @@ public class BillingViewModel extends AndroidViewModel {
      * Open the Play Store premium subscription.
      */
     public void openPremiumPlayStoreSubscriptions() {
-        openPlayStoreSubscriptionsEvent.postValue(Constants.PREMIUM_SKU);
+        openPlayStoreSubscriptionsEvent.postValue(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
     }
 
     /**
@@ -136,7 +136,7 @@ public class BillingViewModel extends AndroidViewModel {
         boolean hasBasic = BillingUtilities
                 .deviceHasGooglePlaySubscription(purchases.getValue(), Constants.BASIC_SKU);
         boolean hasPremium = BillingUtilities
-                .deviceHasGooglePlaySubscription(purchases.getValue(), Constants.PREMIUM_SKU);
+                .deviceHasGooglePlaySubscription(purchases.getValue(), Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
         Log.d("Billing", "hasBasic: " + hasBasic + ", hasPremium: " + hasPremium);
         if (hasBasic && hasPremium) {
             // If the user has both subscriptions, open the basic SKU on Google Play.
@@ -146,7 +146,7 @@ public class BillingViewModel extends AndroidViewModel {
             openPlayStoreSubscriptionsEvent.postValue(Constants.BASIC_SKU);
         } else if (!hasBasic && hasPremium) {
             // If the user just has a premium subscription, downgrade.
-            buy(Constants.BASIC_SKU, Constants.PREMIUM_SKU);
+            buy(Constants.BASIC_SKU, Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
         } else {
             // If the user dooes not have a subscription, buy the basic SKU.
             buy(Constants.BASIC_SKU, null);
@@ -160,20 +160,20 @@ public class BillingViewModel extends AndroidViewModel {
         boolean hasBasic = BillingUtilities
                 .deviceHasGooglePlaySubscription(purchases.getValue(), Constants.BASIC_SKU);
         boolean hasPremium = BillingUtilities
-                .deviceHasGooglePlaySubscription(purchases.getValue(), Constants.PREMIUM_SKU);
+                .deviceHasGooglePlaySubscription(purchases.getValue(), Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
         Log.d("Billing", "hasBasic: " + hasBasic + ", hasPremium: " + hasPremium);
         if (hasBasic && hasPremium) {
             // If the user has both subscriptions, open the premium SKU on Google Play.
-            openPlayStoreSubscriptionsEvent.postValue(Constants.PREMIUM_SKU);
+            openPlayStoreSubscriptionsEvent.postValue(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
         } else if (!hasBasic && hasPremium) {
             // If the user just has a premium subscription, open the premium SKU on Google Play.
-            openPlayStoreSubscriptionsEvent.postValue(Constants.PREMIUM_SKU);
+            openPlayStoreSubscriptionsEvent.postValue(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
         } else if (hasBasic && !hasPremium) {
             // If the user just has a basic subscription, upgrade.
-            buy(Constants.PREMIUM_SKU, Constants.BASIC_SKU);
+            buy(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION, Constants.BASIC_SKU);
         } else {
             // If the user does not have a subscription, buy the premium SKU.
-            buy(Constants.PREMIUM_SKU, null);
+            buy(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION, null);
         }
     }
 
@@ -181,7 +181,7 @@ public class BillingViewModel extends AndroidViewModel {
      * Upgrade to a premium subscription.
      */
     public void buyUpgrade() {
-        buy(Constants.PREMIUM_SKU, Constants.BASIC_SKU);
+        buy(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION, Constants.BASIC_SKU);
     }
 
     /**
@@ -227,11 +227,11 @@ public class BillingViewModel extends AndroidViewModel {
             // Third, create the billing parameters for the purchase.
             if (sku.equals(oldSkuToBeReplaced)) {
                 Log.i("Billing", "Re-subscribe.");
-            } else if (Constants.PREMIUM_SKU.equals(sku)
+            } else if (Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION.equals(sku)
                     && Constants.BASIC_SKU.equals(oldSkuToBeReplaced)) {
                 Log.i("Billing", "Upgrade!");
             } else if (Constants.BASIC_SKU.equals(sku)
-                    && Constants.PREMIUM_SKU.equals(oldSkuToBeReplaced)) {
+                    && Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION.equals(oldSkuToBeReplaced)) {
                 Log.i("Billing", "Downgrade...");
             } else {
                 Log.i("Billing", "Regular purchase.");
@@ -254,7 +254,7 @@ public class BillingViewModel extends AndroidViewModel {
             if (oldSkuToBeReplaced != null && !oldSkuToBeReplaced.equals(sku)) {
                 Purchase oldPurchase = BillingUtilities
                         .getPurchaseForSku(purchases.getValue(), oldSkuToBeReplaced);
-                billingBuilder.setOldSku(oldSkuToBeReplaced, oldPurchase.getPurchaseToken());
+                //billingBuilder.setOldSku(oldSkuToBeReplaced, oldPurchase.getPurchaseToken());
             }
 
             BillingFlowParams billingParams = billingBuilder.build();

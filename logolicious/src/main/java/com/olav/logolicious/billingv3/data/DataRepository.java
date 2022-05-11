@@ -242,7 +242,7 @@ public class DataRepository {
                     // another user. It should be included in the output if the SKU
                     // and purchase token match their previous value.
                     for (Purchase purchase : purchases) {
-                        if (purchase.getSku().equals(oldSubscription.sku) &&
+                        if (purchase.getSkus().contains(oldSubscription.sku) &&
                                 purchase.getPurchaseToken().equals(oldSubscription.purchaseToken)) {
                             // The old subscription that was already owned subscription should
                             // be added to the new subscriptions.
@@ -283,7 +283,7 @@ public class DataRepository {
                 String purchaseToken = subscription.purchaseToken;
                 if (purchases != null) {
                     for (Purchase purchase : purchases) {
-                        if (TextUtils.equals(subscription.sku, purchase.getSku())) {
+                        if (TextUtils.equals(subscription.sku, purchase.getSkus().get(0))) {
                             isLocalPurchase = true;
                             purchaseToken = purchase.getPurchaseToken();
                         }

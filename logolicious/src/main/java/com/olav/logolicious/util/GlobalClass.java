@@ -1,6 +1,7 @@
 package com.olav.logolicious.util;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Application;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
@@ -169,14 +170,16 @@ public class GlobalClass extends Application {
     }
 
     public static void initMemCache(Context ctx) {
+        ActivityManager am = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
         // Get max available VM memory, exceeding this amount will throw an
         // OutOfMemory exception. Stored in kilobytes as LruCache takes an
         // int in its constructor.
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-//	    FileUtil.fileWrite(log_path, "->>maxMemory " + maxMemory, true);
+        //final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        //	    FileUtil.fileWrite(log_path, "->>maxMemory " + maxMemory, true);
+        int availableMemInBytes = am.getMemoryClass() * 1024 * 1024;
 
         // Use 1/8th of the available memory for this memory cache.
-        final int cacheSize = maxMemory / 8;
+        final int cacheSize = availableMemInBytes / 8;
 
         mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
             @Override
@@ -184,11 +187,7 @@ public class GlobalClass extends Application {
                 // The cache size will be measured in kilobytes rather than
                 // number of items.
                 int byteCount = 0;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
-                    byteCount = bitmap.getByteCount();
-                } else {
-                    byteCount = bitmap.getRowBytes() * bitmap.getHeight();
-                }
+                byteCount = bitmap.getByteCount();
                 return byteCount / 1024;
             }
         };
