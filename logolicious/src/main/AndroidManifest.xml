@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.olav.logolicious"
     android:installLocation="preferExternal"
-    android:versionCode="202205111"
-    android:versionName="2022.05.11.1"
+    android:versionCode="202207111"
+    android:versionName="2022.07.11.1"
     tools:ignore="MissingLeanbackLauncher">
 
     <!-- Some Chromebooks don't support touch. Although not essential,

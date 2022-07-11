@@ -2,11 +2,13 @@ package com.olav.logolicious.customize.datamodel;
 
 import android.media.ExifInterface;
 import android.os.Build;
+import android.text.format.DateUtils;
 import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -342,9 +344,12 @@ public class ImageExif {
 
     public boolean save(File filepath) {
         try {
+            //Date & Time: 2022:07:08 14:25:06
+            SimpleDateFormat timestamp = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+            String currentDateandTime = timestamp.format(new Date());
             ExifInterface exif = new ExifInterface(filepath.getAbsolutePath());
             exif.setAttribute(ExifInterface.TAG_ORIENTATION, TAG_ORIENTATION);
-            exif.setAttribute(ExifInterface.TAG_DATETIME, TAG_DATETIME);
+            exif.setAttribute(ExifInterface.TAG_DATETIME, currentDateandTime);
             exif.setAttribute(ExifInterface.TAG_FLASH, TAG_FLASH);
             exif.setAttribute(ExifInterface.TAG_FOCAL_LENGTH, TAG_FOCAL_LENGTH);
             exif.setAttribute(ExifInterface.TAG_FLASH, TAG_FLASH2);
@@ -367,7 +372,7 @@ public class ImageExif {
             exif.setAttribute(ExifInterface.TAG_EXPOSURE_TIME, TAG_EXPOSURE_TIME);
             exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, TAG_GPS_ALTITUDE);
             exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF, TAG_GPS_ALTITUDE_REF);
-            exif.setAttribute(ExifInterface.TAG_GPS_DATESTAMP, TAG_GPS_DATESTAMP);
+            exif.setAttribute(ExifInterface.TAG_GPS_DATESTAMP, currentDateandTime);
 
 //            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             exif.setAttribute(ExifInterface.TAG_SHUTTER_SPEED_VALUE, TAG_SHUTTER_SPEED_VALUE);
@@ -389,8 +394,9 @@ public class ImageExif {
             exif.setAttribute(ExifInterface.TAG_COMPRESSED_BITS_PER_PIXEL, TAG_COMPRESSED_BITS_PER_PIXEL);
             exif.setAttribute(ExifInterface.TAG_COMPRESSION, TAG_COMPRESSION);
             exif.setAttribute(ExifInterface.TAG_CUSTOM_RENDERED, TAG_CUSTOM_RENDERED);
-            exif.setAttribute(ExifInterface.TAG_DATETIME_DIGITIZED, TAG_DATETIME_DIGITIZED);
-            exif.setAttribute(ExifInterface.TAG_DATETIME_ORIGINAL, TAG_DATETIME_ORIGINAL);
+            exif.setAttribute(ExifInterface.TAG_DATETIME_DIGITIZED, currentDateandTime); //TAG_DATETIME_DIGITIZED
+            exif.setAttribute(ExifInterface.TAG_DATETIME_ORIGINAL, currentDateandTime);//TAG_DATETIME_ORIGINAL
+            exif.setAttribute(ExifInterface.TAG_DATETIME, currentDateandTime);
             exif.setAttribute(ExifInterface.TAG_DEVICE_SETTING_DESCRIPTION, TAG_DEVICE_SETTING_DESCRIPTION);
             exif.setAttribute(ExifInterface.TAG_DIGITAL_ZOOM_RATIO, TAG_DIGITAL_ZOOM_RATIO);
             exif.setAttribute(ExifInterface.TAG_EXIF_VERSION, TAG_EXIF_VERSION);
