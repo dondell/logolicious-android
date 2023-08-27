@@ -21,11 +21,15 @@ class TipFourth : Fragment() {
         v = inflater.inflate(layResId, container, false)
         val btnOk = v?.findViewById<View>(R.id.tipOk) as ImageButton
         btnOk.setOnClickListener {
-            if (fragNum == 4) activity!!.finish() // last Tips fragment
+            if (fragNum == 4) requireActivity().finish() // last Tips fragment
             else (activity as Activity_Tip?)!!.pager!!.currentItem = fragNum
         }
-        imageView1 = v?.findViewById<View>(R.id.imageView1) as ImageView
-        Glide.with(GlobalClass.getAppContext()).load(R.drawable.tip_4_guide).into(imageView1)
+        imageView1 = v?.findViewById<View>(R.id.imageView1) as? ImageView
+        imageView1?.let {
+            Glide.with(GlobalClass.getAppContext()).load(R.drawable.tip_4_guide).into(
+                it
+            )
+        }
         return v
     }
 

@@ -6,9 +6,8 @@ android {
   defaultConfig {
     minSdkVersion versions.minSdk
     targetSdkVersion versions.compileSdk
-    versionCode versions.versionCode
-    versionName versions.versionName
   }
+    namespace 'com.skydoves.colorpickerview'
 }
 
 dependencies {

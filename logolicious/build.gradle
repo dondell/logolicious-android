@@ -1,16 +1,20 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply from: '../dependencies.gradle'
 apply from: '../spotless.gradle'
 apply plugin: 'com.google.gms.google-services'
+
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 android {
     signingConfigs {
         release {
             storeFile file('original keystore')
-            storePassword password
+            storePassword localProperties.getProperty('keyStorePassword')
             keyAlias = 'll'
-            keyPassword password
+            keyPassword localProperties.getProperty('keyStorePassword')
             lintOptions {
                 disable 'MissingTranslation'
                 checkReleaseBuilds false
@@ -19,26 +23,22 @@ android {
         }
         debug {
             storeFile file('original keystore')
-            storePassword password
+            storePassword localProperties.getProperty('keyStorePassword')
             keyAlias = 'll'
-            keyPassword password
+            keyPassword localProperties.getProperty('keyStorePassword')
         }
     }
-    compileSdkVersion 30
+    compileSdkVersion 33
 
     compileOptions {
         sourceCompatibility 1.8
         targetCompatibility 1.8
     }
 
-    aaptOptions {
-        ignoreAssetsPattern "!drawable-b+sr+Latn"
-    }
-
     defaultConfig {
         applicationId "com.olav.logolicious"
-        minSdkVersion 14
-        targetSdkVersion 30
+        minSdkVersion 16
+        targetSdkVersion 33
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -98,6 +98,10 @@ android {
     dataBinding {
         enabled = true
     }
+    namespace 'com.olav.logolicious'
+    androidResources {
+        ignoreAssetsPattern '!drawable-b+sr+Latn'
+    }
 }
 
 repositories {
@@ -110,16 +114,16 @@ dependencies {
     //noinspection GradleCompatible
     def billing_version = "4.1.0"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.3.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation "com.google.android.material:material:$versions.googleMaterial"
-    implementation "androidx.constraintlayout:constraintlayout:2.1.0-beta01"
+    implementation "androidx.constraintlayout:constraintlayout:2.0.4"
     implementation files('libs/disklrucache-2.0.2.jar')
     implementation files('libs/nineoldandroids-2.4.0.jar')
     implementation files('libs/universal-image-loader-1.9.5.jar')
     //implementation 'com.anjlab.android.iab.v3:library:1.0.44'
     implementation "com.android.billingclient:billing:$billing_version"
-    implementation 'com.google.android.gms:play-services-auth:19.0.0'
+    implementation 'com.google.android.gms:play-services-auth:20.6.0'
     implementation files('libs/acra-4.5.0.jar')
     implementation 'com.github.duanhong169:colorpicker:1.1.6'
     implementation project(":colorpickerview")
@@ -134,14 +138,14 @@ dependencies {
     // If you encounter a build error "Cannot Access Hide", it means the Firebase libraries'
     // versions you are using are not compatible.
 
-    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.google.code.gson:gson:2.10.1'
 
     // Glide image library.
-    implementation 'com.github.bumptech.glide:glide:4.4.0'
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
 
     implementation 'com.google.android.play:core:1.10.3'
-    implementation 'com.intuit.sdp:sdp-android:1.0.5'
-    implementation "androidx.core:core-ktx:1.6.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
+    implementation 'com.intuit.sdp:sdp-android:1.1.0'
+    implementation 'androidx.core:core:1.10.1'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
