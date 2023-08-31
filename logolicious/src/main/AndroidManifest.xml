@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="preferExternal"
-    android:versionCode="202308271"
-    android:versionName="2023.08.27.1"
+    android:versionCode="202308311"
+    android:versionName="2023.08.31.1"
     tools:ignore="MissingLeanbackLauncher">
 
     <!-- Some Chromebooks don't support touch. Although not essential,

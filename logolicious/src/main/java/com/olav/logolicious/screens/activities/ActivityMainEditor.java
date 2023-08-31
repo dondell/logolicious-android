@@ -90,7 +90,11 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
@@ -159,8 +163,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-@RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-public class ActivityMainEditor extends Activity implements
+@RequiresApi(api = Build.VERSION_CODES.KITKAT)
+public class ActivityMainEditor extends AppCompatActivity implements
         OnTouchListener,
         ToolTipView.OnToolTipViewClickedListener,
         OnClickListener,
@@ -380,6 +384,41 @@ public class ActivityMainEditor extends Activity implements
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
     }
+
+    // Registers a photo picker activity launcher in single-select mode.
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+                // Callback is invoked after the user selects a media item or closes the
+                // photo picker.
+                freeUnneededMemory();
+                resetTranparentSeeker();
+                resetSnapOnGrid();
+                resetAcraData();
+                isLive = false;
+
+                if (uri != null) {
+                    Log.d("PhotoPicker", "Selected URI: " + uri);
+                    if (LogoliciousApp.isMemoryLow(ActivityMainEditor.this)) {
+                        showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                switch (i) {
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        onResultFromGallery(null, uri);
+                                        break;
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        dialogInterface.cancel();
+                                        break;
+                                }
+                            }
+                        });
+                    } else {
+                        onResultFromGallery(null, uri);
+                    }
+                } else {
+                    Log.d("PhotoPicker", "No media selected");
+                }
+            });
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -899,7 +938,7 @@ public class ActivityMainEditor extends Activity implements
                         public void onClick(DialogInterface dialogInterface, int i) {
                             switch (i) {
                                 case DialogInterface.BUTTON_POSITIVE:
-                                    onResultFromGallery(data);
+                                    onResultFromGallery(data, null);
                                     break;
                                 case DialogInterface.BUTTON_NEGATIVE:
                                     dialogInterface.cancel();
@@ -908,7 +947,7 @@ public class ActivityMainEditor extends Activity implements
                         }
                     });
                 } else {
-                    onResultFromGallery(data);
+                    onResultFromGallery(data, null);
                 }
             } else if (requestCode == REQUEST_CODE_CHOOSE_LOGO_FROM_GAL) {
                 GlobalClass.logoPath = null;
@@ -2029,7 +2068,7 @@ public class ActivityMainEditor extends Activity implements
         }
     };
 
-    public void callGalerry(View v) {
+    public void callGallery(View v) {
         if (LogoliciousApp.verifyStoragePermissions(this, LogoliciousApp.PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE)) {
             freeUnneededMemory();
             resetTranparentSeeker();
@@ -2134,8 +2173,18 @@ public class ActivityMainEditor extends Activity implements
             @Override
             public void onClick(View v) {
                 d.dismiss();
-                if (LogoliciousApp.verifyStoragePermissions(ActivityMainEditor.this, LogoliciousApp.PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE))
-                    callGalerry(v);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    // Include only one of the following calls to launch(), depending on the types
+                    // of media that you want to let the user choose from.
+
+                    // Launch the photo picker and let the user choose only images.
+                    pickMedia.launch(new PickVisualMediaRequest.Builder()
+                            .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                            .build());
+                } else {
+                    if (LogoliciousApp.verifyStoragePermissions(ActivityMainEditor.this, LogoliciousApp.PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE))
+                        callGallery(v);
+                }
             }
         });
 
@@ -2648,10 +2697,9 @@ public class ActivityMainEditor extends Activity implements
         LogoliciousApp.callCropper(act, listRight, backgroundImage, DEVICE_WIDTH);
     }
 
-    private void onResultFromGallery(Intent data) {
+    private void onResultFromGallery(Intent data, Uri pickerUri) {
         try {
-            final Uri imageUri = data.getData();
-            String url = data.getData().toString();
+            final Uri imageUri = (pickerUri != null) ? pickerUri : data.getData();
             String originaImagePath = null;
             if ("content".equals(imageUri.getScheme()))
                 originaImagePath = BitmapSaver.getImagePathFromInputStreamUri(ActivityMainEditor.this, imageUri);

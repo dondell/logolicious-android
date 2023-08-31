@@ -34,6 +34,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.Spanned;
@@ -260,13 +261,19 @@ public class LogoliciousApp {
         // Check if we have write permission
         boolean bRet = true;
         int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
         if (permission != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
             ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_CODE);
             bRet = false;
         }
         return bRet;
+    }
+
+    private static void openAppSettings(Activity activity) {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", activity.getPackageName(), null);
+        intent.setData(uri);
+        activity.startActivity(intent);
     }
 
     public static boolean verifyCameraPermissions(Activity activity, String[] PERMISSIONS_CAMERA, int REQUEST_CODE) {
