@@ -101,6 +101,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.SkuDetails;
+import com.google.android.gms.tasks.Task;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
@@ -109,7 +110,6 @@ import com.google.android.play.core.install.InstallStateUpdatedListener;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.InstallStatus;
 import com.google.android.play.core.install.model.UpdateAvailability;
-import com.google.android.play.core.tasks.Task;
 import com.olav.logolicious.BuildConfig;
 import com.olav.logolicious.R;
 import com.olav.logolicious.billingv4.MyBillingImpl;
@@ -288,6 +288,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
     public ArrayList<AdapterFontDetails> arrayFonts = new ArrayList<>();
     private AdapterFonts adapterFonts;
     private AlertDialog alert = null;
+    private ActivityResultLauncher<Intent> updateLauncher;
 
     @Override
     public void onSuccessSavingTemplate() {

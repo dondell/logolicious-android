@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="preferExternal"
-    android:versionCode="202308311"
-    android:versionName="2023.08.31.1"
+    android:versionCode="202408211"
+    android:versionName="2024.08.21.1"
     tools:ignore="MissingLeanbackLauncher">
 
     <!-- Some Chromebooks don't support touch. Although not essential,
@@ -35,8 +35,6 @@
     <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE " />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <!--<uses-permission android:name="android.permission.INTERNET" />-->
     <!-- Required permission to check licensing. -->
     <uses-permission android:name="com.android.vending.CHECK_LICENSE" />
 
@@ -105,24 +103,6 @@
             android:name=".screens.activities.AboutSaveSettings"
             android:excludeFromRecents="true"
             android:theme="@android:style/Theme.Dialog" />
-
-        <service
-            android:name=".billingv3.InstanceIDService"
-            android:exported="true"
-            tools:ignore="ExportedService">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".billingv3.data.network.firebase.SubscriptionMessageService"
-            android:exported="true"
-            tools:ignore="ExportedService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
     </application>
 
 </manifest>

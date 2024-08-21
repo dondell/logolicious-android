@@ -22,6 +22,7 @@ import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.google.gson.Gson;
+import com.olav.logolicious.BuildConfig;
 import com.olav.logolicious.billingv3.Constants;
 import com.olav.logolicious.screens.activities.ActivityMainEditor;
 import com.olav.logolicious.util.LogoliciousApp;
@@ -190,9 +191,13 @@ public class MyBillingImpl implements PurchasesUpdatedListener {
         if (purchasesList != null) {
             if (purchasesList.size() == 0) {
                 AppStatitics.sharedPreferenceSet(context, "isSubscribed", 0);
-                Toast.makeText(context, "Not subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
+                if (BuildConfig.DEBUG) {
+                    Toast.makeText(context, "Not subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
+                }
             } else {
-                Toast.makeText(context, "Has subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
+                if (BuildConfig.DEBUG) {
+                    Toast.makeText(context, "Has subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
+                }
             }
 
             for (Purchase purchase : purchasesList) {
