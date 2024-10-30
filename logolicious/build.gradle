@@ -11,10 +11,10 @@ localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 android {
     signingConfigs {
         release {
-            storeFile file('original keystore')
-            storePassword localProperties.getProperty('keyStorePassword')
+            storeFile file('D:\\Clients\\Direct - OlavAndMic\\keystore\\original keystore')
+            storePassword password
             keyAlias = 'll'
-            keyPassword localProperties.getProperty('keyStorePassword')
+            keyPassword password
             lintOptions {
                 disable 'MissingTranslation'
                 checkReleaseBuilds false
@@ -23,9 +23,9 @@ android {
         }
         debug {
             storeFile file('original keystore')
-            storePassword localProperties.getProperty('keyStorePassword')
+            storePassword password
             keyAlias = 'll'
-            keyPassword localProperties.getProperty('keyStorePassword')
+            keyPassword password
         }
     }
 
@@ -38,7 +38,7 @@ android {
         applicationId "com.olav.logolicious"
         compileSdkVersion 33
         //minSdkVersion 16
-        minSdk 16
+        minSdk 21
         targetSdk 33
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -120,7 +120,8 @@ dependencies {
 
     //noinspection GradleCompatible
     implementation 'androidx.activity:activity:1.7.2'
-    def billing_version = "4.1.0"
+    implementation 'com.android.billingclient:billing-ktx:7.1.1'
+    def billing_version = "6.0.1"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'

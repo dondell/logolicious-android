@@ -99,6 +99,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.SkuDetails;
 import com.google.android.gms.tasks.Task;
@@ -277,7 +278,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
 
     //Billing implementation
     public static MyBillingImpl billingHelper = null;
-    public static List<SkuDetails> skuDetailsList = new ArrayList<>();
+    public static List<ProductDetails> skuDetailsList = new ArrayList<>();
     public static List<Purchase> purchasesList = new ArrayList<>();
     ProgressDialog mProgressDialog;
     AlertDialog mDialog;

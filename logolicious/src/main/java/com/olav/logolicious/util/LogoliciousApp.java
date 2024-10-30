@@ -67,6 +67,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.SkuDetails;
 import com.olav.logolicious.R;
 import com.olav.logolicious.billingv3.Constants;
@@ -1262,10 +1263,14 @@ public class LogoliciousApp {
                 //ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
 
                 // Retrieve a value for "skuDetails" by calling querySkuDetailsAsync().
-                if (skuDetailsList.size() > 0) {
+                if (!skuDetailsList.isEmpty()) {
+                    BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
+                            .setProductDetails(skuDetailsList.get(0)).build();
+                    List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
+                    productDetailsParams.add(params);
                     BillingFlowParams billingFlowParams =
                             BillingFlowParams.newBuilder()
-                                    .setSkuDetails(skuDetailsList.get(0))
+                                    .setProductDetailsParamsList(productDetailsParams)
                                     .build();
                     int responseCode = billingHelper.billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
                     store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
@@ -1340,21 +1345,29 @@ public class LogoliciousApp {
             public void onClick(View v) {
                 isSubBtnClick = true;
                 //ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
-                if (skuDetailsList.size() > 0) {
+                if (!skuDetailsList.isEmpty()) {
                     BillingFlowParams billingFlowParams = null;
                     if (AppStatitics.sharedPreferenceGet(act, "oldSubscriber", 0) == 1) {
-                        for (SkuDetails sd : skuDetailsList) {
-                            if (sd.getSku().equals(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)) {
+                        for (ProductDetails sd : skuDetailsList) {
+                            if (sd.getProductId().equals(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)) {
+                                BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
+                                        .setProductDetails(skuDetailsList.get(0)).build();
+                                List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
+                                productDetailsParams.add(params);
                                 billingFlowParams = BillingFlowParams.newBuilder()
-                                        .setSkuDetails(sd)
+                                        .setProductDetailsParamsList(productDetailsParams)
                                         .build();
                             }
                         }
                     } else {
-                        for (SkuDetails sd : skuDetailsList) {
-                            if (sd.getSku().equals(Constants.ADDYOURLOGOAPP_2022)) {
+                        for (ProductDetails sd : skuDetailsList) {
+                            if (sd.getProductId().equals(Constants.ADDYOURLOGOAPP_2022)) {
+                                BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
+                                        .setProductDetails(skuDetailsList.get(0)).build();
+                                List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
+                                productDetailsParams.add(params);
                                 billingFlowParams = BillingFlowParams.newBuilder()
-                                        .setSkuDetails(sd)
+                                        .setProductDetailsParamsList(productDetailsParams)
                                         .build();
                             }
                         }
