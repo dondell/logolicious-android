@@ -2,19 +2,22 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply from: '../dependencies.gradle'
-apply from: '../spotless.gradle'
 apply plugin: 'com.google.gms.google-services'
 
 def localProperties = new Properties()
 localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     signingConfigs {
         release {
-            storeFile file('D:\\Clients\\Direct - OlavAndMic\\keystore\\original keystore')
-            storePassword password
-            keyAlias = 'll'
-            keyPassword password
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias = keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['storePassword']
             lintOptions {
                 disable 'MissingTranslation'
                 checkReleaseBuilds false
@@ -22,24 +25,27 @@ android {
             }
         }
         debug {
-            storeFile file('original keystore')
-            storePassword password
-            keyAlias = 'll'
-            keyPassword password
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias = keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['storePassword']
         }
     }
 
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17' // or '1.8'
     }
 
     defaultConfig {
         applicationId "com.olav.logolicious"
-        compileSdkVersion 33
+        compileSdk 33
         //minSdkVersion 16
         minSdk 21
-        targetSdk 33
+        targetSdk 34
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -127,6 +133,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.9.0'
     implementation "com.google.android.material:material:$versions.googleMaterial"
     implementation "androidx.constraintlayout:constraintlayout:2.0.4"
+    implementation "androidx.activity:activity:$versions.activity"
     //implementation 'com.anjlab.android.iab.v3:library:1.0.44'
     implementation "com.android.billingclient:billing:$billing_version"
     implementation 'com.google.android.gms:play-services-auth:20.6.0'

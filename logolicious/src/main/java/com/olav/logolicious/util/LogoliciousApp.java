@@ -985,9 +985,7 @@ public class LogoliciousApp {
     public static void initPrefabLogos(Activity context) {
         // move the prefab logos into the sdcard logolicious folder
         // Check if we have write permissioninitPrefabLogos
-        int permission = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission == PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             for (String logos : prefab_logos) {
                 File fLogo = new File(ActivityMainEditor.logoDir, logos);
                 // delete first
@@ -995,8 +993,19 @@ public class LogoliciousApp {
                 // copy to .logos folder
                 FileUtil.copyFileTo(context, "drawable/" + logos, ActivityMainEditor.logoDir, "drawable");
             }
-        }
+        } else {
+            int permission = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
+            if (permission == PackageManager.PERMISSION_GRANTED) {
+                for (String logos : prefab_logos) {
+                    File fLogo = new File(ActivityMainEditor.logoDir, logos);
+                    // delete first
+                    fLogo.delete();
+                    // copy to .logos folder
+                    FileUtil.copyFileTo(context, "drawable/" + logos, ActivityMainEditor.logoDir, "drawable");
+                }
+            }
+        }
     }
 
     private static final long MEGABYTE = 1024L * 1024L;
@@ -1264,16 +1273,21 @@ public class LogoliciousApp {
 
                 // Retrieve a value for "skuDetails" by calling querySkuDetailsAsync().
                 if (!skuDetailsList.isEmpty()) {
-                    BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
-                            .setProductDetails(skuDetailsList.get(0)).build();
-                    List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
-                    productDetailsParams.add(params);
-                    BillingFlowParams billingFlowParams =
-                            BillingFlowParams.newBuilder()
-                                    .setProductDetailsParamsList(productDetailsParams)
-                                    .build();
-                    int responseCode = billingHelper.billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
-                    store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
+                    List<ProductDetails.SubscriptionOfferDetails> offerDetailsList = skuDetailsList.get(0).getSubscriptionOfferDetails();
+                    if (offerDetailsList != null && !offerDetailsList.isEmpty()) {
+                        String offerToken = offerDetailsList.get(0).getOfferToken(); // Get the offerToken of the first offer (you might need to select the correct offer based on user's choice)
+
+                        BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
+                                .setProductDetails(skuDetailsList.get(0)).setOfferToken(offerToken).build();
+                        List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
+                        productDetailsParams.add(params);
+                        BillingFlowParams billingFlowParams =
+                                BillingFlowParams.newBuilder()
+                                        .setProductDetailsParamsList(productDetailsParams)
+                                        .build();
+                        int responseCode = billingHelper.billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
+                        store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
+                    }
                 } else {
                     Toast.makeText(GlobalClass.getAppContext(), "Unable to load subscription.", Toast.LENGTH_SHORT).show();
                 }

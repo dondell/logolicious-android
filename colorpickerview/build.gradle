@@ -13,5 +13,3 @@ android {
 dependencies {
   implementation "androidx.appcompat:appcompat:$versions.androidxAppcompat"
 }
-
-apply from: '../spotless.gradle'

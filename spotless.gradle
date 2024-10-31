@@ -1,11 +1,13 @@
-apply plugin: "com.diffplug.gradle.spotless"
+plugins {
+  id 'com.diffplug.spotless' version '6.15.0'
+}
 spotless {
   java {
     target "**/*.java"
     licenseHeaderFile '../spotless.license.java'
     trimTrailingWhitespace()
     removeUnusedImports()
-    googleJavaFormat()
+    googleJavaFormat("1.15.0") // Replace with a compatible version
     endWithNewline()
   }
 }
