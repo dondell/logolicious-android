@@ -14,21 +14,18 @@ import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchaseHistoryRecord;
-import com.android.billingclient.api.PurchaseHistoryResponseListener;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.google.gson.Gson;
 import com.olav.logolicious.BuildConfig;
 import com.olav.logolicious.billingv3.Constants;
 import com.olav.logolicious.screens.activities.ActivityMainEditor;
 import com.olav.logolicious.util.LogoliciousApp;
 import com.olav.logolicious.util.SubscriptionUtil.AppStatitics;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +36,7 @@ public class MyBillingImpl implements PurchasesUpdatedListener {
     private Activity context;
     public BillingClient billingClient;
     private List<Purchase> mPurchasesList;
-    private List<SkuDetails> mSkuDetailsList = new ArrayList<>();
+    private List<ProductDetails> mSkuDetailsList = new ArrayList<>();
 
     public void initialize(ActivityMainEditor context) {
         billingClient = BillingClient.newBuilder(context)
@@ -115,25 +112,24 @@ public class MyBillingImpl implements PurchasesUpdatedListener {
     };
 
     private void querySKUDetails() {
-        List<String> skuList = new ArrayList<>();
-        skuList.add(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION);
-        skuList.add(Constants.ADDYOURLOGOAPP_2022);
+        List<QueryProductDetailsParams.Product> skuList = new ArrayList<>();
+        skuList.add(QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)
+                .setProductType(BillingClient.ProductType.SUBS).build());
+        skuList.add(QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(Constants.ADDYOURLOGOAPP_2022)
+                .setProductType(BillingClient.ProductType.SUBS).build());
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-        params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS);
-        billingClient.querySkuDetailsAsync(params.build(),
-                new SkuDetailsResponseListener() {
-                    @Override
-                    public void onSkuDetailsResponse(@NotNull BillingResult billingResult,
-                                                     List<SkuDetails> skuDetailsList) {
-                        if (null != skuDetailsList && skuDetailsList.size() > 0) {
-                            mSkuDetailsList.clear();
-                            ActivityMainEditor.skuDetailsList.clear();
 
-                            mSkuDetailsList.addAll(skuDetailsList);
-                            ActivityMainEditor.skuDetailsList.addAll(skuDetailsList);
-                        }
-                    }
-                });
+        QueryProductDetailsParams params1 = QueryProductDetailsParams.newBuilder().setProductList(skuList).build();
+        billingClient.queryProductDetailsAsync(params1, (billingResult, list) -> {
+            if (!list.isEmpty()) {
+                mSkuDetailsList.clear();
+                ActivityMainEditor.skuDetailsList.clear();
+                mSkuDetailsList.addAll(list);
+                ActivityMainEditor.skuDetailsList.addAll(list);
+            }
+        });
     }
 
     public void queryPurchases() {
@@ -141,38 +137,27 @@ public class MyBillingImpl implements PurchasesUpdatedListener {
             Log.e(TAG, "queryPurchases: BillingClient is not ready");
         }
         Log.d(TAG, "queryPurchases: SUBS");
-        Purchase.PurchasesResult result = billingClient.queryPurchases(BillingClient.SkuType.SUBS);
-        if (result == null) {
-            Log.i(TAG, "queryPurchases: null purchase result");
-            processPurchases(null);
-        } else {
-            if (result.getPurchasesList() == null) {
-                Log.i(TAG, "queryPurchases: null purchase list");
+        QueryPurchasesParams params = QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build();
+        billingClient.queryPurchasesAsync(params, (billingResult, list) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.ERROR) {
                 processPurchases(null);
-            } else {
-                processPurchases(result.getPurchasesList());
-            }
-        }
+            } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                processPurchases(list);
 
-        // Check purchase history
-        billingClient.queryPurchaseHistoryAsync(BillingClient.SkuType.SUBS, new PurchaseHistoryResponseListener() {
-            @Override
-            public void onPurchaseHistoryResponse(@NonNull BillingResult billingResult, @Nullable List<PurchaseHistoryRecord> list) {
-                // Check each purchase item data here
-                if (null != list && list.size() > 0) {
-                    // Clear first the flag
-                    AppStatitics.sharedPreferenceSet(context, "oldSubscriber", 0);
+                // Clear first the flag
+                AppStatitics.sharedPreferenceSet(context, "oldSubscriber", 0);
 
-                    for (PurchaseHistoryRecord record : list) {
-                        Log.i(TAG, "Purchased history item " + new Gson().toJson(record));
-                        if (record.getSkus().contains(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)) {
-                            // Has purchase the old Subscription
-                            AppStatitics.sharedPreferenceSet(context, "oldSubscriber", 1);
-                        }
+                // Check purchase history
+                for (Purchase record : list) {
+                    Log.i(TAG, "Purchased history item " + new Gson().toJson(record));
+                    if (record.getSkus().contains(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)) {
+                        // Has purchase the old Subscription
+                        AppStatitics.sharedPreferenceSet(context, "oldSubscriber", 1);
                     }
                 }
             }
         });
+
     }
 
     /**

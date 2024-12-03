@@ -99,6 +99,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.SkuDetails;
 import com.google.android.gms.tasks.Task;
@@ -277,7 +278,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
 
     //Billing implementation
     public static MyBillingImpl billingHelper = null;
-    public static List<SkuDetails> skuDetailsList = new ArrayList<>();
+    public static List<ProductDetails> skuDetailsList = new ArrayList<>();
     public static List<Purchase> purchasesList = new ArrayList<>();
     ProgressDialog mProgressDialog;
     AlertDialog mDialog;
@@ -1896,32 +1897,36 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 toast(getApplicationContext(), "malloc() called. Available mem = " + LogoliciousApp.getAvailableMemMB(getApplicationContext()), Toast.LENGTH_SHORT);
                 break;
             case R.id.buttonShowMyLogos:
-                if (LogoliciousApp.verifyStoragePermissions(this, LogoliciousApp.PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE)) {
-                    Log.i(TAG, "Permission Storage Granted.");
-                } else {
-                    return;
-                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    if (mLogosView == null) {
+                        addMyLogosTooltipView();
+                    } else {
+                        mLogosView.remove();
+                        mLogosView = null;
+                    }
 
-                if (mLogosView == null) {
-                    addMyLogosTooltipView();
                 } else {
-                    mLogosView.remove();
-                    mLogosView = null;
+                    if (LogoliciousApp.verifyStoragePermissions(this, LogoliciousApp.PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE)) {
+                        Log.i(TAG, "Permission Storage Granted.");
+                    } else {
+                        return;
+                    }
                 }
-
                 selectedToolTipView = mLogosView;
                 break;
             case R.id.buttonPrefab:
-                if (LogoliciousApp.verifyStoragePermissions(this, LogoliciousApp.PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    if (mPrefabsLogosView == null) {
+                        addPrefabTooltipView();
+                    } else {
+                        mPrefabsLogosView.remove();
+                        mPrefabsLogosView = null;
+                    }
                 } else {
-                    return;
-                }
-
-                if (mPrefabsLogosView == null) {
-                    addPrefabTooltipView();
-                } else {
-                    mPrefabsLogosView.remove();
-                    mPrefabsLogosView = null;
+                    if (LogoliciousApp.verifyStoragePermissions(this, LogoliciousApp.PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE)) {
+                    } else {
+                        return;
+                    }
                 }
 
                 selectedToolTipView = mPrefabsLogosView;
@@ -2174,19 +2179,14 @@ public class ActivityMainEditor extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
                 d.dismiss();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    // Include only one of the following calls to launch(), depending on the types
-                    // of media that you want to let the user choose from.
+                // Include only one of the following calls to launch(), depending on the types
+                // of media that you want to let the user choose from.
 
-                    // Launch the photo picker and let the user choose only images.
-                    pickMedia.launch(new PickVisualMediaRequest.Builder()
+                // Launch the photo picker and let the user choose only images.
+                pickMedia.launch(new PickVisualMediaRequest.Builder()
                             .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                             .build());
-                } else {
-                    if (LogoliciousApp.verifyStoragePermissions(ActivityMainEditor.this, LogoliciousApp.PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE))
-                        callGallery(v);
-                }
-            }
+    }
         });
 
         buttonSelectBatchPhoto.setOnClickListener(new OnClickListener() {
@@ -2664,6 +2664,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
      *              you can use the onLowMemory(), which is roughly equivalent to the TRIM_MEMORY_COMPLETE event
      */
     public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
     }
 
     private void onResultFromCamera(Intent data) {

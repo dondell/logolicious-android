@@ -67,6 +67,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.SkuDetails;
 import com.olav.logolicious.R;
 import com.olav.logolicious.billingv3.Constants;
@@ -984,9 +985,7 @@ public class LogoliciousApp {
     public static void initPrefabLogos(Activity context) {
         // move the prefab logos into the sdcard logolicious folder
         // Check if we have write permissioninitPrefabLogos
-        int permission = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission == PackageManager.PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             for (String logos : prefab_logos) {
                 File fLogo = new File(ActivityMainEditor.logoDir, logos);
                 // delete first
@@ -994,8 +993,19 @@ public class LogoliciousApp {
                 // copy to .logos folder
                 FileUtil.copyFileTo(context, "drawable/" + logos, ActivityMainEditor.logoDir, "drawable");
             }
-        }
+        } else {
+            int permission = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
+            if (permission == PackageManager.PERMISSION_GRANTED) {
+                for (String logos : prefab_logos) {
+                    File fLogo = new File(ActivityMainEditor.logoDir, logos);
+                    // delete first
+                    fLogo.delete();
+                    // copy to .logos folder
+                    FileUtil.copyFileTo(context, "drawable/" + logos, ActivityMainEditor.logoDir, "drawable");
+                }
+            }
+        }
     }
 
     private static final long MEGABYTE = 1024L * 1024L;
@@ -1262,13 +1272,22 @@ public class LogoliciousApp {
                 //ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
 
                 // Retrieve a value for "skuDetails" by calling querySkuDetailsAsync().
-                if (skuDetailsList.size() > 0) {
-                    BillingFlowParams billingFlowParams =
-                            BillingFlowParams.newBuilder()
-                                    .setSkuDetails(skuDetailsList.get(0))
-                                    .build();
-                    int responseCode = billingHelper.billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
-                    store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
+                if (!skuDetailsList.isEmpty()) {
+                    List<ProductDetails.SubscriptionOfferDetails> offerDetailsList = skuDetailsList.get(0).getSubscriptionOfferDetails();
+                    if (offerDetailsList != null && !offerDetailsList.isEmpty()) {
+                        String offerToken = offerDetailsList.get(0).getOfferToken(); // Get the offerToken of the first offer (you might need to select the correct offer based on user's choice)
+
+                        BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
+                                .setProductDetails(skuDetailsList.get(0)).setOfferToken(offerToken).build();
+                        List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
+                        productDetailsParams.add(params);
+                        BillingFlowParams billingFlowParams =
+                                BillingFlowParams.newBuilder()
+                                        .setProductDetailsParamsList(productDetailsParams)
+                                        .build();
+                        int responseCode = billingHelper.billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
+                        store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
+                    }
                 } else {
                     Toast.makeText(GlobalClass.getAppContext(), "Unable to load subscription.", Toast.LENGTH_SHORT).show();
                 }
@@ -1340,21 +1359,29 @@ public class LogoliciousApp {
             public void onClick(View v) {
                 isSubBtnClick = true;
                 //ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
-                if (skuDetailsList.size() > 0) {
+                if (!skuDetailsList.isEmpty()) {
                     BillingFlowParams billingFlowParams = null;
                     if (AppStatitics.sharedPreferenceGet(act, "oldSubscriber", 0) == 1) {
-                        for (SkuDetails sd : skuDetailsList) {
-                            if (sd.getSku().equals(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)) {
+                        for (ProductDetails sd : skuDetailsList) {
+                            if (sd.getProductId().equals(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)) {
+                                BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
+                                        .setProductDetails(skuDetailsList.get(0)).build();
+                                List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
+                                productDetailsParams.add(params);
                                 billingFlowParams = BillingFlowParams.newBuilder()
-                                        .setSkuDetails(sd)
+                                        .setProductDetailsParamsList(productDetailsParams)
                                         .build();
                             }
                         }
                     } else {
-                        for (SkuDetails sd : skuDetailsList) {
-                            if (sd.getSku().equals(Constants.ADDYOURLOGOAPP_2022)) {
+                        for (ProductDetails sd : skuDetailsList) {
+                            if (sd.getProductId().equals(Constants.ADDYOURLOGOAPP_2022)) {
+                                BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
+                                        .setProductDetails(skuDetailsList.get(0)).build();
+                                List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
+                                productDetailsParams.add(params);
                                 billingFlowParams = BillingFlowParams.newBuilder()
-                                        .setSkuDetails(sd)
+                                        .setProductDetailsParamsList(productDetailsParams)
                                         .build();
                             }
                         }

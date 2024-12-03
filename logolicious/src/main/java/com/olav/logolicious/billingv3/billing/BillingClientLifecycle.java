@@ -31,6 +31,7 @@ import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
@@ -210,18 +211,16 @@ public class BillingClientLifecycle implements LifecycleObserver, PurchasesUpdat
             Log.e(TAG, "queryPurchases: BillingClient is not ready");
         }
         Log.d(TAG, "queryPurchases: SUBS");
-        Purchase.PurchasesResult result = billingClient.queryPurchases(BillingClient.SkuType.SUBS);
-        if (result == null) {
-            Log.i(TAG, "queryPurchases: null purchase result");
-            processPurchases(null);
-        } else {
-            if (result.getPurchasesList() == null) {
-                Log.i(TAG, "queryPurchases: null purchase list");
+        QueryPurchasesParams params = QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build();
+        billingClient.queryPurchasesAsync(params, ((billingResult, list) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.ERROR) {
+                Log.i(TAG, "queryPurchases: null purchase result");
                 processPurchases(null);
-            } else {
-                processPurchases(result.getPurchasesList());
+            } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                Log.i(TAG, "queryPurchases: null purchase list");
+                processPurchases(list);
             }
-        }
+        }));
     }
 
     /**

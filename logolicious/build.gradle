@@ -2,19 +2,22 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply from: '../dependencies.gradle'
-apply from: '../spotless.gradle'
 apply plugin: 'com.google.gms.google-services'
 
 def localProperties = new Properties()
 localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     signingConfigs {
         release {
-            storeFile file('original keystore')
-            storePassword localProperties.getProperty('keyStorePassword')
-            keyAlias = 'll'
-            keyPassword localProperties.getProperty('keyStorePassword')
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias = keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['storePassword']
             lintOptions {
                 disable 'MissingTranslation'
                 checkReleaseBuilds false
@@ -22,24 +25,27 @@ android {
             }
         }
         debug {
-            storeFile file('original keystore')
-            storePassword localProperties.getProperty('keyStorePassword')
-            keyAlias = 'll'
-            keyPassword localProperties.getProperty('keyStorePassword')
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias = keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['storePassword']
         }
     }
 
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17' // or '1.8'
     }
 
     defaultConfig {
         applicationId "com.olav.logolicious"
-        compileSdkVersion 33
+        compileSdk 33
         //minSdkVersion 16
-        minSdk 16
-        targetSdk 33
+        minSdk 21
+        targetSdk 34
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -61,7 +67,7 @@ android {
         }
     }
 
-    productFlavors.whenObjectAdded { flavor ->
+    productFlavors.configureEach { flavor ->
         // Add the property 'myCustomProperty' to each product flavor and set the default value to 'customPropertyValue'
         flavor.ext.set('apkName', '')
     }
@@ -82,7 +88,7 @@ android {
         }
     }
 
-    applicationVariants.all { variant ->
+    applicationVariants.configureEach { variant ->
         variant.outputs.each { output ->
             def SEP = "-"
             def apkName = variant.productFlavors[0].apkName
@@ -119,15 +125,13 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 
     //noinspection GradleCompatible
-    implementation 'androidx.activity:activity:1.7.2'
-    def billing_version = "4.1.0"
+    implementation "androidx.activity:activity:$versions.activity"
+    implementation "com.android.billingclient:billing-ktx:$versions.billingKtx"
+    implementation "com.android.billingclient:billing:$versions.billing"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation "androidx.appcompat:appcompat:$versions.androidxAppcompat"
     implementation "com.google.android.material:material:$versions.googleMaterial"
-    implementation "androidx.constraintlayout:constraintlayout:2.0.4"
-    //implementation 'com.anjlab.android.iab.v3:library:1.0.44'
-    implementation "com.android.billingclient:billing:$billing_version"
+    implementation "androidx.constraintlayout:constraintlayout:$versions.constraintLayout"
     implementation 'com.google.android.gms:play-services-auth:20.6.0'
     implementation "com.jakewharton.timber:timber:$versions.timber"
 
