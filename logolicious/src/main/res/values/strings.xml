@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">LOGOLICIOUS-kotlin</string>
+    <string name="app_name">Logolicious</string>
     <string name="package_name">com.olav.logolicious</string>
     <string name="crash_report">Crash Report</string>
     <string name="app_about_info">For more information visit:</string>

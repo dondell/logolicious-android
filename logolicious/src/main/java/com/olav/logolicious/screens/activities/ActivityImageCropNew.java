@@ -128,7 +128,7 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
                     LogoliciousApp.showMessageOK(ActivityImageCropNew.this, "Can't Crop image.", null);
                 }
 
-                GlobalClass.picturePath = BitmapSaver.saveBitmape(LogoliciousApp.sharedPreferenceGet(ActivityImageCropNew.this), ActivityMainEditor.tempDir, "crop", croppedImage);
+                GlobalClass.picturePath = BitmapSaver.saveBitmap(LogoliciousApp.sharedPreferenceGet(ActivityImageCropNew.this), ActivityMainEditor.tempDir, "crop", croppedImage);
                 GlobalClass.baseBitmap = ImageHelper.decodeBitmapPath(GlobalClass.picturePath);
 
                 //Re-initialized cache if it is null
@@ -166,10 +166,10 @@ public class ActivityImageCropNew extends Activity implements OnClickListener, O
 
                 if (cropImageView.isRotated) {
                     GlobalClass.baseBitmap = cropImageView.getNoCropBitmap();
-                    GlobalClass.picturePath = BitmapSaver.saveBitmape(LogoliciousApp.sharedPreferenceGet(ActivityImageCropNew.this), ActivityMainEditor.tempDir, "rotated", cropImageView.getRotatedBitmap());
+                    GlobalClass.picturePath = BitmapSaver.saveBitmap(LogoliciousApp.sharedPreferenceGet(ActivityImageCropNew.this), ActivityMainEditor.tempDir, "rotated", cropImageView.getRotatedBitmap());
                     Log.i("xxx rotated bitmap", "xxx cropImageView.getRotatedBitmap()");
                 } else {
-                    GlobalClass.picturePath = BitmapSaver.saveBitmape(LogoliciousApp.sharedPreferenceGet(ActivityImageCropNew.this), ActivityMainEditor.tempDir, "crop", cropImageView.getNoCropBitmap());
+                    GlobalClass.picturePath = BitmapSaver.saveBitmap(LogoliciousApp.sharedPreferenceGet(ActivityImageCropNew.this), ActivityMainEditor.tempDir, "crop", cropImageView.getNoCropBitmap());
                 }
 
                 if (GlobalClass.diskCache != null) {

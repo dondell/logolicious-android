@@ -1,17 +1,18 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
 apply from: '../dependencies.gradle'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.devtools.ksp'
 
 def localProperties = new Properties()
 localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 def keystoreProperties = new Properties()
-def keystorePropertiesFile = rootProject.file('keystore.properties')
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+keystoreProperties.load(new FileInputStream(rootProject.file('local.properties')))
 
 android {
+    flavorDimensions "version"
+
     signingConfigs {
         release {
             storeFile file(keystoreProperties['storeFile'])
@@ -42,12 +43,17 @@ android {
 
     defaultConfig {
         applicationId "com.olav.logolicious"
-        compileSdk 33
+        compileSdk 34
         //minSdkVersion 16
-        minSdk 21
+        minSdk 23
         targetSdk 34
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
     buildTypes {
         release {
@@ -57,7 +63,7 @@ android {
         }
         debug {
             debuggable true
-            //signingConfig signingConfigs.key
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -72,8 +78,6 @@ android {
         flavor.ext.set('apkName', '')
     }
 
-    // Specifies one flavor dimension.
-    flavorDimensions "version"
     ndkVersion '20.0.5594570'
 
     productFlavors {
@@ -109,6 +113,9 @@ android {
     androidResources {
         ignoreAssetsPattern '!drawable-b+sr+Latn'
     }
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 repositories {
@@ -132,12 +139,13 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$versions.androidxAppcompat"
     implementation "com.google.android.material:material:$versions.googleMaterial"
     implementation "androidx.constraintlayout:constraintlayout:$versions.constraintLayout"
-    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation 'com.google.android.gms:play-services-auth:21.3.0'
     implementation "com.jakewharton.timber:timber:$versions.timber"
 
     // Room Architecture Components.
-    implementation "android.arch.persistence.room:runtime:$versions.arch"
-    annotationProcessor "android.arch.persistence.room:compiler:$versions.arch"
+    implementation("android.arch.persistence.room:runtime:$versions.arch")
+    ksp("androidx.room:room-compiler:$versions.roomVersion")
+    implementation("androidx.room:room-runtime:$versions.roomVersion")
 
     // Firebase libraries.
     // These libraries versions are known to be compatible with each other.

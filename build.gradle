@@ -16,12 +16,12 @@ buildscript {
         classpath "com.diffplug.spotless:spotless-plugin-gradle:${versions.spotlessGradle}"
         classpath 'com.google.gms:google-services:4.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin_version}"
+        classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.9.22-1.0.17"
     }
 }
 
 allprojects {
     repositories {
-        jcenter()
         mavenCentral()
         maven {
             url 'https://maven.google.com/'

@@ -93,6 +93,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -101,7 +102,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.SkuDetails;
 import com.google.android.gms.tasks.Task;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
@@ -130,6 +130,8 @@ import com.olav.logolicious.supertooltips.ToolTip;
 import com.olav.logolicious.supertooltips.ToolTipRelativeLayout;
 import com.olav.logolicious.supertooltips.ToolTipView;
 import com.olav.logolicious.util.ClickColorListener;
+import com.olav.logolicious.util.CoroutineHelper;
+import com.olav.logolicious.util.CoroutineScopeProvider;
 import com.olav.logolicious.util.FileUtil;
 import com.olav.logolicious.util.FileUtils;
 import com.olav.logolicious.util.GlobalClass;
@@ -163,6 +165,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import kotlinx.coroutines.CoroutineScope;
 
 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
 public class ActivityMainEditor extends AppCompatActivity implements
@@ -252,6 +256,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
 
     public static SharedPreferences preferences;
     SharedPreferences.Editor editor;
+    private CoroutineScope activityScope;
     //available keys : SavingType, dontAskMeAgain
 
     // Live Button Feature
@@ -455,6 +460,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
 
         res = getResources();
         act = ActivityMainEditor.this;
+        activityScope = CoroutineHelper.INSTANCE.createActivityScope();
         preferences = ActivityMainEditor.act.getPreferences(Context.MODE_PRIVATE);
         editor = preferences.edit();
         backgroundImage = findViewById(R.id.backgroundImage);
@@ -691,6 +697,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
         }*/
         super.onDestroy();
         Log.i(TAG, "xxx onDestroy");
+        CoroutineHelper.INSTANCE.cancelActivityScope(); // Cancel the coroutine scope when the activity is destroyed
         if (null != GlobalClass.diskCache)
             GlobalClass.diskCache.clearCache();
         System.gc();
@@ -1867,7 +1874,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
         LogoliciousApp.malloc(getApplicationContext(), (int) LogoliciousApp.fileSizeInBytes(logopath));
         GlobalClass.LOGO_UPLOADED_COUNT = GlobalClass.LOGO_UPLOADED_COUNT + 1;
         ACRA.getErrorReporter().putCustomData(GlobalClass.LOGO_UPLOADED + GlobalClass.LOGO_UPLOADED_COUNT, LogoliciousApp.fileSizeInMb(logopath));
-        logopath = BitmapSaver.saveLogoBitmape(
+        logopath = BitmapSaver.saveLogoBitmap(
                 tempDir + "uploaded_" + currentDateandTime + ".png",
                 BitmapSaver.exifLogoBitmapOrientationCorrector(ActivityMainEditor.this, logopath)
         );
@@ -2431,8 +2438,11 @@ public class ActivityMainEditor extends AppCompatActivity implements
                                     case DialogInterface.BUTTON_POSITIVE:
                                         ACRA.getErrorReporter().putCustomData(GlobalClass.ABOVEOREQUAL_15MB_WARNING_RAISED, "Yes");
                                         LogoliciousApp.malloc(ActivityMainEditor.this, (int) LogoliciousApp.fileSizeInBytes(finalOriginaImagePath));
-                                        GlobalClass.picturePath = BitmapSaver.saveBitmape(preferences, tempDir, "fromOtherApps", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, imageUri));
-                                        continueReceivingFromOtherApp(finalOriginaImagePath);
+                                        BitmapSaver.saveBitmap(preferences, tempDir, "fromOtherApps", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, imageUri),
+                                                CoroutineScopeProvider.INSTANCE.getScope(), path -> {
+                                                    GlobalClass.picturePath = path;
+                                                    continueReceivingFromOtherApp(finalOriginaImagePath);
+                                                });
                                         break;
                                     case DialogInterface.BUTTON_NEGATIVE:
                                         dialogInterface.dismiss();
@@ -2442,8 +2452,15 @@ public class ActivityMainEditor extends AppCompatActivity implements
                         });
                     } else {
                         LogoliciousApp.malloc(ActivityMainEditor.this, (int) LogoliciousApp.fileSizeInBytes(originaImagePath));
-                        GlobalClass.picturePath = BitmapSaver.saveBitmape(preferences, tempDir, "fromOtherApps", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, imageUri));
-                        continueReceivingFromOtherApp(originaImagePath);
+                        String finalOriginaImagePath1 = originaImagePath;
+                        BitmapSaver.saveBitmap(preferences, tempDir, "fromOtherApps", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, imageUri),
+                                CoroutineScopeProvider.INSTANCE.getScope(), new BitmapSaver.SaveBitmapCallback() {
+                                    @Override
+                                    public void onBitmapSaved(@NonNull String path) {
+                                        GlobalClass.picturePath = path;
+                                        continueReceivingFromOtherApp(finalOriginaImagePath1);
+                                    }
+                                });
                     }
 
 
@@ -2673,30 +2690,33 @@ public class ActivityMainEditor extends AppCompatActivity implements
 
         //Compress picture from Camera (Has been discussed before) due to OOM issue.
         //LogoliciousApp.malloc(getApplicationContext(), (int) LogoliciousApp.fileSizeInBytes(GlobalClass.picturePath));
-        GlobalClass.picturePath = BitmapSaver.saveBitmape(preferences, currentPhotoDirPath + "/", "picture_taken", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, GlobalClass.picturePath));
-        try {
-            /**
-             * No need to copy since this path is the final when taking picture.
-             * //Save Exif to new path
-             GlobalClass.baseImageExif.copyExif(GlobalClass.picturePath, GlobalClass.picturePath);
-             */
-            //Correct orientation
-            ImageExif.updateExif(ExifInterface.TAG_ORIENTATION, "" + ExifInterface.ORIENTATION_NORMAL, GlobalClass.picturePath);
-            //Parse Exif
-            GlobalClass.baseImageExif.parse(GlobalClass.picturePath);
-        } catch (Exception e) {
-            Log.i("xxx", "xxx There's problem in parsing Exif.");
-        }
+        BitmapSaver.saveBitmap(preferences, currentPhotoDirPath + "/", "picture_taken", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, GlobalClass.picturePath),
+                CoroutineScopeProvider.INSTANCE.getScope(), path -> {
+                    GlobalClass.picturePath = path;
+                    try {
+                        /**
+                         * No need to copy since this path is the final when taking picture.
+                         * //Save Exif to new path
+                         GlobalClass.baseImageExif.copyExif(GlobalClass.picturePath, GlobalClass.picturePath);
+                         */
+                        //Correct orientation
+                        ImageExif.updateExif(ExifInterface.TAG_ORIENTATION, "" + ExifInterface.ORIENTATION_NORMAL, GlobalClass.picturePath);
+                        //Parse Exif
+                        GlobalClass.baseImageExif.parse(GlobalClass.picturePath);
+                    } catch (Exception e) {
+                        Log.i("xxx", "xxx There's problem in parsing Exif.");
+                    }
 
-        GlobalClass.baseBitmap = BitmapFactory.decodeFile(GlobalClass.picturePath); //ImageHelper.decodeBitmapPath(GlobalClass.picturePath); //ImageHelper.correctBitmapRotation(GlobalClass.picturePath, ImageHelper.decodeBitmapPath(GlobalClass.picturePath));
+                    GlobalClass.baseBitmap = BitmapFactory.decodeFile(GlobalClass.picturePath); //ImageHelper.decodeBitmapPath(GlobalClass.picturePath); //ImageHelper.correctBitmapRotation(GlobalClass.picturePath, ImageHelper.decodeBitmapPath(GlobalClass.picturePath));
 
-        if (LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
-            toast(ActivityMainEditor.this, res.getString(R.string.ErrorAfterCameraCapture), Toast.LENGTH_LONG);
-            return;
-        }
+                    if (LogoliciousApp.strIsNullOrEmpty(GlobalClass.picturePath)) {
+                        toast(ActivityMainEditor.this, res.getString(R.string.ErrorAfterCameraCapture), Toast.LENGTH_LONG);
+                        return;
+                    }
 
-        Log.d(TAG, "Picture retrieve path = " + GlobalClass.picturePath);
-        LogoliciousApp.callCropper(act, listRight, backgroundImage, DEVICE_WIDTH);
+                    Log.d(TAG, "Picture retrieve path = " + GlobalClass.picturePath);
+                    LogoliciousApp.callCropper(act, listRight, backgroundImage, DEVICE_WIDTH);
+                });
     }
 
     private void onResultFromGallery(Intent data, Uri pickerUri) {
@@ -2727,8 +2747,12 @@ public class ActivityMainEditor extends AppCompatActivity implements
                             case DialogInterface.BUTTON_POSITIVE:
                                 ACRA.getErrorReporter().putCustomData(GlobalClass.ABOVEOREQUAL_15MB_WARNING_RAISED, "Yes");
                                 LogoliciousApp.malloc(ActivityMainEditor.this, (int) LogoliciousApp.fileSizeInBytes(finalOriginaImagePath));
-                                GlobalClass.picturePath = BitmapSaver.saveBitmape(preferences, tempDir, "fromAppGallery", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, imageUri));
-                                continueReceivingFromGallery(finalOriginaImagePath);
+                                BitmapSaver.saveBitmap(preferences, tempDir, "fromAppGallery", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, imageUri),
+                                        CoroutineScopeProvider.INSTANCE.getScope(), path -> {
+                                            GlobalClass.picturePath = path;
+                                            continueReceivingFromGallery(finalOriginaImagePath);
+                                        });
+
                                 break;
                             case DialogInterface.BUTTON_NEGATIVE:
                                 dialogInterface.dismiss();
@@ -2738,12 +2762,26 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 });
             } else {
                 LogoliciousApp.malloc(ActivityMainEditor.this, (int) LogoliciousApp.fileSizeInBytes(originaImagePath));
-                GlobalClass.picturePath = BitmapSaver.saveBitmape(preferences, tempDir, "fromAppGallery", BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, imageUri));
-                continueReceivingFromGallery(originaImagePath);
+                saveBitmapAndContinue(imageUri, originaImagePath);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private void saveBitmapAndContinue(Uri imageUri, String originaImagePath) {
+        Bitmap bitmap = BitmapSaver.exifBitmapOrientationCorrector(ActivityMainEditor.this, imageUri);
+        BitmapSaver.saveBitmap(preferences, tempDir, "fromAppGallery", bitmap, activityScope, new BitmapSaver.SaveBitmapCallback() {
+            @Override
+            public void onBitmapSaved(String path) {
+                if (!path.isEmpty()) {
+                    GlobalClass.picturePath = path;
+                    continueReceivingFromGallery(originaImagePath);
+                } else {
+                    Toast.makeText(ActivityMainEditor.this, "Error saving bitmap", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void continueReceivingFromGallery(String originaImagePath) {
@@ -2923,8 +2961,8 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 d.dismiss();
             }
         });
-        ((AlertDialog) d).getButton(AlertDialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
-        ((AlertDialog) d).getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.INVISIBLE);
+        d.getButton(AlertDialog.BUTTON_POSITIVE).setVisibility(View.INVISIBLE);
+        d.getButton(AlertDialog.BUTTON_NEGATIVE).setVisibility(View.INVISIBLE);
         d.getWindow().setLayout((int) LogoliciousApp.convertDpToPixel(30 * 9, this), ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
