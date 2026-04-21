@@ -2,14 +2,17 @@ apply plugin: 'com.android.library'
 apply from: '../dependencies.gradle'
 
 android {
-  compileSdkVersion versions.compileSdk
-  defaultConfig {
-    minSdkVersion versions.minSdk
-    targetSdkVersion versions.compileSdk
-  }
+    compileSdkVersion versions.compileSdk
+    defaultConfig {
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.compileSdk
+    }
+    buildFeatures {
+        buildConfig = true
+    }
     namespace 'com.skydoves.colorpickerview'
 }
 
 dependencies {
-  implementation "androidx.appcompat:appcompat:$versions.androidxAppcompat"
+    implementation "androidx.appcompat:appcompat:$versions.androidxAppcompat"
 }

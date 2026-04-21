@@ -1,6 +1,7 @@
 ext.versions = [
-        minSdk           : 14,
-        compileSdk       : 31,
+        minSdk           : 23,
+        compileSdk       : 34,
+        targetSdk        : 34,
         versionoCode     : 20,
         versionName      : '2.1.6',
         kotlin_version   : '1.9.10',
@@ -11,9 +12,9 @@ ext.versions = [
 
         androidxAppcompat: '1.6.1',
         constraintLayout : '2.0.4',
-        arch             : '1.1.1',
+        arch             : '2.5.2',
         activity         : '1.7.0',
-        billing          : '6.0.1',
+        billing          : '7.1.1',
         billingKtx       : '7.1.1',
 
         // for demo

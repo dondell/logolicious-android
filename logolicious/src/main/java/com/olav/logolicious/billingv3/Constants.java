@@ -23,6 +23,8 @@ public class Constants {
     public static final String BASIC_SKU = "basic_subscription";
     public static final String COM_OLAV_LOGOLICIOUS_SUBSCRIPTION = "com.olav.logolicious.subscription";
     public static final String ADDYOURLOGOAPP_2022 = "addyourlogoapp2022";
+    public static final String ADDYOURLOGOAPP_MONTHLY = "addyourlogoapp_monthly";
+    public static final String ADDYOURLOGOAPP_ANNUAL = "addyourlogoapp_annual";
     public static final String PLAY_STORE_SUBSCRIPTION_URL
             = "https://play.google.com/store/account/subscriptions";
     public static final String PLAY_STORE_SUBSCRIPTION_DEEPLINK_URL

@@ -42,12 +42,19 @@ android {
 
     defaultConfig {
         applicationId "com.olav.logolicious"
-        compileSdk 33
-        //minSdkVersion 16
-        minSdk 21
-        targetSdk 34
+        compileSdk versions.compileSdk
+        minSdk versions.minSdk
+        targetSdk versions.targetSdk
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                // Correct syntax for AGP 8.5+
+                arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
+                        "-DANDROID_EXT_LINKER_FLAGS=-Wl,-z,max-page-size=16384"
+            }
+        }
     }
     buildTypes {
         release {
@@ -61,9 +68,21 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+
     externalNativeBuild {
         cmake {
             path "src/main/cpp/CMakeLists.txt"
+            // Set the specific CMake version requested
+            version "3.22.1"
         }
     }
 
@@ -74,7 +93,7 @@ android {
 
     // Specifies one flavor dimension.
     flavorDimensions "version"
-    ndkVersion '20.0.5594570'
+    ndkVersion '25.1.8937393'
 
     productFlavors {
         demo {
@@ -136,8 +155,12 @@ dependencies {
     implementation "com.jakewharton.timber:timber:$versions.timber"
 
     // Room Architecture Components.
-    implementation "android.arch.persistence.room:runtime:$versions.arch"
-    annotationProcessor "android.arch.persistence.room:compiler:$versions.arch"
+    //implementation "android.arch.persistence.room:runtime:$versions.arch"
+    //annotationProcessor "android.arch.persistence.room:compiler:$versions.arch"
+    // Use the AndroidX version which is compatible with JDK 17implementation "androidx.room:room-runtime:2.5.2"
+    // Room Architecture Components
+    implementation "androidx.room:room-runtime:${versions.arch}"
+    kapt "androidx.room:room-compiler:${versions.arch}"
 
     // Firebase libraries.
     // These libraries versions are known to be compatible with each other.
@@ -153,7 +176,9 @@ dependencies {
     implementation "com.google.android.play:app-update-ktx:$versions.appUpdate"
 
     implementation 'com.intuit.sdp:sdp-android:1.1.0'
-    implementation 'androidx.core:core:1.10.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$versions.kotlin_version"
 }

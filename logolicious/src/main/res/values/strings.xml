@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">LOGOLICIOUS-kotlin</string>
+    <string name="app_name">Logolicious</string>
     <string name="package_name">com.olav.logolicious</string>
     <string name="crash_report">Crash Report</string>
     <string name="app_about_info">For more information visit:</string>
@@ -266,5 +266,14 @@
     <!-- Manage subscriptions guided step on Android TV -->
     <string name="manage_subscription_scan_qr_code">Scan QR code with your mobile device.</string>
     <string name="empty" />
+    <string name="subscription_text">Hi there, frequent user! 😎\n\n
+Greetings from the Logolicious team!\n\n
+Over the last few years, we’ve spent thousands of hours building and improving this app.
+That’s a lot, right? You’re seeing this pop-up because you’ve used Logolicious over 15 times already… which means Logolicious has impacted your life a little too… 😄\n\n
+To keep building new features, improving performance, and keeping the app clean and focused, we’re introducing Logolicious Pro. (Don’t you also hate apps overloaded with ads?) 🤔\n\n
+If Logolicious helps you, consider supporting us — think of it as buying us a cup of coffee ☕👍\n\n
+For just $17.99 per year (or $2.99 monthly), you’ll unlock the full experience and this message won’t appear again.
+Thank you for supporting Logolicious and being awesome!
+Mic, Olav, and Dondell ✌️</string>
 
 </resources>

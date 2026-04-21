@@ -130,6 +130,8 @@ public class LogoliciousApp {
             "prefab_logo_tm_white"
     };
 
+    private static int BUTTON_MONTHLY = 0;
+    private static int BUTTON_YEARLY = 1;
     public static void showAlertOnUpLoadLogo(final Context context, int layout, String strTitle, String strMsg,
                                              final boolean bCloseActivityOnOk) {
         AlertDialog.Builder dlg = new AlertDialog.Builder(context);
@@ -411,24 +413,36 @@ public class LogoliciousApp {
     }
 
     public static void showMessageOK(Activity context, String message, DialogInterface.OnClickListener okListener) {
-        AlertDialog.Builder dialogAlert = null;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            if (!context.isDestroyed() && null != alert && alert.isShowing()) {
-                alert.cancel();
-            }
-        } else {
-            if (null != alert && alert.isShowing()) {
-                alert.cancel();
-            }
+        // 1. Check if activity is null or finishing to prevent crashes
+        if (context == null || context.isFinishing()) {
+            return;
         }
 
-        dialogAlert = new AlertDialog.Builder(context);
-        dialogAlert.setMessage(message)
-                .setPositiveButton("OK", okListener);
+        // 2. Safely handle existing alert
+        try {
+            if (alert != null && alert.isShowing()) {
+                // Check if the activity is still valid for window operations
+                if (!context.isDestroyed()) {
+                    alert.dismiss();
+                }
+            }
+        } catch (Exception e) {
+            // Log the error but don't crash; the window might have closed asynchronously
+            Log.e("LogoliciousApp", "Error dismissing old alert: " + e.getMessage());
+        }
 
-        alert = dialogAlert.create();
-        alert.show();
+        // 3. Create and show the new dialog
+        try {
+            AlertDialog.Builder dialogAlert = new AlertDialog.Builder(context);
+            dialogAlert.setMessage(message)
+                    .setPositiveButton("OK", okListener);
+
+            alert = dialogAlert.create();
+            alert.show();
+        } catch (WindowManager.BadTokenException e) {
+            // This happens if the activity is in the process of closing
+            Log.e("LogoliciousApp", "Cannot show dialog, bad window token");
+        }
     }
 
     public static void showYesNoAlertWithoutTitle(Context context, String strMsg, String strYesText, String strNoText, DialogInterface.OnClickListener listener) {
@@ -1113,7 +1127,7 @@ public class LogoliciousApp {
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
         ActivityManager activityManager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
         activityManager.getMemoryInfo(mi);
-        double availableMegs = mi.availMem / 0x100000L;
+        double availableMegs = (double) mi.availMem / 0x100000L;
 
         //Percentage can be calculated for API 16+
         //double percentAvail = mi.availMem / (double)mi.totalMem;
@@ -1211,12 +1225,9 @@ public class LogoliciousApp {
 
         final TextView tvTimer = (TextView) subsDialog.findViewById(R.id.tvTimer);
         final ImageView button_maybe_later = (ImageView) subsDialog.findViewById(R.id.button_maybe_later);
-        final ImageView subscribe = (ImageView) subsDialog.findViewById(R.id.buttonSubscribe);
+        final TextView btnMonthly = subsDialog.findViewById(R.id.buttonMonthly);
+        final TextView btnYearly = subsDialog.findViewById(R.id.buttonYearly);
         final Button promoCode = (Button) subsDialog.findViewById(R.id.promoCode);
-        //add shadow to buy button
-        final Bitmap src = BitmapFactory.decodeResource(act.getResources(), R.drawable.buy_button);
-        final Bitmap shadow = ImageHelper.addShadow(src, src.getHeight(), src.getWidth(), act.getResources().getColor(R.color.style_grey700), 3, 1, 3);
-        subscribe.setImageBitmap(shadow);
 
         final int deviceWidth = act.getWindowManager().getDefaultDisplay().getWidth();
         subsDialog.getWindow().setLayout((int) (deviceWidth * .9), ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -1265,33 +1276,13 @@ public class LogoliciousApp {
             }
         });
 
-        subscribe.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                isSubBtnClick = true;
-                //ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
+        btnMonthly.setOnClickListener(v -> {
+            subscribe(BUTTON_MONTHLY);
 
-                // Retrieve a value for "skuDetails" by calling querySkuDetailsAsync().
-                if (!skuDetailsList.isEmpty()) {
-                    List<ProductDetails.SubscriptionOfferDetails> offerDetailsList = skuDetailsList.get(0).getSubscriptionOfferDetails();
-                    if (offerDetailsList != null && !offerDetailsList.isEmpty()) {
-                        String offerToken = offerDetailsList.get(0).getOfferToken(); // Get the offerToken of the first offer (you might need to select the correct offer based on user's choice)
+        });
 
-                        BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
-                                .setProductDetails(skuDetailsList.get(0)).setOfferToken(offerToken).build();
-                        List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
-                        productDetailsParams.add(params);
-                        BillingFlowParams billingFlowParams =
-                                BillingFlowParams.newBuilder()
-                                        .setProductDetailsParamsList(productDetailsParams)
-                                        .build();
-                        int responseCode = billingHelper.billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
-                        store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
-                    }
-                } else {
-                    Toast.makeText(GlobalClass.getAppContext(), "Unable to load subscription.", Toast.LENGTH_SHORT).show();
-                }
-            }
+        btnYearly.setOnClickListener(v -> {
+            subscribe(BUTTON_YEARLY);
         });
 
         promoCode.setOnClickListener(new OnClickListener() {
@@ -1305,102 +1296,47 @@ public class LogoliciousApp {
         Log.i("xxx", "xxx showing subscription");
     }
 
-    public static void showSubscriptionFirstPopup(final ActivityMainEditor act, final int count) {
-
-        subsDialog = new Dialog(act);
-        subsDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        subsDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        subsDialog.setContentView(R.layout.subscription);
-
-        if (null == subsDialog) {
-            return;
-        }
-
-        final ImageView button_maybe_later = (ImageView) subsDialog.findViewById(R.id.button_maybe_later);
-        final ImageView subscribe = (ImageView) subsDialog.findViewById(R.id.buttonSubscribe);
-        final Button promoCode = (Button) subsDialog.findViewById(R.id.promoCode);
-        //add shadow to buy button
-        final Bitmap src = BitmapFactory.decodeResource(act.getResources(), R.drawable.buy_button);
-        final Bitmap shadow = ImageHelper.addShadow(src, src.getHeight(), src.getWidth(), act.getResources().getColor(R.color.style_grey700), 3, 1, 3);
-        subscribe.setImageBitmap(shadow);
-
-        final int deviceWidth = act.getWindowManager().getDefaultDisplay().getWidth();
-        subsDialog.getWindow().setLayout((int) (deviceWidth * .9), ViewGroup.LayoutParams.WRAP_CONTENT);
-        subsDialog.setCancelable(false);
-
-        button_maybe_later.setEnabled(false);
-        button_maybe_later.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                button_maybe_later.setEnabled(true);
-            }
-        }, 2000);
-
-        button_maybe_later.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (null != subsDialog) {
-                    subsDialog.cancel();
-                    subsDialog = null;
+    public static void subscribe(int buttonId) {
+        isSubBtnClick = true;
+        String subscription = buttonId == BUTTON_MONTHLY ? Constants.ADDYOURLOGOAPP_MONTHLY : Constants.ADDYOURLOGOAPP_ANNUAL;
+        if (!skuDetailsList.isEmpty()) {
+            BillingFlowParams billingFlowParams = null;
+            if (AppStatitics.sharedPreferenceGet(act, "oldSubscriber", 0) == 1) {
+                for (ProductDetails sd : skuDetailsList) {
+                    if (sd.getProductId().equals(subscription)) {
+                        BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
+                                .setProductDetails(sd).build();
+                        List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
+                        productDetailsParams.add(params);
+                        billingFlowParams = BillingFlowParams.newBuilder()
+                                .setProductDetailsParamsList(productDetailsParams)
+                                .build();
+                    }
                 }
-                isSubBtnClick = false;
-                GlobalClass.subscriptionOkToShow = false;
-                Log.i("xxx", "xxx close subscription");
+            } else {
+                for (ProductDetails sd : skuDetailsList) {
+                    if (sd.getProductId().equals(subscription)) {
+                        List<ProductDetails.SubscriptionOfferDetails> offerDetails = sd.getSubscriptionOfferDetails();
 
-                if (GlobalClass.pendingShowMemAlert) {
-                    ActivityMainEditor.showMemError();
-                }
-            }
-        });
-
-        subscribe.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                isSubBtnClick = true;
-                //ActivityMainEditor.bp.subscribe(act, SubscriptionUtil.SUBSCRIPTION_SKU);
-                if (!skuDetailsList.isEmpty()) {
-                    BillingFlowParams billingFlowParams = null;
-                    if (AppStatitics.sharedPreferenceGet(act, "oldSubscriber", 0) == 1) {
-                        for (ProductDetails sd : skuDetailsList) {
-                            if (sd.getProductId().equals(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)) {
-                                BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
-                                        .setProductDetails(skuDetailsList.get(0)).build();
-                                List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
-                                productDetailsParams.add(params);
-                                billingFlowParams = BillingFlowParams.newBuilder()
-                                        .setProductDetailsParamsList(productDetailsParams)
-                                        .build();
-                            }
-                        }
-                    } else {
-                        for (ProductDetails sd : skuDetailsList) {
-                            if (sd.getProductId().equals(Constants.ADDYOURLOGOAPP_2022)) {
-                                BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
-                                        .setProductDetails(skuDetailsList.get(0)).build();
-                                List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
-                                productDetailsParams.add(params);
-                                billingFlowParams = BillingFlowParams.newBuilder()
-                                        .setProductDetailsParamsList(productDetailsParams)
-                                        .build();
-                            }
+                        if (offerDetails != null && !offerDetails.isEmpty()) {
+                            String offerToken = offerDetails.get(0).getOfferToken();
+                            BillingFlowParams.ProductDetailsParams params = BillingFlowParams.ProductDetailsParams.newBuilder()
+                                    .setProductDetails(sd)
+                                    .setOfferToken(offerToken)
+                                    .build();
+                            List<BillingFlowParams.ProductDetailsParams> productDetailsParams = new ArrayList<>();
+                            productDetailsParams.add(params);
+                            billingFlowParams = BillingFlowParams.newBuilder()
+                                    .setProductDetailsParamsList(productDetailsParams)
+                                    .build();
                         }
                     }
-                    int responseCode = billingHelper.billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
-                    store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
                 }
             }
-        });
-
-        promoCode.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                enterPromoCode(act);
-            }
-        });
-
-        subsDialog.show();
-        Log.i("xxx", "xxx showing subscription");
+            assert billingFlowParams != null;
+            int responseCode = billingHelper.billingClient.launchBillingFlow(act, billingFlowParams).getResponseCode();
+            store.setInt(Constants.KEY_PURCHASE_CODE, responseCode);
+        }
     }
 
     public static void enterPromoCode(final Activity act) {

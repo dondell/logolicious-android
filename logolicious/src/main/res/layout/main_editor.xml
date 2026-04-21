@@ -8,23 +8,21 @@
     tools:context=".screens.activities.ActivityMainEditor">
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_right_sidebar"
+        android:id="@+id/guideline_sidebar"
         android:layout_width="1sp"
         android:layout_height="12sp"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent=".82" />
+        app:layout_constraintGuide_percent=".18" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraint_rightPanel"
         android:layout_width="0dp"
-        android:layout_height="fill_parent"
-        android:layout_weight=".35"
+        android:layout_height="0dp"
         android:background="@color/DodgerBlue"
         android:orientation="vertical"
-        android:weightSum="2"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/guideline_right_sidebar"
+        app:layout_constraintBottom_toBottomOf="@+id/photo"
+        app:layout_constraintEnd_toEndOf="@id/guideline_sidebar"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.Guideline
@@ -39,7 +37,6 @@
             android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:orientation="vertical"
-            app:layout_constraintBottom_toTopOf="@+id/guideline_right_bottom"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -215,97 +212,72 @@
             </LinearLayout>
         </RelativeLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout_select_image"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout_save_share"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/linearLayout_save_share">
-
-        <ImageView
-            android:id="@+id/buttonLive"
-            android:layout_width="match_parent"
-            android:layout_height="35dp"
-            android:layout_gravity="center_horizontal"
-            android:background="@color/Transparent"
-            android:contentDescription="@string/live"
-            android:onClick="selectLiveOption"
-            android:scaleType="fitCenter"
-            android:src="@drawable/live"
-            android:visibility="gone" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp"
-            android:background="@color/White"
-            android:visibility="gone" />
-
-        <ImageView
-            android:id="@+id/buttonGallery"
-            android:layout_width="@dimen/SaveButtonWidth"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/contentdesc_icon_eraser"
-            android:scaleType="fitCenter"
-            android:src="@drawable/select_image" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginLeft="7dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="7dp"
-            android:layout_marginBottom="5dp"
-            android:background="@color/White"
-            android:visibility="visible" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout_save_share"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/DodgerBlue"
-        android:gravity="bottom"
-        android:orientation="vertical"
-        android:paddingTop="10sp"
-        android:paddingBottom="10sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline_right_sidebar">
-
-        <ImageView
-            android:id="@+id/save"
-            android:layout_width="@dimen/SaveButtonWidth"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:adjustViewBounds="true"
-            android:background="@color/DodgerBlue"
-            android:contentDescription="@string/todo"
-            android:scaleType="fitCenter"
-            android:src="@drawable/save" />
-
         <LinearLayout
-            android:layout_width="@dimen/SaveButtonWidth"
+            android:id="@+id/linearLayout_select_image"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp"
-            android:background="@drawable/menu_bg_edge">
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/_25sdp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:id="@+id/buttonLive"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/Transparent"
+                android:contentDescription="@string/live"
+                android:onClick="selectLiveOption"
+                android:scaleType="fitCenter"
+                android:src="@drawable/live"
+                android:visibility="gone" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="5dp"
+                android:background="@color/White"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/buttonGallery"
+                android:layout_width="@dimen/SaveButtonWidth"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/contentdesc_icon_eraser"
+                android:scaleType="fitCenter"
+                android:src="@drawable/select_image" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginLeft="7dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="7dp"
+                android:layout_marginBottom="5dp"
+                android:background="@color/White"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/save"
+                android:layout_width="@dimen/SaveButtonWidth"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:adjustViewBounds="true"
+                android:background="@color/DodgerBlue"
+                android:contentDescription="@string/todo"
+                android:scaleType="fitCenter"
+                android:src="@drawable/save" />
 
             <ImageView
                 android:id="@+id/sharePic"
@@ -323,18 +295,16 @@
                 android:src="@drawable/share_icon2" />
         </LinearLayout>
 
-
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <RelativeLayout
         android:id="@+id/photo"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1.64"
         android:background="@drawable/backrepeat"
         app:layout_constraintBottom_toTopOf="@id/menuBottom"
-        app:layout_constraintEnd_toStartOf="@id/guideline_right_sidebar"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/guideline_sidebar"
         app:layout_constraintTop_toTopOf="parent">
 
         <include
@@ -407,6 +377,13 @@
             android:visibility="invisible" />
     </RelativeLayout>
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_menu_bottom"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".85"/>
+
     <LinearLayout
         android:id="@+id/menuBottom"
         android:layout_width="0dp"
@@ -414,9 +391,9 @@
         android:orientation="vertical"
         android:weightSum="2"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/guideline_right_sidebar"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/linearLayout_save_share">
+        app:layout_constraintTop_toTopOf="@+id/guideline_menu_bottom">
 
         <LinearLayout
             android:id="@+id/menuBottomUpper"

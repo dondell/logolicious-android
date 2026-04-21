@@ -198,6 +198,12 @@ public class BitmapSaver {
 	public static Bitmap exifLogoBitmapOrientationCorrector(Context context, String path){
 		Bitmap realImage = ImageHelper.decodeBitmapPath(path);
 
+        // SAFETY CHECK: If permission denied, realImage will be null
+        if (realImage == null) {
+            Log.e("BitmapSaver", "Failed to decode bitmap at " + path + ". Check permissions.");
+            return null;
+        }
+
 		ExifInterface exif = null;
 		try {
 			exif = new ExifInterface(path);

@@ -113,13 +113,22 @@ public class MyBillingImpl implements PurchasesUpdatedListener {
 
     private void querySKUDetails() {
         List<QueryProductDetailsParams.Product> skuList = new ArrayList<>();
+
         skuList.add(QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)
+                .setProductId(Constants.ADDYOURLOGOAPP_ANNUAL)
                 .setProductType(BillingClient.ProductType.SUBS).build());
+
+        skuList.add(QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(Constants.ADDYOURLOGOAPP_MONTHLY)
+                .setProductType(BillingClient.ProductType.SUBS).build());
+
         skuList.add(QueryProductDetailsParams.Product.newBuilder()
                 .setProductId(Constants.ADDYOURLOGOAPP_2022)
                 .setProductType(BillingClient.ProductType.SUBS).build());
-        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+
+        QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+                .setProductList(skuList)
+                .build();
 
         QueryProductDetailsParams params1 = QueryProductDetailsParams.newBuilder().setProductList(skuList).build();
         billingClient.queryProductDetailsAsync(params1, (billingResult, list) -> {
@@ -150,7 +159,10 @@ public class MyBillingImpl implements PurchasesUpdatedListener {
                 // Check purchase history
                 for (Purchase record : list) {
                     Log.i(TAG, "Purchased history item " + new Gson().toJson(record));
-                    if (record.getSkus().contains(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)) {
+                    if (record.getProducts().contains(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION)
+                            || record.getProducts().contains(Constants.ADDYOURLOGOAPP_2022)
+                            || record.getProducts().contains(Constants.ADDYOURLOGOAPP_ANNUAL)
+                            || record.getProducts().contains(Constants.ADDYOURLOGOAPP_MONTHLY)) {
                         // Has purchase the old Subscription
                         AppStatitics.sharedPreferenceSet(context, "oldSubscriber", 1);
                     }
@@ -174,7 +186,7 @@ public class MyBillingImpl implements PurchasesUpdatedListener {
         }
 
         if (purchasesList != null) {
-            if (purchasesList.size() == 0) {
+            if (purchasesList.isEmpty()) {
                 AppStatitics.sharedPreferenceSet(context, "isSubscribed", 0);
                 if (BuildConfig.DEBUG) {
                     Toast.makeText(context, "Not subscribed " + purchasesList.size(), Toast.LENGTH_SHORT).show();
@@ -187,9 +199,10 @@ public class MyBillingImpl implements PurchasesUpdatedListener {
 
             for (Purchase purchase : purchasesList) {
                 mPurchasesList.add(purchase);
-                ArrayList<String> sku = purchase.getSkus();
                 String purchaseToken = purchase.getPurchaseToken();
-                if (sku.contains(Constants.COM_OLAV_LOGOLICIOUS_SUBSCRIPTION) || sku.contains(Constants.ADDYOURLOGOAPP_2022)) {
+                if (purchase.getProducts().contains(Constants.ADDYOURLOGOAPP_ANNUAL)
+                        || purchase.getProducts().contains(Constants.ADDYOURLOGOAPP_MONTHLY)
+                        || purchase.getProducts().contains(Constants.ADDYOURLOGOAPP_2022)) {
                     //Only show subscription restored popup when isSubscribed key returned 0
                     if (AppStatitics.sharedPreferenceGet(context, "isSubscribed", 0) == 0) {
                         showMessageOK(context,
@@ -203,7 +216,7 @@ public class MyBillingImpl implements PurchasesUpdatedListener {
                     }
                     break;
                 }
-                Log.d(TAG, "Register purchase with sku: " + sku + ", token: " + purchaseToken);
+                Log.d(TAG, "Register purchase with sku: " + purchase.getProducts().get(0) + ", token: " + purchaseToken);
             }
         } else {
             AppStatitics.sharedPreferenceSet(context, "isSubscribed", 0);

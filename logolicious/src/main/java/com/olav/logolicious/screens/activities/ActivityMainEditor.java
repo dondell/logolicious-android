@@ -164,7 +164,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-@RequiresApi(api = Build.VERSION_CODES.KITKAT)
+import kotlin.coroutines.CoroutineContext;
+import kotlinx.coroutines.BuildersKt;
+import kotlinx.coroutines.Dispatchers;
+
 public class ActivityMainEditor extends AppCompatActivity implements
         OnTouchListener,
         ToolTipView.OnToolTipViewClickedListener,
@@ -618,10 +621,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
         LogoliciousApp.setViewVisibility(this, R.id.flipCamera, false);
         LogoliciousApp.setOnClickListener(this, R.id.buttonSnapOnGrid);
         LogoliciousApp.setOnClickListener(this, R.id.buttonGallery);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
-            new LoadFontsTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        else
-            new LoadFontsTask().execute();
+        loadFonts(true);
 
         LogoliciousApp.initPrefabLogos(act);
 
@@ -772,6 +772,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
         checkSubscription(this);
         isSomeActivityIsRunning = false;
         mOrientation = this.getResources().getConfiguration().orientation;
+        isMinimized = false;
         isMinimized = false;
         gc.setCurrentActivity(this);
 
@@ -976,7 +977,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
                                     public void onClick(DialogInterface d, int which) {
                                         switch (which) {
                                             case DialogInterface.BUTTON_POSITIVE:
-                                                new UploadLogoTask().execute(GlobalClass.logoPath);
+                                                uploadLogo(GlobalClass.logoPath);
                                                 break;
                                             case DialogInterface.BUTTON_NEGATIVE:
                                                 d.dismiss();
@@ -987,7 +988,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
                                 });
                     } else {
                         Log.i(TAG, "xxx on an recommended logo size");
-                        new UploadLogoTask().execute(GlobalClass.logoPath);
+                        uploadLogo(GlobalClass.logoPath);
                     }
 
                 } catch (Exception e) {
@@ -1004,7 +1005,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 if (LogoliciousApp.strIsNullOrEmpty(selectedLogo))
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.NoLogoSelected), Toast.LENGTH_LONG).show();
                 else
-                    new UploadLogoTask().execute(selectedLogo);
+                    uploadLogo(selectedLogo);
             } else if (requestCode == PICK_FONT_RESULT_CODE) {
                 if (null == data)
                     return;
@@ -1060,7 +1061,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
 //                                                            ActivityMainEditor.fontsDir + font_file.getName()));
                                     sqLiteHelper.insertFont(path);
 //                                        }
-                                    new LoadFontsTask().execute();
+                                    loadFonts(true);
 //                                    } catch (IOException e) {
 //                                        e.printStackTrace();
 //                                    }
@@ -1166,6 +1167,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
         seekbarTrans.setProgress(252);
         layeredLogos.setVisibility(View.VISIBLE);
 
+        Log.i(TAG, logoPath);
         Bitmap mBitmapTmp = ImageHelper.decodeSampledBitmapFromPath(logoPath, DEVICE_WIDTH, DEVICE_HEIGHT);
         if (mBitmapTmp == null) {
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.LogoUploadErrorMessage), Toast.LENGTH_LONG).show();
@@ -1727,42 +1729,37 @@ public class ActivityMainEditor extends AppCompatActivity implements
 
     public static boolean forSharing = false;
 
-    private class SharingFinalImageTask extends AsyncTask<String, Integer, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            if (LogoliciousApp.isMemoryLow(ActivityMainEditor.this))
-                showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), null);
-
-            forSharing = true;
-            showProgress("Sharing your file. \nGive us a moment while we share this in " + FileUtil.getImageQualityTypeDescription(preferences) + ".");
+    private void startSharingProcess() {
+        if (LogoliciousApp.isMemoryLow(ActivityMainEditor.this)) {
+            showMessageOK(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), null);
         }
 
-        protected String doInBackground(String... param) {
-            return saveFinalImage(false, true);
-        }
+        forSharing = true;
+        showProgress("Sharing your file. \nGive us a moment while we share this in " + FileUtil.getImageQualityTypeDescription(preferences) + ".");
 
-        protected void onPostExecute(String picturePath) {
-            mProgressDialog.dismiss();
+        androidx.lifecycle.LifecycleOwnerKt.getLifecycleScope(this)
+                .launchWhenStarted((scope, continuation) -> {
 
-            if (picturePath.equalsIgnoreCase("not enough memory")) {
-                LogoliciousApp.showYesNoAlertWithoutTitle(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), "Continue", "Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        switch (i) {
-                            case DialogInterface.BUTTON_POSITIVE:
-                                editor.putBoolean("ProceedEvenNoMemAvailable", true);
-                                editor.commit();
-                                new SharingFinalImageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                                break;
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                dialogInterface.cancel();
-                                editor.putBoolean("ProceedEvenNoMemAvailable", false);
-                                editor.commit();
-                                break;
-                        }
+            // doInBackground equivalent
+            String picturePathResult = (String) BuildersKt.withContext(
+                    (CoroutineContext) Dispatchers.getIO(),
+                    (coroutineScope, continuationInner) -> saveFinalImage(false, true),
+                    null
+            );
+
+            // onPostExecute equivalent
+            if (mProgressDialog != null && mProgressDialog.isShowing()) {
+                mProgressDialog.dismiss();
+            }
+
+            if (picturePathResult.equalsIgnoreCase("not enough memory")) {
+                LogoliciousApp.showYesNoAlertWithoutTitle(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), "Continue", "Ok", (dialogInterface, i) -> {
+                    if (i == DialogInterface.BUTTON_POSITIVE) {
+                        editor.putBoolean("ProceedEvenNoMemAvailable", true).commit();
+                        startSharingProcess(); // Recursive call to new method
+                    } else {
+                        dialogInterface.cancel();
+                        editor.putBoolean("ProceedEvenNoMemAvailable", false).commit();
                     }
                 });
             } else {
@@ -1791,7 +1788,8 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 editor.putBoolean("ProceedEvenNoMemAvailable", false);
                 editor.commit();
             }
-        }
+            return null;
+        });
     }
 
     public static void showShareIntent(String absPath) {
@@ -1819,47 +1817,63 @@ public class ActivityMainEditor extends AppCompatActivity implements
         act.startActivityForResult(Intent.createChooser(shareIntent, "Share Your LogoLicious"), REQUEST_SHARE_ACTION);
     }
 
-    private class UploadLogoTask extends AsyncTask<String, String, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            GlobalClass.freeMem();
-
-            showProgress("Uploading Logo");
-        }
-
-        @Override
-        protected String doInBackground(String... logopath) {
-            if (!LogoliciousApp.strIsNullOrEmpty(logopath[0])) {
-
-                if (FileUtil.getFileSize(logopath[0]) > FileUtil.PREFERRED_LOGO_SIZE)
-                    return decodeUploadedLogo(logopath[0]);
-                else
-                    return decodeUploadedLogo(logopath[0]);
+    private void uploadLogo(String logopath) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+                return; // Stop execution until they grant permission
             }
-            return logopath[0];
         }
 
-        protected void onPostExecute(final String result) {
-            new Handler().postDelayed(new Runnable() {
+        GlobalClass.freeMem();
+        showProgress("Uploading Logo");
 
-                @Override
-                public void run() {
-                    mProgressDialog.dismiss();
-                    // Add the first logo to the screen
-                    if (!LogoliciousApp.strIsNullOrEmpty(result)) {
-                        addFirstLogoSelectedToScreen(result);
-                    }
-                }
-            }, 1000);
+        androidx.lifecycle.LifecycleOwnerKt.getLifecycleScope(this).launchWhenStarted((scope, continuation) -> {
 
+            String result = null;
+            try {
+                // Wrap runBlocking in a try-catch to handle the InterruptedException
+                result = (String) BuildersKt.runBlocking(
+                        (CoroutineContext) Dispatchers.getIO(),
+                        (coroutineScope, innerContinuation) -> {
+                            if (!LogoliciousApp.strIsNullOrEmpty(logopath)) {
+                                return decodeUploadedLogo(logopath);
+                            }
+                            return logopath;
+                        }
+                );
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                // Optionally handle the interruption (e.g., stop the task)
+            }
+
+            // This code runs on the Main thread after runBlocking finishes
+            if (mProgressDialog != null && mProgressDialog.isShowing()) {
+                mProgressDialog.dismiss();
+            }
+
+            // Ensure result is not null before processing
+            if (!LogoliciousApp.strIsNullOrEmpty(result)) {
+                addFirstLogoSelectedToScreen(result);
+            }
             GlobalClass.freeMem();
-        }
 
+            return null;
+        });
     }
 
+
     private String decodeUploadedLogo(String logopath) {
+        Bitmap resultBmp = BitmapSaver.exifLogoBitmapOrientationCorrector(this, logopath);
+        if (resultBmp == null) {
+            // Show a message to the user that the file couldn't be opened
+            runOnUiThread(() -> Toast.makeText(this, "Permission denied or file corrupted", Toast.LENGTH_SHORT).show());
+            return null;
+        }
+
         // this is called when I want to create a very large buffer in native memory
         //temporary logo path to correct image rotation
         SimpleDateFormat timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss");
@@ -1897,6 +1911,16 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 toast(getApplicationContext(), "malloc() called. Available mem = " + LogoliciousApp.getAvailableMemMB(getApplicationContext()), Toast.LENGTH_SHORT);
                 break;
             case R.id.buttonShowMyLogos:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    if (!Environment.isExternalStorageManager()) {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                        Uri uri = Uri.fromParts("package", getPackageName(), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                        return; // Stop execution until they grant permission
+                    }
+                }
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     if (mLogosView == null) {
                         addMyLogosTooltipView();
@@ -2044,7 +2068,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
                     new SaveFinalImageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case MESSAGE_SHARING_IMAGE:
-                    new SharingFinalImageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    startSharingProcess();
                     break;
                 case MESSAGE_SAVING_IMAGE_ERROR:
                     toast(getApplicationContext(), res.getString(R.string.SavingImageMessage), 1);
@@ -2885,8 +2909,13 @@ public class ActivityMainEditor extends AppCompatActivity implements
 
         customColorsArray.clear();
         Cursor colorCursor = GlobalClass.sqLiteHelper.getCustomColors();
-        while (colorCursor.moveToNext()) {
-            customColorsArray.add(colorCursor.getString(colorCursor.getColumnIndex(SQLiteHelper.COLOR_CODE)));
+        int columnIndex = colorCursor.getColumnIndex(SQLiteHelper.COLOR_CODE);
+        if (columnIndex != -1) { // Check that the column actually exists
+            while (colorCursor.moveToNext()) {
+                customColorsArray.add(colorCursor.getString(columnIndex));
+            }
+        } else {
+            Log.e(TAG, "Column " + SQLiteHelper.COLOR_CODE + " not found!");
         }
         customColorAdapter = new CustomColorAdapter(this, customColorsArray, new ClickColorListener() {
             @Override
@@ -3548,75 +3577,97 @@ public class ActivityMainEditor extends AppCompatActivity implements
         dialog.show();
     }
 
-    public class LoadFontsTask extends AsyncTask<String, String, String> {
+    private void loadFonts(boolean notifyAdapter) {
+        // Use the LifecycleScope to ensure the task is cancelled if the Activity is destroyed
+        androidx.lifecycle.LifecycleOwnerKt.getLifecycleScope(this).launchWhenStarted((scope, continuation) -> {
 
-        @Override
-        protected String doInBackground(String... params) {
-            // new fonts from Mics
-            arrayFonts.clear();
-            arrayFonts.add(new AdapterFontDetails("Display", "new_fonts/Display.ttf"));
-            arrayFonts.add(new AdapterFontDetails("IdolWild", "new_fonts/Idolwild.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Manteka", "new_fonts/Manteka.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Nexa Bold", "new_fonts/Nexa Bold.otf"));
-            arrayFonts.add(new AdapterFontDetails("Nexa Light", "new_fonts/Nexa Light.otf"));
-            arrayFonts.add(new AdapterFontDetails("Oswald-Bold", "new_fonts/Oswald-Bold.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Oswald-ExtraLight", "new_fonts/Oswald-ExtraLight.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Oswald-Regular", "new_fonts/Oswald-Regular.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Variane Script", "new_fonts/Variane Script.ttf"));
-            // 2016-10-22
-            arrayFonts.add(new AdapterFontDetails("Ansley Display-Outline", "new_fonts/Ansley Display-Outline.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Ansley Display-Regular", "new_fonts/Ansley Display-Regular.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Cornerstone", "new_fonts/Cornerstone.ttf"));
-            //			arrayFonts.add(new AdapterFontDetails("Hamurz Free Version", "new_fonts/Hamurz Free Version.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Lulo Clean", "new_fonts/Lulo Clean 1.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Mosk Semi-Bold 600", "new_fonts/Mosk Semi-Bold 600.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Mosk Thin 100", "new_fonts/Mosk Thin 100.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Mosk Ultra-Bold 900", "new_fonts/Mosk Ultra-Bold 900.ttf"));
-            arrayFonts.add(new AdapterFontDetails("ShellaheraLiteScript", "new_fonts/ShellaheraLiteScript.otf"));
-            //2016-12-08
-            arrayFonts.add(new AdapterFontDetails("AgreloyInT3", "new_fonts/AgreloyInT3.ttf"));
-            arrayFonts.add(new AdapterFontDetails("AgreloyS1", "new_fonts/AgreloyS1.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Berry Rotunda", "new_fonts/Berry Rotunda.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Bimbo_JVE", "new_fonts/Bimbo_JVE.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Dyer Arts and Crafts", "new_fonts/Dyer Arts and Crafts.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Essays1743", "new_fonts/Essays1743.ttf"));
-            arrayFonts.add(new AdapterFontDetails("JWerd", "new_fonts/JWerd.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Lemon Tuesday", "new_fonts/Lemon Tuesday.otf"));
-            arrayFonts.add(new AdapterFontDetails("LiberationSans-Bold", "new_fonts/LiberationSans-Bold.ttf"));
-            arrayFonts.add(new AdapterFontDetails("LiberationSans-Regular", "new_fonts/LiberationSans-Regular.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Nobile-Bold", "new_fonts/Nobile-Bold.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Nobile-Italic", "new_fonts/Nobile-Italic.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Nobile-Regular", "new_fonts/Nobile-Regular.ttf"));
-            arrayFonts.add(new AdapterFontDetails("OstrichSans-Heavy", "new_fonts/OstrichSans-Heavy.otf"));
-            arrayFonts.add(new AdapterFontDetails("Pacifico", "new_fonts/Pacifico.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Portmanteau Regular", "new_fonts/Portmanteau Regular.ttf"));
-            arrayFonts.add(new AdapterFontDetails("Ubuntu-Title", "new_fonts/Ubuntu-Title.ttf"));
+            // Use runBlocking for the background work.
+            // We do NOT pass the 'continuation' as a 3rd parameter to avoid the "already complete" crash.
+            try {
+                BuildersKt.runBlocking(
+                        (CoroutineContext) Dispatchers.getIO(),
+                        (coroutineScope, innerContinuation) -> {
 
-            //Load User Fonts
-            Cursor fontCursor = GlobalClass.sqLiteHelper.getFonts();
-            while (fontCursor.moveToNext()) {
-                String fontPath = fontCursor.getString(fontCursor.getColumnIndex("path"));
-                Log.i("xxx", "xxx fontPath " + fontPath);
-                if (!TextUtils.isEmpty(fontPath)) {
-                    String[] pathSplits = fontPath.split("/");
-                    if (pathSplits.length > 0 && pathSplits[pathSplits.length - 1].contains(".ttf")) {
-                        arrayFonts.add(new AdapterFontDetails(pathSplits[pathSplits.length - 1].replace(".ttf", ""),
-                                "",
-                                fontPath,
-                                true));
-                    }
-                }
+                            // new fonts from Mics
+                            arrayFonts.clear();
+                            arrayFonts.add(new AdapterFontDetails("Display", "new_fonts/Display.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("IdolWild", "new_fonts/Idolwild.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Manteka", "new_fonts/Manteka.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Nexa Bold", "new_fonts/Nexa Bold.otf"));
+                            arrayFonts.add(new AdapterFontDetails("Nexa Light", "new_fonts/Nexa Light.otf"));
+                            arrayFonts.add(new AdapterFontDetails("Oswald-Bold", "new_fonts/Oswald-Bold.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Oswald-ExtraLight", "new_fonts/Oswald-ExtraLight.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Oswald-Regular", "new_fonts/Oswald-Regular.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Variane Script", "new_fonts/Variane Script.ttf"));
+                            // 2016-10-22
+                            arrayFonts.add(new AdapterFontDetails("Ansley Display-Outline", "new_fonts/Ansley Display-Outline.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Ansley Display-Regular", "new_fonts/Ansley Display-Regular.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Cornerstone", "new_fonts/Cornerstone.ttf"));
+                            //			arrayFonts.add(new AdapterFontDetails("Hamurz Free Version", "new_fonts/Hamurz Free Version.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Lulo Clean", "new_fonts/Lulo Clean 1.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Mosk Semi-Bold 600", "new_fonts/Mosk Semi-Bold 600.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Mosk Thin 100", "new_fonts/Mosk Thin 100.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Mosk Ultra-Bold 900", "new_fonts/Mosk Ultra-Bold 900.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("ShellaheraLiteScript", "new_fonts/ShellaheraLiteScript.otf"));
+                            //2016-12-08
+                            arrayFonts.add(new AdapterFontDetails("AgreloyInT3", "new_fonts/AgreloyInT3.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("AgreloyS1", "new_fonts/AgreloyS1.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Berry Rotunda", "new_fonts/Berry Rotunda.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Bimbo_JVE", "new_fonts/Bimbo_JVE.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Dyer Arts and Crafts", "new_fonts/Dyer Arts and Crafts.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Essays1743", "new_fonts/Essays1743.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("JWerd", "new_fonts/JWerd.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Lemon Tuesday", "new_fonts/Lemon Tuesday.otf"));
+                            arrayFonts.add(new AdapterFontDetails("LiberationSans-Bold", "new_fonts/LiberationSans-Bold.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("LiberationSans-Regular", "new_fonts/LiberationSans-Regular.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Nobile-Bold", "new_fonts/Nobile-Bold.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Nobile-Italic", "new_fonts/Nobile-Italic.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Nobile-Regular", "new_fonts/Nobile-Regular.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("OstrichSans-Heavy", "new_fonts/OstrichSans-Heavy.otf"));
+                            arrayFonts.add(new AdapterFontDetails("Pacifico", "new_fonts/Pacifico.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Portmanteau Regular", "new_fonts/Portmanteau Regular.ttf"));
+                            arrayFonts.add(new AdapterFontDetails("Ubuntu-Title", "new_fonts/Ubuntu-Title.ttf"));
+
+                            // 2. Load User Fonts from SQLite
+                            Cursor fontCursor = GlobalClass.sqLiteHelper.getFonts();
+                            if (fontCursor != null) {
+                                try {
+                                    // Performance: Get column index once outside the loop
+                                    int pathIndex = fontCursor.getColumnIndex("path");
+                                    if (pathIndex != -1) {
+                                        while (fontCursor.moveToNext()) {
+                                            String fontPath = fontCursor.getString(pathIndex);
+                                            if (!TextUtils.isEmpty(fontPath)) {
+                                                String[] pathSplits = fontPath.split("/");
+                                                if (pathSplits.length > 0 && pathSplits[pathSplits.length - 1].contains(".ttf")) {
+                                                    arrayFonts.add(new AdapterFontDetails(
+                                                            pathSplits[pathSplits.length - 1].replace(".ttf", ""),
+                                                            "", fontPath, true));
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                } finally {
+                                    // Always close the cursor to prevent memory leaks
+                                    fontCursor.close();
+                                }
+                            }
+                            return null; // Return for the runBlocking lambda
+                        }
+                );
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
 
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            if (null != adapterFonts)
+            // This part runs on the Main Thread after runBlocking completes
+            if (adapterFonts != null && notifyAdapter) {
                 adapterFonts.notifyDataSetChanged();
-        }
+            }
+
+            return null; // Return for the launchWhenStarted lambda
+        });
     }
 
     public class SyncFontTask extends AsyncTask<String, String, String> {
@@ -3691,7 +3742,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
                             }
                         }
                     });
-            new LoadFontsTask().execute();
+            loadFonts(true);
         }
     }
 
