@@ -202,7 +202,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
     private static final int REQUEST_SHARE_ACTION = 4;
     private static final int REQUEST_CODE_CHOOSE_LOGO_FROM_GAL = 5;
     private static final int REQUEST_BROWSE_FONT = 6;
-    private static final int REQUEST_MANAGE_ALL_FILES_PERM = 7;
+
 
     /**
      * Draggable ImageView for funny images
@@ -890,14 +890,8 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 }
                 break;
             case 2296:
-                if (SDK_INT >= Build.VERSION_CODES.R) {
-                    if (Environment.isExternalStorageManager()) {
-                        // perform action when allow permission success
-                        permCallback.permGranted();
-                    } else {
-                        Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
-                        permCallback.permDenied();
-                    }
+                if (permCallback != null) {
+                    permCallback.permGranted();
                 }
                 break;
         }
@@ -955,17 +949,13 @@ public class ActivityMainEditor extends AppCompatActivity implements
             } else if (requestCode == REQUEST_CODE_CHOOSE_LOGO_FROM_GAL) {
                 GlobalClass.logoPath = null;
                 Uri selectedImage = data.getData();
-                String[] filePath = {MediaStore.Images.Media.DATA};
-                Cursor c = getContentResolver().query(selectedImage, filePath, null, null, null);
-                if (null == c) {
+                GlobalClass.logoPath = BitmapSaver.getImagePathFromInputStreamUri(this, selectedImage);
+
+                if (LogoliciousApp.strIsNullOrEmpty(GlobalClass.logoPath)) {
                     showMessageOK(ActivityMainEditor.this, getString(R.string.MessageErrorOnLogoUpload), null);
                     return;
                 }
-                c.moveToFirst();
-                int columnIndex = c.getColumnIndex(filePath[0]);
-                GlobalClass.logoPath = "";
-                GlobalClass.logoPath = c.getString(columnIndex);
-                c.close();
+
                 try {
                     if (FileUtil.getFileSize(GlobalClass.logoPath) > FileUtil.PREFERRED_LOGO_SIZE) {
                         Log.i(TAG, "xxx logo is above recommended size");
@@ -1016,17 +1006,6 @@ public class ActivityMainEditor extends AppCompatActivity implements
                     FileUtil.copyFile(new FileInputStream(content_describer.getPath()), new FileOutputStream(fontsDir + content_describer.getLastPathSegment()));
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
-            }
-
-            if (requestCode == REQUEST_MANAGE_ALL_FILES_PERM) {
-                if (SDK_INT >= Build.VERSION_CODES.R) {
-                    if (Environment.isExternalStorageManager()) {
-                        addFont();
-                    } else {
-                        toast(this, "MANAGE_EXTERNAL_STORAGE permission is needed" +
-                                " in order to copy font file to app directory.", Toast.LENGTH_SHORT);
-                    }
                 }
             }
 
@@ -1274,20 +1253,8 @@ public class ActivityMainEditor extends AppCompatActivity implements
     }
 
     public void addFont() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            appCheckSelfPermission(new String[]{
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, new PermissionCallback() {
-                @Override
-                public void permGranted() {
-                    browseFont();
-                }
-
-                @Override
-                public void permDenied() {
-
-                }
-            });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            browseFont();
         } else {
             appCheckSelfPermission(new String[]{
                     Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -1741,11 +1708,20 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 .launchWhenStarted((scope, continuation) -> {
 
             // doInBackground equivalent
-            String picturePathResult = (String) BuildersKt.withContext(
-                    (CoroutineContext) Dispatchers.getIO(),
-                    (coroutineScope, continuationInner) -> saveFinalImage(false, true),
-                    null
-            );
+                    String picturePathResult = "";
+                    try {
+                        // Use runBlocking to wait for the IO work to finish.
+                        // DO NOT pass the 'continuation' as a 3rd parameter here.
+                        picturePathResult = (String) BuildersKt.runBlocking(
+                                (CoroutineContext) Dispatchers.getIO(),
+                                (coroutineScope, innerContinuation) -> {
+                                    // This runs on background thread
+                                    return saveFinalImage(false, true);
+                                }
+                        );
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
 
             // onPostExecute equivalent
             if (mProgressDialog != null && mProgressDialog.isShowing()) {
@@ -1753,42 +1729,50 @@ public class ActivityMainEditor extends AppCompatActivity implements
             }
 
             if (picturePathResult.equalsIgnoreCase("not enough memory")) {
-                LogoliciousApp.showYesNoAlertWithoutTitle(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), "Continue", "Ok", (dialogInterface, i) -> {
-                    if (i == DialogInterface.BUTTON_POSITIVE) {
-                        editor.putBoolean("ProceedEvenNoMemAvailable", true).commit();
-                        startSharingProcess(); // Recursive call to new method
-                    } else {
-                        dialogInterface.cancel();
-                        editor.putBoolean("ProceedEvenNoMemAvailable", false).commit();
-                    }
-                });
+                handleLowMemoryOnShare();
             } else {
-                rateApp();
-                System.gc();
-                Runtime.getRuntime().gc();
-                AppStatitics.addSaveShareCount(ActivityMainEditor.this);
-                ActivityMainEditor.picturePath = picturePath;
-
-                //Show share list.
-                Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
-                //shareIntent.setType("image/" + FileUtil.getImageType(preferences)); // text/plain
-                shareIntent.setType("message/rfc822");
-                String shareText = getResources().getString(R.string.label_sharetext);
-                shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "LogoLicious");
-                shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareText);
-                Uri uri = FileProvider.getUriForFile(ActivityMainEditor.this, BuildConfig.APPLICATION_ID + ".fileprovider", new File(photoUri.getPath()));
-                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                shareIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                shareIntent.setDataAndType(uri, getContentResolver().getType(uri));
-                shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-                //shareIntent.putExtra(Intent.EXTRA_STREAM, photoUri);
-                startActivityForResult(Intent.createChooser(shareIntent, "Share Your LogoLicious"), REQUEST_SHARE_ACTION);
-
-                editor.putBoolean("ProceedEvenNoMemAvailable", false);
-                editor.commit();
+                completeSharing(picturePathResult);
             }
             return null;
+        });
+    }
+
+    private void completeSharing(String picturePathResult) {
+        rateApp();
+        System.gc();
+        Runtime.getRuntime().gc();
+        AppStatitics.addSaveShareCount(ActivityMainEditor.this);
+        ActivityMainEditor.picturePath = picturePath;
+
+        //Show share list.
+        Intent shareIntent = new Intent(android.content.Intent.ACTION_SEND);
+        //shareIntent.setType("image/" + FileUtil.getImageType(preferences)); // text/plain
+        shareIntent.setType("message/rfc822");
+        String shareText = getResources().getString(R.string.label_sharetext);
+        shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "LogoLicious");
+        shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareText);
+        Uri uri = FileProvider.getUriForFile(ActivityMainEditor.this, BuildConfig.APPLICATION_ID + ".fileprovider", new File(photoUri.getPath()));
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        shareIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        shareIntent.setDataAndType(uri, getContentResolver().getType(uri));
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+        //shareIntent.putExtra(Intent.EXTRA_STREAM, photoUri);
+        startActivityForResult(Intent.createChooser(shareIntent, "Share Your LogoLicious"), REQUEST_SHARE_ACTION);
+
+        editor.putBoolean("ProceedEvenNoMemAvailable", false);
+        editor.commit();
+    }
+
+    private void handleLowMemoryOnShare() {
+        LogoliciousApp.showYesNoAlertWithoutTitle(ActivityMainEditor.this, getString(R.string.MemoryLowAlertMessage), "Continue", "Ok", (dialogInterface, i) -> {
+            if (i == DialogInterface.BUTTON_POSITIVE) {
+                editor.putBoolean("ProceedEvenNoMemAvailable", true).commit();
+                startSharingProcess(); // Recursive call to new method
+            } else {
+                dialogInterface.cancel();
+                editor.putBoolean("ProceedEvenNoMemAvailable", false).commit();
+            }
         });
     }
 
@@ -1818,16 +1802,6 @@ public class ActivityMainEditor extends AppCompatActivity implements
     }
 
     private void uploadLogo(String logopath) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                Uri uri = Uri.fromParts("package", getPackageName(), null);
-                intent.setData(uri);
-                startActivity(intent);
-                return; // Stop execution until they grant permission
-            }
-        }
-
         GlobalClass.freeMem();
         showProgress("Uploading Logo");
 
@@ -1911,16 +1885,6 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 toast(getApplicationContext(), "malloc() called. Available mem = " + LogoliciousApp.getAvailableMemMB(getApplicationContext()), Toast.LENGTH_SHORT);
                 break;
             case R.id.buttonShowMyLogos:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    if (!Environment.isExternalStorageManager()) {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                        Uri uri = Uri.fromParts("package", getPackageName(), null);
-                        intent.setData(uri);
-                        startActivity(intent);
-                        return; // Stop execution until they grant permission
-                    }
-                }
-
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     if (mLogosView == null) {
                         addMyLogosTooltipView();
@@ -3523,40 +3487,7 @@ public class ActivityMainEditor extends AppCompatActivity implements
                 if (null != mDialog && mDialog.isShowing())
                     mDialog.dismiss();
 
-                if (SDK_INT >= 30) {
-                    if (mDialog != null && mDialog.isShowing())
-                        mDialog.dismiss();
-
-                    if (!Environment.isExternalStorageManager()) {
-                        showSimpleDialog("Permission",
-                                "In order to locate fonts on your phone, LogoLicious needs to be allowed access to browse files." +
-                                        "No worries, everything is local on your device only and no information will be shared online.",
-                                "Agree",
-                                "",
-                                v -> {
-                                    if (mDialog != null && mDialog.isShowing())
-                                        mDialog.dismiss();
-
-                                    Intent getPermission = new Intent();
-                                    getPermission.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                                    startActivityForResult(getPermission, REQUEST_MANAGE_ALL_FILES_PERM);
-                                },
-                                view1 -> {
-                                    if (mDialog != null && mDialog.isShowing())
-                                        mDialog.dismiss();
-                                },
-                                null,
-                                true,
-                                true,
-                                true,
-                                false,
-                                false);
-                    } else {
-                        addFont();
-                    }
-                } else {
-                    addFont();
-                }
+                addFont();
             }
         });
 
